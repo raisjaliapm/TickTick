@@ -4,13 +4,18 @@ import {
   isSameMonth, isToday, addMonths, subMonths, addWeeks, subWeeks,
   getHours, isSameDay,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Grid3X3, Rows3 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Grid3X3, Rows3, Trash2 } from 'lucide-react';
 import type { Task, Category } from '@/hooks/useTaskStore';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface CalendarViewProps {
   tasks: Task[];
   categories: Category[];
   onToggle: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<Task>) => void;
+  onDelete: (id: string) => void;
   mode?: 'month' | 'week';
 }
 
@@ -23,7 +28,70 @@ const priorityDot: Record<string, string> = {
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6:00 – 21:00
 
-export function CalendarView({ tasks, categories, onToggle, mode: initialMode = 'month' }: CalendarViewProps) {
+// Editable task chip used in both month and week views
+function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete }: {
+  task: Task; categories: Category[]; onToggle: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<Task>) => void; onDelete: (id: string) => void;
+}) {
+  const [title, setTitle] = useState(task.title);
+  const [priority, setPriority] = useState(task.priority);
+  const [open, setOpen] = useState(false);
+  const category = categories.find(c => c.id === task.category_id);
+
+  const handleSave = () => {
+    const updates: Partial<Task> = {};
+    if (title.trim() && title.trim() !== task.title) updates.title = title.trim();
+    if (priority !== task.priority) updates.priority = priority;
+    if (Object.keys(updates).length > 0) onUpdate(task.id, updates);
+    setOpen(false);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) { setTitle(task.title); setPriority(task.priority); } }}>
+      <PopoverTrigger asChild>
+        <button
+          className={`w-full text-left text-[10px] px-1.5 py-0.5 rounded truncate protocol-transition hover:bg-task-hover flex items-center gap-1 ${task.status === 'completed' ? 'text-task-completed line-through' : 'text-foreground'}`}>
+          <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
+          <span className="truncate">{task.title}</span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-3 space-y-3" align="start" onClick={e => e.stopPropagation()}>
+        <div>
+          <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1 block">Title</label>
+          <Input value={title} onChange={e => setTitle(e.target.value)} className="h-8 text-sm"
+            onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setOpen(false); }} />
+        </div>
+        <div>
+          <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1 block">Priority</label>
+          <div className="flex gap-1">
+            {(['low', 'medium', 'high', 'urgent'] as const).map(p => (
+              <button key={p} onClick={() => setPriority(p)}
+                className={`text-[10px] px-2 py-1 rounded-md capitalize protocol-transition ${priority === p ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+                {p}
+              </button>
+            ))}
+          </div>
+        </div>
+        {category && (
+          <div className="text-[10px] font-mono text-muted-foreground">Category: {category.name}</div>
+        )}
+        <div className="flex items-center justify-between pt-1">
+          <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground hover:text-destructive" onClick={() => { onDelete(task.id); setOpen(false); }}>
+            <Trash2 className="h-3 w-3 mr-1" /> Delete
+          </Button>
+          <div className="flex gap-1.5">
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { onToggle(task.id); setOpen(false); }}>
+              {task.status === 'completed' ? 'Undo' : 'Done'}
+            </Button>
+            <Button size="sm" className="h-7 text-xs" onClick={handleSave}>Save</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, mode: initialMode = 'month' }: CalendarViewProps) {
   const [mode, setMode] = useState<'month' | 'week'>(initialMode);
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -115,11 +183,7 @@ export function CalendarView({ tasks, categories, onToggle, mode: initialMode = 
                   </div>
                   <div className="space-y-0.5">
                     {dayTasks.slice(0, 3).map(task => (
-                      <button key={task.id} onClick={() => onToggle(task.id)}
-                        className={`w-full text-left text-[10px] px-1 py-0.5 rounded truncate protocol-transition hover:bg-task-hover flex items-center gap-1 ${task.status === 'completed' ? 'text-task-completed line-through' : 'text-foreground'}`}>
-                        <div className={`h-1 w-1 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
-                        <span className="truncate">{task.title}</span>
-                      </button>
+                      <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
                     ))}
                     {dayTasks.length > 3 && (
                       <span className="text-[9px] font-mono text-muted-foreground px-1">+{dayTasks.length - 3} more</span>
@@ -174,15 +238,7 @@ export function CalendarView({ tasks, categories, onToggle, mode: initialMode = 
                     <div key={`${key}-${hour}`}
                       className={`min-h-[48px] border-r border-border last:border-r-0 p-0.5 ${today ? 'bg-primary/[0.02]' : ''}`}>
                       {hourTasks.map(task => (
-                        <button key={task.id} onClick={() => onToggle(task.id)}
-                          className={`w-full text-left text-[10px] px-1.5 py-1 rounded-md mb-0.5 protocol-transition flex items-center gap-1.5 ${
-                            task.status === 'completed'
-                              ? 'bg-secondary/50 text-task-completed line-through'
-                              : 'bg-secondary hover:bg-task-hover text-foreground'
-                          }`}>
-                          <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
-                          <span className="truncate">{task.title}</span>
-                        </button>
+                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
                       ))}
                     </div>
                   );
@@ -206,15 +262,7 @@ export function CalendarView({ tasks, categories, onToggle, mode: initialMode = 
                 <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5 px-1">Unscheduled</p>
                 <div className="flex flex-wrap gap-1">
                   {unscheduled.slice(0, 10).map(task => (
-                    <button key={task.id} onClick={() => onToggle(task.id)}
-                      className={`text-[10px] px-2 py-1 rounded-md protocol-transition flex items-center gap-1.5 ${
-                        task.status === 'completed'
-                          ? 'bg-secondary/50 text-task-completed line-through'
-                          : 'bg-secondary hover:bg-task-hover text-foreground'
-                      }`}>
-                      <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
-                      <span>{task.title}</span>
-                    </button>
+                    <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
                   ))}
                 </div>
               </div>
