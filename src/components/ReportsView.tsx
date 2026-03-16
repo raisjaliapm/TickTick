@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Download, BarChart3, CheckCircle2, Clock, AlertTriangle, TrendingUp } from 'lucide-react';
 import { format, isToday, isPast, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, subDays } from 'date-fns';
 import * as XLSX from 'xlsx';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -11,6 +12,55 @@ interface ReportsViewProps {
   tasks: Task[];
   categories: Category[];
 }
+
+const PRIORITY_COLORS: Record<string, string> = {
+  urgent: 'hsl(0, 84%, 60%)',
+  high: 'hsl(25, 95%, 53%)',
+  medium: 'hsl(45, 93%, 47%)',
+  low: 'hsl(217, 91%, 60%)',
+};
+
+const CATEGORY_COLORS = [
+  'hsl(142, 71%, 45%)',
+  'hsl(217, 91%, 60%)',
+  'hsl(25, 95%, 53%)',
+  'hsl(45, 93%, 47%)',
+  'hsl(280, 65%, 60%)',
+  'hsl(0, 84%, 60%)',
+  'hsl(180, 60%, 45%)',
+  'hsl(330, 70%, 55%)',
+];
+
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const d = payload[0].payload;
+    return (
+      <div className="bg-popover border border-border rounded-md px-3 py-2 shadow-md">
+        <p className="text-xs font-mono text-foreground">{d.name}</p>
+        <p className="text-xs font-mono text-muted-foreground">{d.percentage ?? d.value}%</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const BarTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-popover border border-border rounded-md px-3 py-2 shadow-md">
+        <p className="text-xs font-mono text-foreground mb-1">{label}</p>
+        {payload.map((p: any) => (
+          <p key={p.name} className="text-xs font-mono text-muted-foreground">
+            {p.name}: {p.value}%
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const renderPieLabel = ({ name, percentage }: any) => `${name} ${percentage}%`;
 
 export function ReportsView({ tasks, categories }: ReportsViewProps) {
   const categoryMap = useMemo(() => {
@@ -25,14 +75,10 @@ export function ReportsView({ tasks, categories }: ReportsViewProps) {
     const completed = tasks.filter(t => t.status === 'completed');
     const overdue = active.filter(t => t.due_date && isPast(new Date(t.due_date)) && !isToday(new Date(t.due_date)));
     const dueToday = active.filter(t => t.due_date && isToday(new Date(t.due_date)));
-
-    const thisWeek = tasks.filter(t => t.due_date && isWithinInterval(new Date(t.due_date), { start: startOfWeek(now), end: endOfWeek(now) }));
-    const thisMonth = tasks.filter(t => t.due_date && isWithinInterval(new Date(t.due_date), { start: startOfMonth(now), end: endOfMonth(now) }));
-
     const completedLast7 = completed.filter(t => t.completed_at && new Date(t.completed_at) >= subDays(now, 7));
 
     const byPriority: Record<string, number> = {};
-    active.forEach(t => { byPriority[t.priority] = (byPriority[t.priority] || 0) + 1; });
+    tasks.forEach(t => { byPriority[t.priority] = (byPriority[t.priority] || 0) + 1; });
 
     const byCategory: Record<string, { active: number; completed: number }> = {};
     tasks.forEach(t => {
@@ -42,10 +88,43 @@ export function ReportsView({ tasks, categories }: ReportsViewProps) {
       else byCategory[name].active++;
     });
 
-    return { active: active.length, completed: completed.length, overdue: overdue.length, dueToday: dueToday.length, thisWeek: thisWeek.length, thisMonth: thisMonth.length, completedLast7: completedLast7.length, byPriority, byCategory, completionRate: tasks.length > 0 ? Math.round((completed.length / tasks.length) * 100) : 0 };
+    return { active: active.length, completed: completed.length, overdue: overdue.length, dueToday: dueToday.length, completedLast7: completedLast7.length, byPriority, byCategory, completionRate: tasks.length > 0 ? Math.round((completed.length / tasks.length) * 100) : 0 };
   }, [tasks, categoryMap]);
 
+  // Chart data with percentages
+  const statusPieData = useMemo(() => {
+    const total = tasks.length || 1;
+    return [
+      { name: 'Active', value: stats.active, percentage: Math.round((stats.active / total) * 100), fill: 'hsl(217, 91%, 60%)' },
+      { name: 'Completed', value: stats.completed, percentage: Math.round((stats.completed / total) * 100), fill: 'hsl(142, 71%, 45%)' },
+      { name: 'Overdue', value: stats.overdue, percentage: Math.round((stats.overdue / total) * 100), fill: 'hsl(0, 84%, 60%)' },
+    ].filter(d => d.value > 0);
+  }, [tasks.length, stats]);
+
+  const priorityPieData = useMemo(() => {
+    const total = tasks.length || 1;
+    return ['urgent', 'high', 'medium', 'low']
+      .map(p => ({
+        name: p.charAt(0).toUpperCase() + p.slice(1),
+        value: stats.byPriority[p] || 0,
+        percentage: Math.round(((stats.byPriority[p] || 0) / total) * 100),
+      }))
+      .filter(d => d.value > 0);
+  }, [tasks.length, stats.byPriority]);
+
+  const categoryBarData = useMemo(() => {
+    const total = tasks.length || 1;
+    return Object.entries(stats.byCategory).map(([name, v]) => ({
+      name,
+      Active: Math.round((v.active / total) * 100),
+      Completed: Math.round((v.completed / total) * 100),
+      activeRaw: v.active,
+      completedRaw: v.completed,
+    }));
+  }, [tasks.length, stats.byCategory]);
+
   const exportToExcel = () => {
+    const total = tasks.length || 1;
     const rows = tasks.map(t => ({
       Title: t.title,
       Status: t.status,
@@ -58,41 +137,35 @@ export function ReportsView({ tasks, categories }: ReportsViewProps) {
     }));
 
     const wb = XLSX.utils.book_new();
-
-    // All tasks sheet
     const ws = XLSX.utils.json_to_sheet(rows);
     ws['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 10 }, { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, ws, 'All Tasks');
 
-    // Summary sheet
     const summary = [
-      ['Metric', 'Value'],
-      ['Total Tasks', tasks.length],
-      ['Active', stats.active],
-      ['Completed', stats.completed],
-      ['Overdue', stats.overdue],
-      ['Due Today', stats.dueToday],
-      ['Completion Rate', `${stats.completionRate}%`],
-      ['Completed (Last 7 Days)', stats.completedLast7],
+      ['Metric', 'Count', 'Percentage'],
+      ['Total Tasks', tasks.length, '100%'],
+      ['Active', stats.active, `${Math.round((stats.active / total) * 100)}%`],
+      ['Completed', stats.completed, `${stats.completionRate}%`],
+      ['Overdue', stats.overdue, `${Math.round((stats.overdue / total) * 100)}%`],
+      ['Due Today', stats.dueToday, `${Math.round((stats.dueToday / total) * 100)}%`],
+      ['Completed (Last 7 Days)', stats.completedLast7, `${Math.round((stats.completedLast7 / total) * 100)}%`],
       [],
-      ['Priority', 'Count'],
-      ...Object.entries(stats.byPriority).map(([k, v]) => [k, v]),
+      ['Priority', 'Count', 'Percentage'],
+      ...['urgent', 'high', 'medium', 'low'].map(p => [p, stats.byPriority[p] || 0, `${Math.round(((stats.byPriority[p] || 0) / total) * 100)}%`]),
       [],
-      ['Category', 'Active', 'Completed'],
-      ...Object.entries(stats.byCategory).map(([k, v]) => [k, v.active, v.completed]),
+      ['Category', 'Active', 'Completed', '% of Total'],
+      ...Object.entries(stats.byCategory).map(([k, v]) => [k, v.active, v.completed, `${Math.round(((v.active + v.completed) / total) * 100)}%`]),
     ];
     const ws2 = XLSX.utils.aoa_to_sheet(summary);
-    ws2['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 12 }];
+    ws2['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
 
     XLSX.writeFile(wb, `todoist-report-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
   };
 
-  const priorityOrder = ['urgent', 'high', 'medium', 'low'];
-
   return (
     <div className="space-y-8">
-      {/* Header with export */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />
@@ -113,8 +186,8 @@ export function ReportsView({ tasks, categories }: ReportsViewProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <p className="text-2xl font-display font-semibold text-foreground">{stats.completed}</p>
-            <p className="text-[11px] font-mono text-muted-foreground">{stats.completionRate}% rate</p>
+            <p className="text-2xl font-display font-semibold text-foreground">{stats.completionRate}%</p>
+            <p className="text-[11px] font-mono text-muted-foreground">{stats.completed} of {tasks.length} tasks</p>
           </CardContent>
         </Card>
 
@@ -125,8 +198,8 @@ export function ReportsView({ tasks, categories }: ReportsViewProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <p className="text-2xl font-display font-semibold text-foreground">{stats.active}</p>
-            <p className="text-[11px] font-mono text-muted-foreground">{stats.dueToday} due today</p>
+            <p className="text-2xl font-display font-semibold text-foreground">{tasks.length ? Math.round((stats.active / tasks.length) * 100) : 0}%</p>
+            <p className="text-[11px] font-mono text-muted-foreground">{stats.active} tasks · {stats.dueToday} due today</p>
           </CardContent>
         </Card>
 
@@ -137,8 +210,8 @@ export function ReportsView({ tasks, categories }: ReportsViewProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <p className="text-2xl font-display font-semibold text-foreground">{stats.overdue}</p>
-            <p className="text-[11px] font-mono text-muted-foreground">need attention</p>
+            <p className="text-2xl font-display font-semibold text-foreground">{tasks.length ? Math.round((stats.overdue / tasks.length) * 100) : 0}%</p>
+            <p className="text-[11px] font-mono text-muted-foreground">{stats.overdue} tasks need attention</p>
           </CardContent>
         </Card>
 
@@ -150,41 +223,109 @@ export function ReportsView({ tasks, categories }: ReportsViewProps) {
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <p className="text-2xl font-display font-semibold text-foreground">{stats.completedLast7}</p>
-            <p className="text-[11px] font-mono text-muted-foreground">completed</p>
+            <p className="text-[11px] font-mono text-muted-foreground">completed recently</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Priority Breakdown */}
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Status Pie Chart */}
+        <Card className="bg-card border-border">
+          <CardHeader className="px-4 pt-4 pb-1">
+            <CardTitle className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Status Distribution (%)</CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            {tasks.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-10">No tasks yet</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={statusPieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={3}
+                    dataKey="value"
+                    label={renderPieLabel}
+                    labelLine={false}
+                  >
+                    {statusPieData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend formatter={(value) => <span className="text-xs font-mono text-muted-foreground">{value}</span>} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Priority Pie Chart */}
+        <Card className="bg-card border-border">
+          <CardHeader className="px-4 pt-4 pb-1">
+            <CardTitle className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Priority Distribution (%)</CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            {tasks.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-10">No tasks yet</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={priorityPieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={3}
+                    dataKey="value"
+                    label={renderPieLabel}
+                    labelLine={false}
+                  >
+                    {priorityPieData.map((entry, i) => (
+                      <Cell key={i} fill={PRIORITY_COLORS[entry.name.toLowerCase()] || CATEGORY_COLORS[i]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend formatter={(value) => <span className="text-xs font-mono text-muted-foreground">{value}</span>} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Category Bar Chart */}
       <Card className="bg-card border-border">
-        <CardHeader className="px-4 pt-4 pb-3">
-          <CardTitle className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Active by Priority</CardTitle>
+        <CardHeader className="px-4 pt-4 pb-1">
+          <CardTitle className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Category Breakdown (% of Total)</CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4">
-          <div className="flex gap-3">
-            {priorityOrder.map(p => {
-              const count = stats.byPriority[p] || 0;
-              const total = stats.active || 1;
-              return (
-                <div key={p} className="flex-1">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-mono capitalize text-muted-foreground">{p}</span>
-                    <span className="text-xs font-mono text-foreground">{count}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                    <div className={`h-full rounded-full bg-priority-${p} protocol-transition`} style={{ width: `${(count / total) * 100}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {tasks.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-10">No tasks yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={Math.max(200, categoryBarData.length * 50)}>
+              <BarChart data={categoryBarData} layout="vertical" margin={{ left: 20, right: 20, top: 10, bottom: 10 }}>
+                <XAxis type="number" domain={[0, 100]} tickFormatter={v => `${v}%`} tick={{ fontSize: 11, fill: 'hsl(240, 5%, 54%)' }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'hsl(0, 0%, 98%)' }} width={90} />
+                <Tooltip content={<BarTooltip />} />
+                <Legend formatter={(value) => <span className="text-xs font-mono text-muted-foreground">{value}</span>} />
+                <Bar dataKey="Active" stackId="a" fill="hsl(217, 91%, 60%)" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="Completed" stackId="a" fill="hsl(142, 71%, 45%)" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
-      {/* Category Breakdown */}
+      {/* Category Table with % */}
       <Card className="bg-card border-border">
         <CardHeader className="px-4 pt-4 pb-3">
-          <CardTitle className="text-xs font-mono uppercase tracking-wider text-muted-foreground">By Category</CardTitle>
+          <CardTitle className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Category Details</CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4">
           <Table>
@@ -194,23 +335,29 @@ export function ReportsView({ tasks, categories }: ReportsViewProps) {
                 <TableHead className="text-xs font-mono text-right">Active</TableHead>
                 <TableHead className="text-xs font-mono text-right">Completed</TableHead>
                 <TableHead className="text-xs font-mono text-right">Total</TableHead>
+                <TableHead className="text-xs font-mono text-right">% of All</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Object.entries(stats.byCategory).map(([name, v]) => (
-                <TableRow key={name} className="border-border">
-                  <TableCell className="text-sm text-foreground">{name}</TableCell>
-                  <TableCell className="text-sm text-right text-muted-foreground">{v.active}</TableCell>
-                  <TableCell className="text-sm text-right text-muted-foreground">{v.completed}</TableCell>
-                  <TableCell className="text-sm text-right font-medium text-foreground">{v.active + v.completed}</TableCell>
-                </TableRow>
-              ))}
+              {Object.entries(stats.byCategory).map(([name, v]) => {
+                const total = v.active + v.completed;
+                const pct = tasks.length ? Math.round((total / tasks.length) * 100) : 0;
+                return (
+                  <TableRow key={name} className="border-border">
+                    <TableCell className="text-sm text-foreground">{name}</TableCell>
+                    <TableCell className="text-sm text-right text-muted-foreground">{v.active}</TableCell>
+                    <TableCell className="text-sm text-right text-muted-foreground">{v.completed}</TableCell>
+                    <TableCell className="text-sm text-right font-medium text-foreground">{total}</TableCell>
+                    <TableCell className="text-sm text-right font-mono text-primary">{pct}%</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
 
-      {/* Recent Tasks Table */}
+      {/* All Tasks Table */}
       <Card className="bg-card border-border">
         <CardHeader className="px-4 pt-4 pb-3">
           <CardTitle className="text-xs font-mono uppercase tracking-wider text-muted-foreground">All Tasks ({tasks.length})</CardTitle>
