@@ -7,6 +7,7 @@ import { TaskList } from '@/components/TaskList';
 import { CommandPalette } from '@/components/CommandPalette';
 import { CalendarView } from '@/components/CalendarView';
 import { ReportsView } from '@/components/ReportsView';
+import { WeeklyReportsView } from '@/components/WeeklyReportsView';
 
 const viewLabels: Record<string, string> = {
   all: 'All Tasks',
