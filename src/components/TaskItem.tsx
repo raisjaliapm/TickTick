@@ -74,13 +74,26 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
         )}
       </div>
 
-      <div className="opacity-0 group-hover:opacity-100 protocol-transition flex items-center gap-2 shrink-0">
+      <div className="opacity-0 group-hover:opacity-100 protocol-transition flex items-center gap-1.5 shrink-0">
         {task.due_date && (
-          <span className={`text-[11px] font-mono ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
+          <span className={`text-[11px] font-mono mr-1 ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
             {isOverdue ? 'overdue' : format(new Date(task.due_date), 'MMM d')}
           </span>
         )}
-        <button onClick={() => onDelete(task.id)} className="text-[11px] font-mono text-muted-foreground hover:text-destructive protocol-transition">⌫</button>
+        <button
+          onClick={() => { setIsEditing(true); setEditValue(task.title); }}
+          className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition"
+          title="Edit task"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+        <button
+          onClick={() => onDelete(task.id)}
+          className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition"
+          title="Delete task"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
       </div>
 
       {isOverdue && <span className="text-[11px] font-mono text-priority-urgent shrink-0 group-hover:hidden">overdue</span>}
