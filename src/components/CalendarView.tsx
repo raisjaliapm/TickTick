@@ -4,13 +4,18 @@ import {
   isSameMonth, isToday, addMonths, subMonths, addWeeks, subWeeks,
   getHours, isSameDay,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Grid3X3, Rows3 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Grid3X3, Rows3, Trash2 } from 'lucide-react';
 import type { Task, Category } from '@/hooks/useTaskStore';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface CalendarViewProps {
   tasks: Task[];
   categories: Category[];
   onToggle: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<Task>) => void;
+  onDelete: (id: string) => void;
   mode?: 'month' | 'week';
 }
 
