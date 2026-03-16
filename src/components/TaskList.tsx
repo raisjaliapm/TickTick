@@ -1,6 +1,6 @@
 import { AnimatePresence } from 'framer-motion';
 import { TaskItem } from './TaskItem';
-import type { Task, Category } from '@/types/task';
+import type { Task, Category } from '@/hooks/useTaskStore';
 
 interface TaskListProps {
   tasks: Task[];
@@ -23,14 +23,7 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete }: Ta
     <div className="space-y-0.5">
       <AnimatePresence mode="popLayout">
         {tasks.map(task => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            categories={categories}
-            onToggle={onToggle}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-          />
+          <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
         ))}
       </AnimatePresence>
     </div>
