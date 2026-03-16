@@ -20,6 +20,7 @@ const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] =
   { key: 'completed', label: 'Completed', icon: CheckCircle2 },
   { key: 'calendar', label: 'Calendar', icon: CalendarRange },
   { key: 'reports', label: 'Reports', icon: BarChart3 },
+  { key: 'weekly-reports', label: 'Weekly Reports', icon: FileText },
 ];
 
 const priorities: { key: Priority; label: string; color: string }[] = [

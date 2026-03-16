@@ -63,11 +63,13 @@ const Index = () => {
             </button>
           </header>
 
-          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && (
+          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && (
             <TaskInput onAdd={store.addTask} categories={store.categories} />
           )}
 
-          {store.viewFilter === 'reports' ? (
+          {store.viewFilter === 'weekly-reports' ? (
+            <WeeklyReportsView />
+          ) : store.viewFilter === 'reports' ? (
             <ReportsView tasks={store.allTasks} categories={store.categories} />
           ) : store.viewFilter === 'calendar' ? (
             <CalendarView tasks={store.allTasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
