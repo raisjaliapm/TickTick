@@ -1,4 +1,4 @@
-import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut } from 'lucide-react';
+import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3 } from 'lucide-react';
 import type { ViewFilter, Category, Priority } from '@/hooks/useTaskStore';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -19,6 +19,7 @@ const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] =
   { key: 'upcoming', label: 'Upcoming', icon: ListTodo },
   { key: 'completed', label: 'Completed', icon: CheckCircle2 },
   { key: 'calendar', label: 'Calendar', icon: CalendarRange },
+  { key: 'reports', label: 'Reports', icon: BarChart3 },
 ];
 
 const priorities: { key: Priority; label: string; color: string }[] = [

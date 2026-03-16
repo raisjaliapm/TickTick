@@ -6,6 +6,7 @@ import { TaskInput } from '@/components/TaskInput';
 import { TaskList } from '@/components/TaskList';
 import { CommandPalette } from '@/components/CommandPalette';
 import { CalendarView } from '@/components/CalendarView';
+import { ReportsView } from '@/components/ReportsView';
 
 const viewLabels: Record<string, string> = {
   all: 'All Tasks',
@@ -13,6 +14,7 @@ const viewLabels: Record<string, string> = {
   upcoming: 'Upcoming (7 days)',
   completed: 'Completed',
   calendar: 'Calendar',
+  reports: 'Reports',
 };
 
 const Index = () => {
@@ -42,7 +44,7 @@ const Index = () => {
       <main className="flex-1 relative">
         <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
 
-        <div className={`relative z-10 mx-auto px-6 py-12 md:py-16 ${store.viewFilter === 'calendar' ? 'max-w-5xl' : 'max-w-2xl'}`}>
+        <div className={`relative z-10 mx-auto px-6 py-12 md:py-16 ${store.viewFilter === 'calendar' || store.viewFilter === 'reports' ? 'max-w-5xl' : 'max-w-2xl'}`}>
           <header className="flex items-center justify-between mb-10">
             <div>
               <h1 className="text-xl font-display font-medium tracking-tight text-foreground">
@@ -59,11 +61,13 @@ const Index = () => {
             </button>
           </header>
 
-          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && (
+          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && (
             <TaskInput onAdd={store.addTask} categories={store.categories} />
           )}
 
-          {store.viewFilter === 'calendar' ? (
+          {store.viewFilter === 'reports' ? (
+            <ReportsView tasks={store.allTasks} categories={store.categories} />
+          ) : store.viewFilter === 'calendar' ? (
             <CalendarView tasks={store.allTasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
           ) : (
             <TaskList tasks={store.tasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
