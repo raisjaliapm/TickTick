@@ -183,11 +183,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                   </div>
                   <div className="space-y-0.5">
                     {dayTasks.slice(0, 3).map(task => (
-                      <button key={task.id} onClick={() => onToggle(task.id)}
-                        className={`w-full text-left text-[10px] px-1 py-0.5 rounded truncate protocol-transition hover:bg-task-hover flex items-center gap-1 ${task.status === 'completed' ? 'text-task-completed line-through' : 'text-foreground'}`}>
-                        <div className={`h-1 w-1 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
-                        <span className="truncate">{task.title}</span>
-                      </button>
+                      <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
                     ))}
                     {dayTasks.length > 3 && (
                       <span className="text-[9px] font-mono text-muted-foreground px-1">+{dayTasks.length - 3} more</span>
