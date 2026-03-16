@@ -1,4 +1,4 @@
-import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3 } from 'lucide-react';
+import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText } from 'lucide-react';
 import type { ViewFilter, Category, Priority } from '@/hooks/useTaskStore';
 import { useAuth } from '@/contexts/AuthContext';
 
