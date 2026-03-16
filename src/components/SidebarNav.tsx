@@ -35,7 +35,7 @@ export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCateg
     <aside className="w-56 shrink-0 border-r border-border bg-sidebar p-4 flex flex-col gap-6 h-screen sticky top-0 overflow-y-auto scrollbar-thin">
       <div className="flex items-center gap-2 px-2 pt-2">
         <Circle className="h-4 w-4 fill-primary text-primary" />
-        <span className="text-base font-display font-medium tracking-tight text-foreground">Protocol</span>
+        <span className="text-base font-display font-medium tracking-tight text-foreground">Todoist</span>
       </div>
 
       <nav className="space-y-0.5">
