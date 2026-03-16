@@ -51,7 +51,7 @@ const ResetPassword = () => {
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex items-center gap-2 justify-center mb-8">
           <Circle className="h-5 w-5 fill-primary text-primary" />
-          <span className="text-xl font-display font-medium tracking-tight text-foreground">Protocol</span>
+          <span className="text-xl font-display font-medium tracking-tight text-foreground">Todoist</span>
         </div>
         <div className="bg-card border border-border rounded-xl p-6">
           <h2 className="text-lg font-display font-medium text-foreground mb-1">Set new password</h2>
