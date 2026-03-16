@@ -28,9 +28,13 @@ const Auth = () => {
         if (error) throw error;
         navigate('/');
       } else if (mode === 'signup') {
-        const { error } = await signUp(email, password, displayName);
+        const { error, session } = await signUp(email, password, displayName);
         if (error) throw error;
-        setMessage('Check your email to confirm your account.');
+        if (session) {
+          navigate('/');
+        } else {
+          setMessage('Check your email to confirm your account.');
+        }
       } else {
         const { error } = await resetPassword(email);
         if (error) throw error;
