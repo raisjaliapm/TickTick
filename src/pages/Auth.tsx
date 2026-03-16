@@ -55,7 +55,7 @@ const Auth = () => {
         {/* Logo */}
         <div className="flex items-center gap-2 justify-center mb-8">
           <Circle className="h-5 w-5 fill-primary text-primary" />
-          <span className="text-xl font-display font-medium tracking-tight text-foreground">Protocol</span>
+          <span className="text-xl font-display font-medium tracking-tight text-foreground">Todoist</span>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-6">
