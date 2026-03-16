@@ -19,6 +19,7 @@ const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] =
   { key: 'upcoming', label: 'Upcoming', icon: ListTodo },
   { key: 'completed', label: 'Completed', icon: CheckCircle2 },
   { key: 'calendar', label: 'Calendar', icon: CalendarRange },
+  { key: 'reports', label: 'Reports', icon: BarChart3 },
 ];
 
 const priorities: { key: Priority; label: string; color: string }[] = [

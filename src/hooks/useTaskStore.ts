@@ -7,7 +7,7 @@ import { isToday, isPast, isWithinInterval, addDays, startOfDay } from 'date-fns
 export type Task = Tables<'tasks'>;
 export type Category = Tables<'categories'>;
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
-export type ViewFilter = 'all' | 'today' | 'upcoming' | 'completed' | 'calendar';
+export type ViewFilter = 'all' | 'today' | 'upcoming' | 'completed' | 'calendar' | 'reports';
 
 export function useTaskStore() {
   const { user } = useAuth();
