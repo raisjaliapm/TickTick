@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check, Pencil, Trash2 } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import type { Task, Category } from '@/hooks/useTaskStore';
 
