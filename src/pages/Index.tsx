@@ -61,7 +61,7 @@ const Index = () => {
             </button>
           </header>
 
-          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && (
+          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && (
             <TaskInput onAdd={store.addTask} categories={store.categories} />
           )}
 
