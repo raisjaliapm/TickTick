@@ -115,6 +115,54 @@ export type Database = {
           },
         ]
       }
+      weekly_reports: {
+        Row: {
+          active_tasks: number
+          by_category: Json
+          by_priority: Json
+          completed_tasks: number
+          completion_rate: number
+          created_at: string
+          id: string
+          overdue_tasks: number
+          top_completed: Json
+          total_tasks: number
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          active_tasks?: number
+          by_category?: Json
+          by_priority?: Json
+          completed_tasks?: number
+          completion_rate?: number
+          created_at?: string
+          id?: string
+          overdue_tasks?: number
+          top_completed?: Json
+          total_tasks?: number
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          active_tasks?: number
+          by_category?: Json
+          by_priority?: Json
+          completed_tasks?: number
+          completion_rate?: number
+          created_at?: string
+          id?: string
+          overdue_tasks?: number
+          top_completed?: Json
+          total_tasks?: number
+          user_id?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
