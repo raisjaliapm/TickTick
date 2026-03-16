@@ -238,15 +238,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                     <div key={`${key}-${hour}`}
                       className={`min-h-[48px] border-r border-border last:border-r-0 p-0.5 ${today ? 'bg-primary/[0.02]' : ''}`}>
                       {hourTasks.map(task => (
-                        <button key={task.id} onClick={() => onToggle(task.id)}
-                          className={`w-full text-left text-[10px] px-1.5 py-1 rounded-md mb-0.5 protocol-transition flex items-center gap-1.5 ${
-                            task.status === 'completed'
-                              ? 'bg-secondary/50 text-task-completed line-through'
-                              : 'bg-secondary hover:bg-task-hover text-foreground'
-                          }`}>
-                          <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
-                          <span className="truncate">{task.title}</span>
-                        </button>
+                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
                       ))}
                     </div>
                   );
