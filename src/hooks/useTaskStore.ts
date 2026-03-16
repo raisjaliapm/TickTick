@@ -1,126 +1,123 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Task, Category, Priority, ViewFilter, TaskStatus } from '@/types/task';
-import { DEFAULT_CATEGORIES } from '@/types/task';
-import { isToday, isFuture, isPast, isWithinInterval, addDays, startOfDay } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import type { Tables } from '@/integrations/supabase/types';
+import { isToday, isPast, isWithinInterval, addDays, startOfDay } from 'date-fns';
 
-const STORAGE_KEY = 'protocol-tasks';
-const CATEGORIES_KEY = 'protocol-categories';
-
-function loadTasks(): Task[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveTasks(tasks: Task[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
-
-function loadCategories(): Category[] {
-  try {
-    const raw = localStorage.getItem(CATEGORIES_KEY);
-    return raw ? JSON.parse(raw) : DEFAULT_CATEGORIES;
-  } catch { return DEFAULT_CATEGORIES; }
-}
-
-function saveCategories(categories: Category[]) {
-  localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
-}
+export type Task = Tables<'tasks'>;
+export type Category = Tables<'categories'>;
+export type Priority = 'low' | 'medium' | 'high' | 'urgent';
+export type ViewFilter = 'all' | 'today' | 'upcoming' | 'completed' | 'calendar';
 
 export function useTaskStore() {
-  const [tasks, setTasks] = useState<Task[]>(loadTasks);
-  const [categories, setCategories] = useState<Category[]>(loadCategories);
+  const { user } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [viewFilter, setViewFilter] = useState<ViewFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<Priority | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { saveTasks(tasks); }, [tasks]);
-  useEffect(() => { saveCategories(categories); }, [categories]);
+  // Fetch tasks
+  const fetchTasks = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from('tasks').select('*').eq('user_id', user.id).order('sort_order', { ascending: true }).order('created_at', { ascending: false });
+    if (data) setTasks(data);
+  }, [user]);
 
-  const addTask = useCallback((title: string, priority: Priority = 'medium', dueDate: string | null = null, categoryId: string | null = null) => {
-    const now = new Date().toISOString();
-    const task: Task = {
-      id: crypto.randomUUID(),
-      title,
-      description: '',
-      status: 'active',
-      priority,
-      dueDate,
-      completedAt: null,
-      categoryId,
-      sortOrder: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
-    setTasks(prev => [task, ...prev]);
-    return task;
-  }, []);
+  // Fetch categories
+  const fetchCategories = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from('categories').select('*').eq('user_id', user.id).order('created_at', { ascending: true });
+    if (data) setCategories(data);
+  }, [user]);
 
-  const toggleTask = useCallback((id: string) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id !== id) return t;
-      const newStatus: TaskStatus = t.status === 'active' ? 'completed' : 'active';
-      return {
-        ...t,
-        status: newStatus,
-        completedAt: newStatus === 'completed' ? new Date().toISOString() : null,
-        updatedAt: new Date().toISOString(),
-      };
-    }));
-  }, []);
-
-  const updateTask = useCallback((id: string, updates: Partial<Task>) => {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t
-    ));
-  }, []);
-
-  const deleteTask = useCallback((id: string) => {
-    setTasks(prev => prev.filter(t => t.id !== id));
-  }, []);
-
-  const reorderTasks = useCallback((reordered: Task[]) => {
-    setTasks(reordered);
-  }, []);
-
-  const addCategory = useCallback((name: string) => {
-    const cat: Category = { id: crypto.randomUUID(), name };
-    setCategories(prev => [...prev, cat]);
-    return cat;
-  }, []);
-
-  const filteredTasks = tasks.filter(task => {
-    // View filter
-    if (viewFilter === 'completed' && task.status !== 'completed') return false;
-    if (viewFilter !== 'completed' && task.status === 'completed') return false;
-    if (viewFilter === 'today' && task.dueDate) {
-      if (!isToday(new Date(task.dueDate)) && !isPast(new Date(task.dueDate))) return false;
+  useEffect(() => {
+    if (user) {
+      setLoading(true);
+      Promise.all([fetchTasks(), fetchCategories()]).finally(() => setLoading(false));
+    } else {
+      setTasks([]);
+      setCategories([]);
+      setLoading(false);
     }
-    if (viewFilter === 'today' && !task.dueDate) return true; // show undated in today
-    if (viewFilter === 'upcoming' && task.dueDate) {
-      const d = new Date(task.dueDate);
+  }, [user, fetchTasks, fetchCategories]);
+
+  // Real-time subscription
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('tasks-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `user_id=eq.${user.id}` }, () => {
+        fetchTasks();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchTasks]);
+
+  const addTask = useCallback(async (title: string, priority: Priority = 'medium', dueDate: string | null = null, categoryId: string | null = null) => {
+    if (!user) return;
+    await supabase.from('tasks').insert({
+      user_id: user.id,
+      title,
+      priority,
+      due_date: dueDate ? new Date(dueDate).toISOString() : null,
+      category_id: categoryId,
+    });
+    await fetchTasks();
+  }, [user, fetchTasks]);
+
+  const toggleTask = useCallback(async (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    const newStatus = task.status === 'active' ? 'completed' : 'active';
+    await supabase.from('tasks').update({
+      status: newStatus,
+      completed_at: newStatus === 'completed' ? new Date().toISOString() : null,
+    }).eq('id', id);
+    await fetchTasks();
+  }, [tasks, fetchTasks]);
+
+  const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+    await supabase.from('tasks').update(updates).eq('id', id);
+    await fetchTasks();
+  }, [fetchTasks]);
+
+  const deleteTask = useCallback(async (id: string) => {
+    await supabase.from('tasks').delete().eq('id', id);
+    await fetchTasks();
+  }, [fetchTasks]);
+
+  const addCategory = useCallback(async (name: string) => {
+    if (!user) return;
+    await supabase.from('categories').insert({ user_id: user.id, name });
+    await fetchCategories();
+  }, [user, fetchCategories]);
+
+  // Filter logic
+  const filteredTasks = tasks.filter(task => {
+    if (viewFilter === 'completed' && task.status !== 'completed') return false;
+    if (viewFilter !== 'completed' && viewFilter !== 'calendar' && task.status === 'completed') return false;
+    if (viewFilter === 'today' && task.due_date) {
+      if (!isToday(new Date(task.due_date)) && !isPast(new Date(task.due_date))) return false;
+    }
+    if (viewFilter === 'today' && !task.due_date) return true;
+    if (viewFilter === 'upcoming' && task.due_date) {
+      const d = new Date(task.due_date);
       if (!isWithinInterval(d, { start: startOfDay(new Date()), end: addDays(startOfDay(new Date()), 7) })) return false;
     }
-
-    // Category filter
-    if (categoryFilter && task.categoryId !== categoryFilter) return false;
-
-    // Priority filter
+    if (categoryFilter && task.category_id !== categoryFilter) return false;
     if (priorityFilter && task.priority !== priorityFilter) return false;
-
-    // Search
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-
     return true;
   });
 
   const stats = {
     total: tasks.filter(t => t.status === 'active').length,
-    today: tasks.filter(t => t.status === 'active' && t.dueDate && (isToday(new Date(t.dueDate)) || isPast(new Date(t.dueDate)))).length,
+    today: tasks.filter(t => t.status === 'active' && t.due_date && (isToday(new Date(t.due_date)) || isPast(new Date(t.due_date)))).length,
     completed: tasks.filter(t => t.status === 'completed').length,
-    overdue: tasks.filter(t => t.status === 'active' && t.dueDate && isPast(new Date(t.dueDate)) && !isToday(new Date(t.dueDate))).length,
+    overdue: tasks.filter(t => t.status === 'active' && t.due_date && isPast(new Date(t.due_date)) && !isToday(new Date(t.due_date))).length,
   };
 
   return {
@@ -131,8 +128,9 @@ export function useTaskStore() {
     categoryFilter, setCategoryFilter,
     priorityFilter, setPriorityFilter,
     searchQuery, setSearchQuery,
-    addTask, toggleTask, updateTask, deleteTask, reorderTasks,
+    addTask, toggleTask, updateTask, deleteTask,
     addCategory,
     stats,
+    loading,
   };
 }

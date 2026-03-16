@@ -5,16 +5,26 @@ import { SidebarNav } from '@/components/SidebarNav';
 import { TaskInput } from '@/components/TaskInput';
 import { TaskList } from '@/components/TaskList';
 import { CommandPalette } from '@/components/CommandPalette';
+import { CalendarView } from '@/components/CalendarView';
 
-const viewLabels = {
+const viewLabels: Record<string, string> = {
   all: 'All Tasks',
   today: 'Today',
   upcoming: 'Upcoming (7 days)',
   completed: 'Completed',
+  calendar: 'Calendar',
 };
 
 const Index = () => {
   const store = useTaskStore();
+
+  if (store.loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground text-sm font-mono">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -30,11 +40,9 @@ const Index = () => {
       />
 
       <main className="flex-1 relative">
-        {/* Grid bg */}
         <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
 
         <div className="relative z-10 max-w-2xl mx-auto px-6 py-12 md:py-16">
-          {/* Header */}
           <header className="flex items-center justify-between mb-10">
             <div>
               <h1 className="text-xl font-display font-medium tracking-tight text-foreground">
@@ -45,40 +53,25 @@ const Index = () => {
               </p>
             </div>
             <button
-              onClick={() => {
-                // Trigger Cmd+K programmatically
-                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
-              }}
-              className="flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground bg-secondary px-2.5 py-1.5 rounded-lg border border-border hover:bg-task-hover protocol-transition"
-            >
-              <Command className="h-3 w-3" />
-              <span>K</span>
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+              className="flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground bg-secondary px-2.5 py-1.5 rounded-lg border border-border hover:bg-task-hover protocol-transition">
+              <Command className="h-3 w-3" /><span>K</span>
             </button>
           </header>
 
-          {/* Input */}
-          {store.viewFilter !== 'completed' && (
+          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && (
             <TaskInput onAdd={store.addTask} categories={store.categories} />
           )}
 
-          {/* Task list */}
-          <TaskList
-            tasks={store.tasks}
-            categories={store.categories}
-            onToggle={store.toggleTask}
-            onUpdate={store.updateTask}
-            onDelete={store.deleteTask}
-          />
+          {store.viewFilter === 'calendar' ? (
+            <CalendarView tasks={store.allTasks} categories={store.categories} onToggle={store.toggleTask} />
+          ) : (
+            <TaskList tasks={store.tasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
+          )}
         </div>
       </main>
 
-      {/* Command Palette */}
-      <CommandPalette
-        tasks={store.allTasks}
-        onToggle={store.toggleTask}
-        onDelete={store.deleteTask}
-        onSearch={store.setSearchQuery}
-      />
+      <CommandPalette tasks={store.allTasks} onToggle={store.toggleTask} />
     </div>
   );
 };
