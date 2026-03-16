@@ -42,7 +42,7 @@ const Index = () => {
       <main className="flex-1 relative">
         <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
 
-        <div className="relative z-10 max-w-2xl mx-auto px-6 py-12 md:py-16">
+        <div className={`relative z-10 mx-auto px-6 py-12 md:py-16 ${store.viewFilter === 'calendar' ? 'max-w-5xl' : 'max-w-2xl'}`}>
           <header className="flex items-center justify-between mb-10">
             <div>
               <h1 className="text-xl font-display font-medium tracking-tight text-foreground">
