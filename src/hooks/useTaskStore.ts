@@ -4,10 +4,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { Tables } from '@/integrations/supabase/types';
 import { isToday, isPast, isWithinInterval, addDays, startOfDay } from 'date-fns';
 
-export type Task = Tables<'tasks'>;
+export type Task = Tables<'tasks'> & { recurrence?: string | null };
 export type Category = Tables<'categories'>;
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
 export type ViewFilter = 'all' | 'today' | 'upcoming' | 'completed' | 'calendar' | 'reports' | 'weekly-reports';
+
+function getNextDueDate(currentDue: string | null, recurrence: string): string {
+  const base = currentDue ? new Date(currentDue) : new Date();
+  if (recurrence === 'daily') base.setDate(base.getDate() + 1);
+  else if (recurrence === 'weekly') base.setDate(base.getDate() + 7);
+  else if (recurrence === 'monthly') base.setMonth(base.getMonth() + 1);
+  return base.toISOString();
+}
 
 export function useTaskStore() {
   const { user } = useAuth();
@@ -19,14 +27,12 @@ export function useTaskStore() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Fetch tasks
   const fetchTasks = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('tasks').select('*').eq('user_id', user.id).order('sort_order', { ascending: true }).order('created_at', { ascending: false });
-    if (data) setTasks(data);
+    if (data) setTasks(data as Task[]);
   }, [user]);
 
-  // Fetch categories
   const fetchCategories = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('categories').select('*').eq('user_id', user.id).order('created_at', { ascending: true });
@@ -44,7 +50,6 @@ export function useTaskStore() {
     }
   }, [user, fetchTasks, fetchCategories]);
 
-  // Real-time subscription
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -56,7 +61,7 @@ export function useTaskStore() {
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchTasks]);
 
-  const addTask = useCallback(async (title: string, priority: Priority = 'medium', dueDate: string | null = null, categoryId: string | null = null) => {
+  const addTask = useCallback(async (title: string, priority: Priority = 'medium', dueDate: string | null = null, categoryId: string | null = null, recurrence: string | null = null) => {
     if (!user) return;
     await supabase.from('tasks').insert({
       user_id: user.id,
@@ -64,7 +69,8 @@ export function useTaskStore() {
       priority,
       due_date: dueDate ? new Date(dueDate).toISOString() : null,
       category_id: categoryId,
-    });
+      recurrence,
+    } as any);
     await fetchTasks();
   }, [user, fetchTasks]);
 
@@ -72,15 +78,31 @@ export function useTaskStore() {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
     const newStatus = task.status === 'active' ? 'completed' : 'active';
+
     await supabase.from('tasks').update({
       status: newStatus,
       completed_at: newStatus === 'completed' ? new Date().toISOString() : null,
     }).eq('id', id);
+
+    // If completing a recurring task, create the next occurrence
+    if (newStatus === 'completed' && task.recurrence && user) {
+      const nextDue = getNextDueDate(task.due_date, task.recurrence);
+      await supabase.from('tasks').insert({
+        user_id: user.id,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        category_id: task.category_id,
+        due_date: nextDue,
+        recurrence: task.recurrence,
+      } as any);
+    }
+
     await fetchTasks();
-  }, [tasks, fetchTasks]);
+  }, [tasks, user, fetchTasks]);
 
   const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
-    await supabase.from('tasks').update(updates).eq('id', id);
+    await supabase.from('tasks').update(updates as any).eq('id', id);
     await fetchTasks();
   }, [fetchTasks]);
 
@@ -95,7 +117,6 @@ export function useTaskStore() {
     await fetchCategories();
   }, [user, fetchCategories]);
 
-  // Filter logic
   const filteredTasks = tasks.filter(task => {
     if (viewFilter === 'completed' && task.status !== 'completed') return false;
     if (viewFilter !== 'completed' && viewFilter !== 'calendar' && task.status === 'completed') return false;

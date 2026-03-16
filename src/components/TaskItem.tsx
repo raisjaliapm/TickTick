@@ -1,10 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Pencil, Trash2, X, Save, CalendarDays } from 'lucide-react';
+import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import type { Task, Category } from '@/hooks/useTaskStore';
+import type { Recurrence } from '@/components/TaskInput';
 
 const protocolCurve = [0.16, 1, 0.3, 1] as const;
 
@@ -14,6 +16,7 @@ interface TaskItemProps {
   onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
+  onAddCategory?: (name: string) => Promise<void>;
 }
 
 const priorityDot: Record<string, string> = {
@@ -24,19 +27,30 @@ const priorityDot: Record<string, string> = {
 };
 
 const priorityOptions = ['low', 'medium', 'high', 'urgent'] as const;
+const recurrenceOptions: { value: Recurrence; label: string }[] = [
+  { value: null, label: 'Once' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+];
+const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 
-export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: TaskItemProps) {
+export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAddCategory }: TaskItemProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(task.title);
   const [editDescription, setEditDescription] = React.useState(task.description || '');
   const [editPriority, setEditPriority] = React.useState(task.priority);
   const [editCategoryId, setEditCategoryId] = React.useState<string | null>(task.category_id);
   const [editDueDate, setEditDueDate] = React.useState<Date | undefined>(task.due_date ? new Date(task.due_date) : undefined);
+  const [editRecurrence, setEditRecurrence] = React.useState<Recurrence>((task as any).recurrence || null);
   const [calendarOpen, setCalendarOpen] = React.useState(false);
+  const [showNewCategory, setShowNewCategory] = React.useState(false);
+  const [newCategoryName, setNewCategoryName] = React.useState('');
 
   const isCompleted = task.status === 'completed';
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && !isCompleted;
   const category = categories.find(c => c.id === task.category_id);
+  const taskRecurrence = (task as any).recurrence as string | null;
 
   const openEdit = () => {
     setEditTitle(task.title);
@@ -44,6 +58,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
     setEditPriority(task.priority);
     setEditCategoryId(task.category_id);
     setEditDueDate(task.due_date ? new Date(task.due_date) : undefined);
+    setEditRecurrence((task as any).recurrence || null);
     setIsEditing(true);
   };
 
@@ -55,12 +70,18 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
       priority: editPriority,
       category_id: editCategoryId,
       due_date: editDueDate ? editDueDate.toISOString() : null,
-    });
+      recurrence: editRecurrence,
+    } as any);
     setIsEditing(false);
   };
 
-  const cancelEdit = () => {
-    setIsEditing(false);
+  const cancelEdit = () => setIsEditing(false);
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim() || !onAddCategory) return;
+    await onAddCategory(newCategoryName.trim());
+    setNewCategoryName('');
+    setShowNewCategory(false);
   };
 
   if (isEditing) {
@@ -73,7 +94,6 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
         transition={{ duration: 0.2, ease: [...protocolCurve] }}
         className="rounded-lg border border-border bg-card p-4 space-y-3"
       >
-        {/* Title */}
         <input
           autoFocus
           value={editTitle}
@@ -83,7 +103,6 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
           className="w-full bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground"
         />
 
-        {/* Description */}
         <textarea
           value={editDescription}
           onChange={e => setEditDescription(e.target.value)}
@@ -93,7 +112,6 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
           className="w-full bg-secondary/50 rounded-md px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground resize-none"
         />
 
-        {/* Priority + Category + Due Date row */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Priority */}
           <div className="flex items-center gap-1">
@@ -110,7 +128,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
           </div>
 
           {/* Category */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mr-1">Category</span>
             <button
               onClick={() => setEditCategoryId(null)}
@@ -127,8 +145,34 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
                 {c.name}
               </button>
             ))}
+            {onAddCategory && (
+              <button
+                onClick={() => setShowNewCategory(true)}
+                className="px-2 py-0.5 rounded text-[11px] font-mono bg-secondary text-muted-foreground hover:bg-secondary/80 protocol-transition"
+              >
+                + New
+              </button>
+            )}
           </div>
+        </div>
 
+        {showNewCategory && (
+          <div className="flex items-center gap-2">
+            <Hash className="h-3 w-3 text-muted-foreground" />
+            <input
+              autoFocus
+              value={newCategoryName}
+              onChange={e => setNewCategoryName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleAddCategory(); if (e.key === 'Escape') { setShowNewCategory(false); setNewCategoryName(''); } }}
+              placeholder="Category name..."
+              className="text-[11px] font-mono bg-secondary text-secondary-foreground rounded-md px-2 py-1 focus:outline-none border-none flex-1"
+            />
+            <button onClick={handleAddCategory} className="text-[11px] font-mono px-2 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 protocol-transition">Add</button>
+            <button onClick={() => { setShowNewCategory(false); setNewCategoryName(''); }} className="text-[11px] font-mono px-2 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 protocol-transition">Cancel</button>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2">
           {/* Due Date */}
           <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
             <PopoverTrigger asChild>
@@ -143,6 +187,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
                 selected={editDueDate}
                 onSelect={d => { setEditDueDate(d); setCalendarOpen(false); }}
                 initialFocus
+                className={cn("p-3 pointer-events-auto")}
               />
               {editDueDate && (
                 <div className="px-3 pb-3">
@@ -153,9 +198,22 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
               )}
             </PopoverContent>
           </Popover>
+
+          {/* Recurrence */}
+          <div className="flex items-center gap-1">
+            <Repeat className="h-3 w-3 text-muted-foreground" />
+            {recurrenceOptions.map(r => (
+              <button
+                key={r.label}
+                onClick={() => setEditRecurrence(r.value)}
+                className={`px-2 py-0.5 rounded text-[11px] font-mono protocol-transition ${editRecurrence === r.value ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Save / Cancel */}
         <div className="flex items-center gap-2 pt-1">
           <button onClick={saveEdit} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono bg-primary text-primary-foreground hover:bg-primary/90 protocol-transition">
             <Save className="h-3 w-3" /> Save
@@ -197,6 +255,12 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
             {category.name}
           </span>
         )}
+        {taskRecurrence && (
+          <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">
+            <Repeat className="h-2.5 w-2.5" />
+            {recurrenceLabels[taskRecurrence]}
+          </span>
+        )}
       </div>
 
       <div className="opacity-0 group-hover:opacity-100 protocol-transition flex items-center gap-1.5 shrink-0">
@@ -205,18 +269,10 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete }: Tas
             {isOverdue ? 'overdue' : format(new Date(task.due_date), 'MMM d')}
           </span>
         )}
-        <button
-          onClick={openEdit}
-          className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition"
-          title="Edit task"
-        >
+        <button onClick={openEdit} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition" title="Edit task">
           <Pencil className="h-3.5 w-3.5" />
         </button>
-        <button
-          onClick={() => onDelete(task.id)}
-          className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition"
-          title="Delete task"
-        >
+        <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="Delete task">
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
