@@ -64,7 +64,7 @@ const Index = () => {
           </header>
 
           {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && (
-            <TaskInput onAdd={store.addTask} categories={store.categories} />
+            <TaskInput onAdd={store.addTask} categories={store.categories} onAddCategory={store.addCategory} />
           )}
 
           {store.viewFilter === 'weekly-reports' ? (
@@ -74,7 +74,7 @@ const Index = () => {
           ) : store.viewFilter === 'calendar' ? (
             <CalendarView tasks={store.allTasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
           ) : (
-            <TaskList tasks={store.tasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
+            <TaskList tasks={store.tasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onAddCategory={store.addCategory} />
           )}
         </div>
       </main>

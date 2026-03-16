@@ -8,9 +8,10 @@ interface TaskListProps {
   onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
+  onAddCategory?: (name: string) => Promise<void>;
 }
 
-export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete }: TaskListProps) {
+export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onAddCategory }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="py-20 text-center border border-dashed border-border rounded-2xl">
@@ -23,7 +24,7 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete }: Ta
     <div className="space-y-0.5">
       <AnimatePresence mode="popLayout">
         {tasks.map(task => (
-          <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
+          <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onAddCategory={onAddCategory} />
         ))}
       </AnimatePresence>
     </div>
