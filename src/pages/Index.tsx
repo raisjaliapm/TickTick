@@ -16,6 +16,7 @@ const viewLabels: Record<string, string> = {
   completed: 'Completed',
   calendar: 'Calendar',
   reports: 'Reports',
+  'weekly-reports': 'Weekly Reports',
 };
 
 const Index = () => {
