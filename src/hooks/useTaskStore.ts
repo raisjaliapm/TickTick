@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Tables } from '@/integrations/supabase/types';
 import { isToday, isPast, isWithinInterval, addDays, startOfDay } from 'date-fns';
+import { formatLocalDateTime, parseLocalDate } from '@/lib/dateUtils';
 
 export type Task = Tables<'tasks'> & { recurrence?: string | null };
 export type Category = Tables<'categories'>;
