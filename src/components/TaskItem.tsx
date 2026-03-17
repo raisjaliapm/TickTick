@@ -5,6 +5,7 @@ import { format, isPast, isToday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { formatLocalDateTime } from '@/lib/dateUtils';
 import type { Task, Category } from '@/hooks/useTaskStore';
 import type { Recurrence } from '@/components/TaskInput';
 
