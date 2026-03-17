@@ -182,7 +182,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
                 {editDueDate ? format(editDueDate, 'MMM d, yyyy') : 'No due date'}
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
               <Calendar
                 mode="single"
                 selected={editDueDate}
