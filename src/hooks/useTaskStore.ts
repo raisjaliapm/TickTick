@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Tables } from '@/integrations/supabase/types';
 import { isToday, isPast, isWithinInterval, addDays, startOfDay } from 'date-fns';
+import { formatLocalDateTime, parseLocalDate } from '@/lib/dateUtils';
 
 export type Task = Tables<'tasks'> & { recurrence?: string | null };
 export type Category = Tables<'categories'>;
@@ -14,7 +15,7 @@ function getNextDueDate(currentDue: string | null, recurrence: string): string {
   if (recurrence === 'daily') base.setDate(base.getDate() + 1);
   else if (recurrence === 'weekly') base.setDate(base.getDate() + 7);
   else if (recurrence === 'monthly') base.setMonth(base.getMonth() + 1);
-  return base.toISOString();
+  return formatLocalDateTime(base);
 }
 
 export function useTaskStore() {
@@ -67,7 +68,7 @@ export function useTaskStore() {
       user_id: user.id,
       title,
       priority,
-      due_date: dueDate ? new Date(dueDate).toISOString() : null,
+      due_date: dueDate ? formatLocalDateTime(parseLocalDate(dueDate)) : null,
       category_id: categoryId,
       recurrence,
     } as any);

@@ -5,6 +5,7 @@ import { format, isPast, isToday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { formatLocalDateTime } from '@/lib/dateUtils';
 import type { Task, Category } from '@/hooks/useTaskStore';
 import type { Recurrence } from '@/components/TaskInput';
 
@@ -69,7 +70,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       description: editDescription.trim() || null,
       priority: editPriority,
       category_id: editCategoryId,
-      due_date: editDueDate ? editDueDate.toISOString() : null,
+      due_date: editDueDate ? formatLocalDateTime(editDueDate) : null,
       recurrence: editRecurrence,
     } as any);
     setIsEditing(false);
