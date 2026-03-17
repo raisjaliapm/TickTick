@@ -15,7 +15,7 @@ function getNextDueDate(currentDue: string | null, recurrence: string): string {
   if (recurrence === 'daily') base.setDate(base.getDate() + 1);
   else if (recurrence === 'weekly') base.setDate(base.getDate() + 7);
   else if (recurrence === 'monthly') base.setMonth(base.getMonth() + 1);
-  return base.toISOString();
+  return formatLocalDateTime(base);
 }
 
 export function useTaskStore() {
