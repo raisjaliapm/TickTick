@@ -70,7 +70,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       description: editDescription.trim() || null,
       priority: editPriority,
       category_id: editCategoryId,
-      due_date: editDueDate ? editDueDate.toISOString() : null,
+      due_date: editDueDate ? formatLocalDateTime(editDueDate) : null,
       recurrence: editRecurrence,
     } as any);
     setIsEditing(false);

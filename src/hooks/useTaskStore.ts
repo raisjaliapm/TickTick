@@ -68,7 +68,7 @@ export function useTaskStore() {
       user_id: user.id,
       title,
       priority,
-      due_date: dueDate ? new Date(dueDate).toISOString() : null,
+      due_date: dueDate ? formatLocalDateTime(parseLocalDate(dueDate)) : null,
       category_id: categoryId,
       recurrence,
     } as any);
