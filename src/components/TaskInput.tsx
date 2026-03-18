@@ -66,7 +66,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
       return;
     }
     const recognition = new SR();
-    recognition.lang = 'en-US';
+    recognition.lang = speechLang;
     recognition.interimResults = false;
     recognition.continuous = false;
     recognition.onresult = (event: SpeechRecognitionEvent) => {
