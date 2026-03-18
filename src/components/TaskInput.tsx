@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Calendar, Flag, Repeat, Hash } from 'lucide-react';
-import type { Priority, Category } from '@/hooks/useTaskStore';
+import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2 } from 'lucide-react';
+import type { Priority, Category, TaskStatus } from '@/hooks/useTaskStore';
 
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
 
 interface TaskInputProps {
-  onAdd: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence) => void;
+  onAdd: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus) => void;
   categories: Category[];
   onAddCategory?: (name: string) => Promise<void>;
 }
@@ -14,22 +14,35 @@ const priorityLabels: Record<Priority, string> = { low: 'Low', medium: 'Med', hi
 const priorityColors: Record<Priority, string> = { low: 'text-priority-low', medium: 'text-priority-medium', high: 'text-priority-high', urgent: 'text-priority-urgent' };
 const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 
+const statusConfig: { value: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
+  { value: 'not_started', label: 'Not Started', icon: Circle, colorClass: 'text-[hsl(var(--status-not-started))]' },
+  { value: 'in_progress', label: 'In Progress', icon: Clock, colorClass: 'text-[hsl(var(--status-in-progress))]' },
+  { value: 'on_hold', label: 'On Hold', icon: Pause, colorClass: 'text-[hsl(var(--status-on-hold))]' },
+  { value: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
+];
+
 export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) {
   const [value, setValue] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
   const [dueDate, setDueDate] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
+  const [status, setStatus] = useState<TaskStatus>('not_started');
   const [expanded, setExpanded] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const catInputRef = useRef<HTMLInputElement>(null);
 
+  const handleSubmit = () => {
+    if (!value.trim()) return;
+    onAdd(value.trim(), priority, dueDate || null, categoryId, recurrence, status);
+    setValue(''); setPriority('medium'); setDueDate(''); setCategoryId(null); setRecurrence(null); setStatus('not_started');
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && value.trim()) {
-      onAdd(value.trim(), priority, dueDate || null, categoryId, recurrence);
-      setValue(''); setPriority('medium'); setDueDate(''); setCategoryId(null); setRecurrence(null);
+      handleSubmit();
     }
     if (e.key === 'Escape') { setValue(''); setExpanded(false); inputRef.current?.blur(); }
   };
@@ -52,6 +65,11 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
     setRecurrence(order[(order.indexOf(recurrence) + 1) % order.length]);
   };
 
+  const cycleStatus = () => {
+    const order: TaskStatus[] = ['not_started', 'in_progress', 'on_hold', 'completed'];
+    setStatus(order[(order.indexOf(status) + 1) % order.length]);
+  };
+
   const handleAddCategory = async () => {
     if (!newCategoryName.trim() || !onAddCategory) return;
     await onAddCategory(newCategoryName.trim());
@@ -63,19 +81,37 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
     if (showNewCategory) catInputRef.current?.focus();
   }, [showNewCategory]);
 
+  const currentStatusConfig = statusConfig.find(s => s.value === status) || statusConfig[0];
+  const StatusIcon = currentStatusConfig.icon;
+
   return (
     <div className="mb-6">
-      <div className="relative">
-        <Plus className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input ref={inputRef} type="text" value={value} onChange={e => setValue(e.target.value)} onKeyDown={handleKeyDown}
-          onFocus={() => setExpanded(true)} placeholder="Add a task..."
-          className="w-full bg-surface-well border border-border rounded-xl py-3 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition placeholder:text-muted-foreground/60" />
+      <div className="relative flex gap-2">
+        <div className="relative flex-1">
+          <Plus className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input ref={inputRef} type="text" value={value} onChange={e => setValue(e.target.value)} onKeyDown={handleKeyDown}
+            onFocus={() => setExpanded(true)} placeholder="Add a task..."
+            className="w-full bg-surface-well border border-border rounded-xl py-3 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition placeholder:text-muted-foreground/60" />
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={!value.trim()}
+          className="px-4 py-3 rounded-xl text-sm font-mono bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed protocol-transition"
+        >
+          Add
+        </button>
       </div>
       {expanded && (
         <div className="flex flex-wrap items-center gap-2 mt-2 px-1">
           <button onClick={cyclePriority} className={`flex items-center gap-1 text-[11px] font-mono px-2 py-1 rounded-md bg-secondary protocol-transition ${priorityColors[priority]}`}>
             <Flag className="h-3 w-3" />{priorityLabels[priority]}
           </button>
+
+          {/* Status selector */}
+          <button onClick={cycleStatus} className={`flex items-center gap-1 text-[11px] font-mono px-2 py-1 rounded-md bg-secondary protocol-transition ${currentStatusConfig.colorClass}`}>
+            <StatusIcon className="h-3 w-3" />{currentStatusConfig.label}
+          </button>
+
           <div className="relative">
             <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
             <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
