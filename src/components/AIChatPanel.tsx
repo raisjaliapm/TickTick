@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, ListTodo, Zap, Calendar, BarChart3, ArrowDown } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, ListTodo, Zap, Calendar, BarChart3, ArrowDown, Mic, MicOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
