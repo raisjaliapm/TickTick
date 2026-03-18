@@ -16,6 +16,7 @@ const viewLabels: Record<string, string> = {
   upcoming: 'Upcoming (7 days)',
   completed: 'Completed',
   calendar: 'Calendar',
+  kanban: 'Board',
   reports: 'Reports',
   'weekly-reports': 'Weekly Reports',
 };
