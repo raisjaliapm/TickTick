@@ -433,10 +433,20 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
             </div>
           ))}
           <div className="flex items-center gap-2">
-            <button onClick={addUrl} className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition" type="button" title="Add URL">
+            <button
+              onClick={() => {
+                if (newUrl.trim()) {
+                  addUrl();
+                } else {
+                  urlInputRef.current?.focus();
+                }
+              }}
+              className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition" type="button" title="Add URL"
+            >
               <Plus className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
             </button>
             <input
+              ref={urlInputRef}
               value={newUrl}
               onChange={e => setNewUrl(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addUrl(); } }}
