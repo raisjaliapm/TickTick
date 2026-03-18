@@ -85,24 +85,34 @@ export function parseSpeechInput(text: string, categories: Category[] = []): Par
   }
 
   // --- Category ---
-  const catMatch = cleaned.match(/\b(?:category\s*(?:is\s*)?|under\s*|in\s*category\s*|tag\s*(?:as\s*)?)([a-zA-Z0-9]+(?:\s+[a-zA-Z0-9]+)?)\b/i);
-  if (catMatch && categories.length > 0) {
-    const spokenCat = catMatch[1].toLowerCase().trim();
-    const found = categories.find(c => c.name.toLowerCase() === spokenCat);
-    if (found) {
-      categoryId = found.id;
-      cleaned = removeMatch(cleaned, catMatch);
+  // Match "category work", "under personal", "work task", "personal task", "for work"
+  if (categories.length > 0) {
+    // First try explicit patterns: "category X", "under X", "for X", "X task"
+    for (const cat of [...categories].sort((a, b) => b.name.length - a.name.length)) {
+      const escaped = cat.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const explicitPatterns = [
+        new RegExp(`\\b(?:category\\s*(?:is\\s*)?|under\\s+|in\\s+category\\s+|tag\\s+(?:as\\s+)?|for\\s+)${escaped}\\b`, 'i'),
+        new RegExp(`\\b${escaped}\\s+(?:task|todo|to-do|item)\\b`, 'i'),
+      ];
+      for (const pat of explicitPatterns) {
+        const m = cleaned.match(pat);
+        if (m) {
+          categoryId = cat.id;
+          cleaned = removeMatch(cleaned, m);
+          break;
+        }
+      }
+      if (categoryId) break;
     }
-  }
-  // Also try matching category names directly anywhere in the text
-  if (!categoryId && categories.length > 0) {
-    for (const cat of categories) {
-      const catRegex = new RegExp(`\\b${cat.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-      const m = cleaned.match(catRegex);
-      if (m) {
-        categoryId = cat.id;
-        // Don't remove - category name might be part of the task title
-        break;
+    // Fallback: match category name standalone (don't remove from title)
+    if (!categoryId) {
+      for (const cat of [...categories].sort((a, b) => b.name.length - a.name.length)) {
+        const catRegex = new RegExp(`\\b${cat.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+        const m = cleaned.match(catRegex);
+        if (m) {
+          categoryId = cat.id;
+          break;
+        }
       }
     }
   }
