@@ -18,7 +18,15 @@ interface TaskItemProps {
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
   onAddCategory?: (name: string) => Promise<void>;
+  onUpdateStatus?: (id: string, status: TaskStatus) => void;
 }
+
+const statusOptions: { value: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
+  { value: 'not_started', label: 'Not Started', icon: Circle, colorClass: 'text-[hsl(var(--status-not-started))]' },
+  { value: 'in_progress', label: 'In Progress', icon: Clock, colorClass: 'text-[hsl(var(--status-in-progress))]' },
+  { value: 'on_hold', label: 'On Hold', icon: Pause, colorClass: 'text-[hsl(var(--status-on-hold))]' },
+  { value: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
+];
 
 const priorityDot: Record<string, string> = {
   urgent: 'bg-priority-urgent',
