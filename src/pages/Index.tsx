@@ -57,6 +57,7 @@ const Index = () => {
           setStatusFilter={(s) => { store.setStatusFilter(s); setMainView('tasks'); }}
           categories={store.categories}
           stats={store.stats}
+          onLogoClick={() => setMainView('ai')}
         />
       )}
 
