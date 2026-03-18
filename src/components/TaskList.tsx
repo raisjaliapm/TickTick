@@ -1,6 +1,6 @@
 import { AnimatePresence } from 'framer-motion';
 import { TaskItem } from './TaskItem';
-import type { Task, Category } from '@/hooks/useTaskStore';
+import type { Task, Category, TaskStatus } from '@/hooks/useTaskStore';
 
 interface TaskListProps {
   tasks: Task[];
@@ -9,9 +9,10 @@ interface TaskListProps {
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
   onAddCategory?: (name: string) => Promise<void>;
+  onUpdateStatus?: (id: string, status: TaskStatus) => void;
 }
 
-export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onAddCategory }: TaskListProps) {
+export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onAddCategory, onUpdateStatus }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="py-20 text-center border border-dashed border-border rounded-2xl">
@@ -24,7 +25,7 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onAd
     <div className="space-y-0.5">
       <AnimatePresence mode="popLayout">
         {tasks.map(task => (
-          <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onAddCategory={onAddCategory} />
+          <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onAddCategory={onAddCategory} onUpdateStatus={onUpdateStatus} />
         ))}
       </AnimatePresence>
     </div>
