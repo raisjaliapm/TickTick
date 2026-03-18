@@ -119,6 +119,13 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
               className="text-[11px] font-mono bg-secondary text-secondary-foreground rounded-md pl-7 pr-2 py-1 protocol-transition focus:outline-none border-none" />
           </div>
+          {dueDate && (
+            <div className="relative">
+              <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              <input type="time" value={dueTime} onChange={e => setDueTime(e.target.value)}
+                className="text-[11px] font-mono bg-secondary text-secondary-foreground rounded-md pl-7 pr-2 py-1 protocol-transition focus:outline-none border-none" />
+            </div>
+          )}
           <button onClick={cycleRecurrence} className={`flex items-center gap-1 text-[11px] font-mono px-2 py-1 rounded-md protocol-transition ${recurrence ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-secondary text-secondary-foreground'}`}>
             <Repeat className="h-3 w-3" />{recurrence ? recurrenceLabels[recurrence] : 'Once'}
           </button>
