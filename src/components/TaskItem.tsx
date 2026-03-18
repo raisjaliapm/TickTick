@@ -228,6 +228,19 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
             </PopoverContent>
           </Popover>
 
+          {/* Due Time */}
+          {editDueDate && (
+            <div className="relative">
+              <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              <input
+                type="time"
+                value={editDueTime}
+                onChange={e => setEditDueTime(e.target.value)}
+                className="text-[11px] font-mono bg-secondary text-secondary-foreground rounded-md pl-7 pr-2 py-1 protocol-transition focus:outline-none border-none"
+              />
+            </div>
+          )}
+
           {/* Recurrence */}
           <div className="flex items-center gap-1">
             <Repeat className="h-3 w-3 text-muted-foreground" />
