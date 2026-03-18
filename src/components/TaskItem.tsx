@@ -51,6 +51,13 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
   const [editPriority, setEditPriority] = React.useState(task.priority);
   const [editCategoryId, setEditCategoryId] = React.useState<string | null>(task.category_id);
   const [editDueDate, setEditDueDate] = React.useState<Date | undefined>(task.due_date ? new Date(task.due_date) : undefined);
+  const [editDueTime, setEditDueTime] = React.useState<string>(() => {
+    if (!task.due_date) return '';
+    const d = new Date(task.due_date);
+    const h = d.getHours();
+    const m = d.getMinutes();
+    return (h === 0 && m === 0) ? '' : `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  });
   const [editRecurrence, setEditRecurrence] = React.useState<Recurrence>((task as any).recurrence || null);
   const [calendarOpen, setCalendarOpen] = React.useState(false);
   const [showNewCategory, setShowNewCategory] = React.useState(false);
