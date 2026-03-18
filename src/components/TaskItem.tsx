@@ -380,7 +380,9 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
             </div>
           ))}
           <div className="flex items-center gap-2">
-            <Plus className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <button onClick={addSubtask} className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition" type="button" title="Add subtask">
+              <Plus className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+            </button>
             <input
               value={newSubtaskTitle}
               onChange={e => setNewSubtaskTitle(e.target.value)}
@@ -417,7 +419,9 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
             </div>
           ))}
           <div className="flex items-center gap-2">
-            <Plus className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <button onClick={addUrl} className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition" type="button" title="Add URL">
+              <Plus className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+            </button>
             <input
               value={newUrl}
               onChange={e => setNewUrl(e.target.value)}
