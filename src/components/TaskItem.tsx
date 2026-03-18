@@ -366,7 +366,11 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       <div className="opacity-0 group-hover:opacity-100 protocol-transition flex items-center gap-1.5 shrink-0">
         {task.due_date && (
           <span className={`text-[11px] font-mono mr-1 ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
-            {isOverdue ? 'overdue' : format(new Date(task.due_date), 'MMM d')}
+            {isOverdue ? 'overdue' : (() => {
+              const d = new Date(task.due_date!);
+              const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
+              return hasTime ? format(d, 'MMM d, h:mm a') : format(d, 'MMM d');
+            })()}
           </span>
         )}
         <button onClick={openEdit} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition" title="Edit task">
