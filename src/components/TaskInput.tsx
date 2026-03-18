@@ -55,7 +55,9 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const recognitionRef = useRef<any>(null);
 
   const stopListening = useCallback(() => {
-    recognitionRef.current?.stop();
+    const rec = recognitionRef.current;
+    recognitionRef.current = null;
+    rec?.stop();
     setIsListening(false);
   }, []);
 
