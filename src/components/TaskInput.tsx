@@ -173,10 +173,29 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
         <button
           onClick={toggleListening}
           type="button"
-          className={`p-3 rounded-xl protocol-transition ${isListening ? 'bg-destructive text-destructive-foreground animate-pulse' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}
+          className={`relative p-3 rounded-xl protocol-transition ${isListening ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}
           title={isListening ? 'Stop listening' : 'Voice input'}
         >
-          {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          {isListening && (
+            <>
+              <span className="absolute inset-0 rounded-xl bg-destructive/40 animate-ping" />
+              <span className="absolute -inset-1 rounded-xl border-2 border-destructive/50 animate-pulse" />
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-end gap-[2px]">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <span
+                    key={i}
+                    className="w-[3px] rounded-full bg-destructive"
+                    style={{
+                      animation: `waveform 0.8s ease-in-out ${i * 0.1}s infinite alternate`,
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          <span className="relative z-10">
+            {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </span>
         </button>
         <button
           onClick={handleSubmit}
