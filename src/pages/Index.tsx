@@ -89,6 +89,7 @@ const Index = () => {
 
       <CommandPalette tasks={store.allTasks} onToggle={store.toggleTask} />
       <GoogleCalendarAutoSync tasks={store.allTasks} />
+      <AIChatDrawer onTasksChanged={() => { store.fetchTasks?.(); }} />
     </div>
   );
 };

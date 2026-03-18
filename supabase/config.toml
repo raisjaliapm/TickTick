@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.google-calendar-auth-url]
 verify_jwt = false
+
+[functions.chat-tasks]
+verify_jwt = false
