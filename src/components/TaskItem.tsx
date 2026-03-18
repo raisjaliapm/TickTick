@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash } from 'lucide-react';
+import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash, Circle, Clock, Pause, CheckCircle2 } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { formatLocalDateTime } from '@/lib/dateUtils';
-import type { Task, Category } from '@/hooks/useTaskStore';
+import type { Task, Category, TaskStatus } from '@/hooks/useTaskStore';
 import type { Recurrence } from '@/components/TaskInput';
 
 const protocolCurve = [0.16, 1, 0.3, 1] as const;
