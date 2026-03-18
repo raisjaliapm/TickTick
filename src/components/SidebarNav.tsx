@@ -76,6 +76,21 @@ export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCateg
       </nav>
 
       <nav className="space-y-0.5">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-2 mb-2">Status</p>
+        {statusItems.map(s => {
+          const Icon = s.icon;
+          const count = s.key === 'not_started' ? stats.notStarted : s.key === 'in_progress' ? stats.inProgress : s.key === 'on_hold' ? stats.onHold : s.key === 'completed' ? stats.completed : undefined;
+          return (
+            <button key={s.key} onClick={() => { setStatusFilter(statusFilter === s.key ? null : s.key); setCategoryFilter(null); setPriorityFilter(null); if (viewFilter === 'calendar') setViewFilter('all'); }}
+              className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm protocol-transition ${statusFilter === s.key ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}`}>
+              <Icon className={`h-4 w-4 ${s.colorClass}`} />
+              <span className="flex-1 text-left">{s.label}</span>
+              {count !== undefined && <span className="text-[10px] font-mono text-muted-foreground">{count}</span>}
+            </button>
+          );
+        })}
+      </nav>
+
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-2 mb-2">Categories</p>
         {categories.map(cat => (
           <button key={cat.id} onClick={() => { setCategoryFilter(categoryFilter === cat.id ? null : cat.id); setPriorityFilter(null); if (viewFilter === 'completed' || viewFilter === 'calendar') setViewFilter('all'); }}
