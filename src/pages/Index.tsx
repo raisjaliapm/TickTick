@@ -8,6 +8,7 @@ import { CommandPalette } from '@/components/CommandPalette';
 import { CalendarView } from '@/components/CalendarView';
 import { ReportsView } from '@/components/ReportsView';
 import { WeeklyReportsView } from '@/components/WeeklyReportsView';
+import { KanbanView } from '@/components/KanbanView';
 
 const viewLabels: Record<string, string> = {
   all: 'All Tasks',
@@ -15,6 +16,7 @@ const viewLabels: Record<string, string> = {
   upcoming: 'Upcoming (7 days)',
   completed: 'Completed',
   calendar: 'Calendar',
+  kanban: 'Board',
   reports: 'Reports',
   'weekly-reports': 'Weekly Reports',
 };
@@ -48,7 +50,7 @@ const Index = () => {
       <main className="flex-1 relative">
         <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
 
-        <div className={`relative z-10 mx-auto px-6 py-12 md:py-16 ${store.viewFilter === 'calendar' || store.viewFilter === 'reports' || store.viewFilter === 'weekly-reports' ? 'max-w-5xl' : 'max-w-2xl'}`}>
+        <div className={`relative z-10 mx-auto px-6 py-12 md:py-16 ${store.viewFilter === 'calendar' || store.viewFilter === 'reports' || store.viewFilter === 'weekly-reports' || store.viewFilter === 'kanban' ? 'max-w-5xl' : 'max-w-2xl'}`}>
           <header className="flex items-center justify-between mb-10">
             <div>
               <h1 className="text-xl font-display font-medium tracking-tight text-foreground">
@@ -65,7 +67,7 @@ const Index = () => {
             </button>
           </header>
 
-          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && (
+          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && store.viewFilter !== 'kanban' && (
             <TaskInput onAdd={store.addTask} categories={store.categories} onAddCategory={store.addCategory} />
           )}
 
@@ -73,6 +75,8 @@ const Index = () => {
             <WeeklyReportsView />
           ) : store.viewFilter === 'reports' ? (
             <ReportsView tasks={store.allTasks} categories={store.categories} />
+          ) : store.viewFilter === 'kanban' ? (
+            <KanbanView tasks={store.allTasks} categories={store.categories} onUpdateStatus={store.updateTaskStatus} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
           ) : store.viewFilter === 'calendar' ? (
             <CalendarView tasks={store.allTasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
           ) : (
