@@ -65,21 +65,37 @@ async function getValidToken(
 
 async function createCalendarEvent(
   accessToken: string,
-  task: { title: string; description?: string; due_date: string }
+  task: { title: string; description?: string; due_date?: string | null }
 ) {
-  const startTime = new Date(task.due_date);
-  const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hour duration
+  let event: any;
 
-  const event = {
-    summary: task.title,
-    description: task.description || "",
-    start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
-    end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
-    reminders: {
-      useDefault: false,
-      overrides: [{ method: "popup", minutes: 30 }],
-    },
-  };
+  if (task.due_date) {
+    const startTime = new Date(task.due_date);
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hour duration
+    event = {
+      summary: task.title,
+      description: task.description || "",
+      start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
+      end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
+      reminders: {
+        useDefault: false,
+        overrides: [{ method: "popup", minutes: 30 }],
+      },
+    };
+  } else {
+    // No due date — create an all-day event for today
+    const today = new Date().toISOString().split("T")[0];
+    event = {
+      summary: task.title,
+      description: task.description || "",
+      start: { date: today },
+      end: { date: today },
+      reminders: {
+        useDefault: false,
+        overrides: [{ method: "popup", minutes: 30 }],
+      },
+    };
+  }
 
   const res = await fetch(`${GOOGLE_CALENDAR_API}/calendars/primary/events`, {
     method: "POST",
