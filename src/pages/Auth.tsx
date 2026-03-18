@@ -3,6 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { lovable } from '@/integrations/lovable/index';
+import { toast } from 'sonner';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
