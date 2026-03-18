@@ -31,7 +31,7 @@ const Auth = () => {
         if (error) throw error;
         navigate('/');
       } else if (mode === 'signup') {
-        const { error, session } = await signUp(email, password, displayName);
+        const { error, session } = await signUp(email, password, displayName, phoneNumber);
         if (error) throw error;
         if (session) {
           navigate('/');
