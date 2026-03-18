@@ -80,7 +80,7 @@ export function useTaskStore() {
   const toggleTask = useCallback(async (id: string) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
-    const newStatus = task.status === 'active' ? 'completed' : 'active';
+    const newStatus = task.status === 'completed' ? 'not_started' : 'completed';
 
     await supabase.from('tasks').update({
       status: newStatus,
@@ -98,6 +98,32 @@ export function useTaskStore() {
         category_id: task.category_id,
         due_date: nextDue,
         recurrence: task.recurrence,
+        status: 'not_started',
+      } as any);
+    }
+
+    await fetchTasks();
+  }, [tasks, user, fetchTasks]);
+
+  const updateTaskStatus = useCallback(async (id: string, status: TaskStatus) => {
+    await supabase.from('tasks').update({
+      status,
+      completed_at: status === 'completed' ? new Date().toISOString() : null,
+    }).eq('id', id);
+
+    // If completing a recurring task, create the next occurrence
+    const task = tasks.find(t => t.id === id);
+    if (status === 'completed' && task?.recurrence && user) {
+      const nextDue = getNextDueDate(task.due_date, task.recurrence);
+      await supabase.from('tasks').insert({
+        user_id: user.id,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        category_id: task.category_id,
+        due_date: nextDue,
+        recurrence: task.recurrence,
+        status: 'not_started',
       } as any);
     }
 
