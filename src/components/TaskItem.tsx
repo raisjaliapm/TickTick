@@ -73,6 +73,10 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
   // Subtasks state
   const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
   const [newSubtaskTitle, setNewSubtaskTitle] = React.useState('');
+  const subtaskInputRef = React.useRef<HTMLInputElement>(null);
+
+  // URL ref
+  const urlInputRef = React.useRef<HTMLInputElement>(null);
 
   // URLs state
   const [editUrls, setEditUrls] = React.useState<string[]>(() => {
