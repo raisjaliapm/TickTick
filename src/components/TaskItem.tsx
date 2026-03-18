@@ -82,12 +82,23 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
 
   const saveEdit = () => {
     if (!editTitle.trim()) return;
+    let finalDueDate: string | null = null;
+    if (editDueDate) {
+      const d = new Date(editDueDate);
+      if (editDueTime) {
+        const [h, m] = editDueTime.split(':').map(Number);
+        d.setHours(h, m, 0, 0);
+      } else {
+        d.setHours(0, 0, 0, 0);
+      }
+      finalDueDate = formatLocalDateTime(d);
+    }
     onUpdate(task.id, {
       title: editTitle.trim(),
       description: editDescription.trim() || null,
       priority: editPriority,
       category_id: editCategoryId,
-      due_date: editDueDate ? formatLocalDateTime(editDueDate) : null,
+      due_date: finalDueDate,
       recurrence: editRecurrence,
     } as any);
     setIsEditing(false);
