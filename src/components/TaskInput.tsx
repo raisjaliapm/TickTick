@@ -44,11 +44,11 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
 
   const startListening = useCallback(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    if (!SR) {
       alert('Speech recognition is not supported in your browser.');
       return;
     }
-    const recognition = new SpeechRecognition();
+    const recognition = new SR();
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.continuous = false;
