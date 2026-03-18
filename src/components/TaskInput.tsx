@@ -50,6 +50,8 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const inputRef = useRef<HTMLInputElement>(null);
   const catInputRef = useRef<HTMLInputElement>(null);
   const [isListening, setIsListening] = useState(false);
+  const [speechLang, setSpeechLang] = useState('en-US');
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const recognitionRef = useRef<any>(null);
 
   const stopListening = useCallback(() => {
