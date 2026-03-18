@@ -25,6 +25,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const [value, setValue] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
   const [status, setStatus] = useState<TaskStatus>('not_started');
