@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Circle } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
@@ -54,8 +54,8 @@ const Auth = () => {
       <div className="relative z-10 w-full max-w-sm">
         {/* Logo */}
         <div className="flex items-center gap-2 justify-center mb-8">
-          <Circle className="h-5 w-5 fill-primary text-primary" />
-          <span className="text-xl font-display font-medium tracking-tight text-foreground">Todoist</span>
+          <Clock className="h-5 w-5 text-primary" />
+          <span className="text-xl font-display font-medium tracking-tight text-foreground">TickTick</span>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-6">
@@ -63,7 +63,7 @@ const Auth = () => {
             {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Reset password'}
           </h2>
           <p className="text-sm text-muted-foreground mb-6">
-            {mode === 'signin' ? 'Welcome back.' : mode === 'signup' ? 'Get started with Todoist.' : 'Enter your email to reset.'}
+            {mode === 'signin' ? 'Welcome back.' : mode === 'signup' ? 'Get started with TickTick.' : 'Enter your email to reset.'}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">

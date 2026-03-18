@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Circle } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -50,8 +50,8 @@ const ResetPassword = () => {
       <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex items-center gap-2 justify-center mb-8">
-          <Circle className="h-5 w-5 fill-primary text-primary" />
-          <span className="text-xl font-display font-medium tracking-tight text-foreground">Todoist</span>
+          <Clock className="h-5 w-5 text-primary" />
+          <span className="text-xl font-display font-medium tracking-tight text-foreground">TickTick</span>
         </div>
         <div className="bg-card border border-border rounded-xl p-6">
           <h2 className="text-lg font-display font-medium text-foreground mb-1">Set new password</h2>
