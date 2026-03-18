@@ -239,27 +239,14 @@ Deno.serve(async (req) => {
       result = { success: true, eventId: event.id };
     } else if (action === "update") {
       if (!task.google_calendar_event_id) {
-        // No existing event — create one if task has a due date
-        if (task.due_date) {
-          const event = await createCalendarEvent(accessToken, task);
-          await supabase
-            .from("tasks")
-            .update({ google_calendar_event_id: event.id })
-            .eq("id", task.id)
-            .eq("user_id", userId);
-          result = { success: true, eventId: event.id };
-        } else {
-          result = { success: true, message: "No event to update" };
-        }
-      } else if (!task.due_date) {
-        // Due date removed — delete the calendar event
-        await deleteCalendarEvent(accessToken, task.google_calendar_event_id);
+        // No existing event — create one
+        const event = await createCalendarEvent(accessToken, task);
         await supabase
           .from("tasks")
-          .update({ google_calendar_event_id: null })
+          .update({ google_calendar_event_id: event.id })
           .eq("id", task.id)
           .eq("user_id", userId);
-        result = { success: true, message: "Event deleted (no due date)" };
+        result = { success: true, eventId: event.id };
       } else {
         await updateCalendarEvent(accessToken, task.google_calendar_event_id, task);
         result = { success: true };
