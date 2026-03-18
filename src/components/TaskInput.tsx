@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff } from 'lucide-react';
+import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff, Globe } from 'lucide-react';
 import type { Priority, Category, TaskStatus } from '@/hooks/useTaskStore';
 
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
