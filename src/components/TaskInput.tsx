@@ -14,6 +14,21 @@ const priorityLabels: Record<Priority, string> = { low: 'Low', medium: 'Med', hi
 const priorityColors: Record<Priority, string> = { low: 'text-priority-low', medium: 'text-priority-medium', high: 'text-priority-high', urgent: 'text-priority-urgent' };
 const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 
+const speechLanguages = [
+  { code: 'en-US', label: 'English' },
+  { code: 'es-ES', label: 'Español' },
+  { code: 'fr-FR', label: 'Français' },
+  { code: 'de-DE', label: 'Deutsch' },
+  { code: 'pt-BR', label: 'Português' },
+  { code: 'hi-IN', label: 'हिन्दी' },
+  { code: 'zh-CN', label: '中文' },
+  { code: 'ja-JP', label: '日本語' },
+  { code: 'ko-KR', label: '한국어' },
+  { code: 'ar-SA', label: 'العربية' },
+  { code: 'ta-IN', label: 'தமிழ்' },
+  { code: 'te-IN', label: 'తెలుగు' },
+];
+
 const statusConfig: { value: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
   { value: 'not_started', label: 'Not Started', icon: Circle, colorClass: 'text-[hsl(var(--status-not-started))]' },
   { value: 'in_progress', label: 'In Progress', icon: Clock, colorClass: 'text-[hsl(var(--status-in-progress))]' },
