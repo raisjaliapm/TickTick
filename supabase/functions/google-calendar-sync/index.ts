@@ -227,13 +227,6 @@ Deno.serve(async (req) => {
     let result: any = { success: true };
 
     if (action === "create") {
-      if (!task.due_date) {
-        return new Response(JSON.stringify({ error: "Task has no due date" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
       const event = await createCalendarEvent(accessToken, task);
 
       // Store the calendar event ID on the task
