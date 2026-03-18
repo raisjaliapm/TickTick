@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff, Globe, Square } from 'lucide-react';
 import type { Priority, Category, TaskStatus } from '@/hooks/useTaskStore';
 import { parseSpeechInput } from '@/lib/speechParser';
+import { toast } from '@/hooks/use-toast';
 
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
 
