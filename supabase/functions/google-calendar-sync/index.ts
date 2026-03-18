@@ -65,21 +65,37 @@ async function getValidToken(
 
 async function createCalendarEvent(
   accessToken: string,
-  task: { title: string; description?: string; due_date: string }
+  task: { title: string; description?: string; due_date?: string | null }
 ) {
-  const startTime = new Date(task.due_date);
-  const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hour duration
+  let event: any;
 
-  const event = {
-    summary: task.title,
-    description: task.description || "",
-    start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
-    end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
-    reminders: {
-      useDefault: false,
-      overrides: [{ method: "popup", minutes: 30 }],
-    },
-  };
+  if (task.due_date) {
+    const startTime = new Date(task.due_date);
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hour duration
+    event = {
+      summary: task.title,
+      description: task.description || "",
+      start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
+      end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
+      reminders: {
+        useDefault: false,
+        overrides: [{ method: "popup", minutes: 30 }],
+      },
+    };
+  } else {
+    // No due date — create an all-day event for today
+    const today = new Date().toISOString().split("T")[0];
+    event = {
+      summary: task.title,
+      description: task.description || "",
+      start: { date: today },
+      end: { date: today },
+      reminders: {
+        useDefault: false,
+        overrides: [{ method: "popup", minutes: 30 }],
+      },
+    };
+  }
 
   const res = await fetch(`${GOOGLE_CALENDAR_API}/calendars/primary/events`, {
     method: "POST",
@@ -98,21 +114,36 @@ async function createCalendarEvent(
 async function updateCalendarEvent(
   accessToken: string,
   eventId: string,
-  task: { title: string; description?: string; due_date: string; status: string }
+  task: { title: string; description?: string; due_date?: string | null; status: string }
 ) {
-  const startTime = new Date(task.due_date);
-  const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+  let event: any;
 
-  const event: any = {
-    summary: task.title,
-    description: task.description || "",
-    start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
-    end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
-    reminders: {
-      useDefault: false,
-      overrides: [{ method: "popup", minutes: 30 }],
-    },
-  };
+  if (task.due_date) {
+    const startTime = new Date(task.due_date);
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    event = {
+      summary: task.title,
+      description: task.description || "",
+      start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
+      end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
+      reminders: {
+        useDefault: false,
+        overrides: [{ method: "popup", minutes: 30 }],
+      },
+    };
+  } else {
+    const today = new Date().toISOString().split("T")[0];
+    event = {
+      summary: task.title,
+      description: task.description || "",
+      start: { date: today },
+      end: { date: today },
+      reminders: {
+        useDefault: false,
+        overrides: [{ method: "popup", minutes: 30 }],
+      },
+    };
+  }
 
   // Mark completed tasks
   if (task.status === "completed") {
@@ -196,13 +227,6 @@ Deno.serve(async (req) => {
     let result: any = { success: true };
 
     if (action === "create") {
-      if (!task.due_date) {
-        return new Response(JSON.stringify({ error: "Task has no due date" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
       const event = await createCalendarEvent(accessToken, task);
 
       // Store the calendar event ID on the task
@@ -215,27 +239,14 @@ Deno.serve(async (req) => {
       result = { success: true, eventId: event.id };
     } else if (action === "update") {
       if (!task.google_calendar_event_id) {
-        // No existing event — create one if task has a due date
-        if (task.due_date) {
-          const event = await createCalendarEvent(accessToken, task);
-          await supabase
-            .from("tasks")
-            .update({ google_calendar_event_id: event.id })
-            .eq("id", task.id)
-            .eq("user_id", userId);
-          result = { success: true, eventId: event.id };
-        } else {
-          result = { success: true, message: "No event to update" };
-        }
-      } else if (!task.due_date) {
-        // Due date removed — delete the calendar event
-        await deleteCalendarEvent(accessToken, task.google_calendar_event_id);
+        // No existing event — create one
+        const event = await createCalendarEvent(accessToken, task);
         await supabase
           .from("tasks")
-          .update({ google_calendar_event_id: null })
+          .update({ google_calendar_event_id: event.id })
           .eq("id", task.id)
           .eq("user_id", userId);
-        result = { success: true, message: "Event deleted (no due date)" };
+        result = { success: true, eventId: event.id };
       } else {
         await updateCalendarEvent(accessToken, task.google_calendar_event_id, task);
         result = { success: true };
@@ -249,12 +260,11 @@ Deno.serve(async (req) => {
       // Just check if connected
       result = { success: true, connected: true };
     } else if (action === "sync_all") {
-      // Sync all tasks with due dates that don't have calendar events yet
+      // Sync all tasks that don't have calendar events yet
       const { data: tasksToSync } = await supabase
         .from("tasks")
         .select("*")
         .eq("user_id", userId)
-        .not("due_date", "is", null)
         .is("google_calendar_event_id", null)
         .neq("status", "completed");
 
