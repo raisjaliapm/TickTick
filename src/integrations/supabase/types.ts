@@ -35,6 +35,36 @@ export type Database = {
         }
         Relationships: []
       }
+      google_calendar_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          id: string
+          refresh_token: string
+          token_expires_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          id?: string
+          refresh_token: string
+          token_expires_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          id?: string
+          refresh_token?: string
+          token_expires_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -69,6 +99,7 @@ export type Database = {
           created_at: string
           description: string | null
           due_date: string | null
+          google_calendar_event_id: string | null
           id: string
           priority: string
           recurrence: string | null
@@ -84,6 +115,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          google_calendar_event_id?: string | null
           id?: string
           priority?: string
           recurrence?: string | null
@@ -99,6 +131,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          google_calendar_event_id?: string | null
           id?: string
           priority?: string
           recurrence?: string | null

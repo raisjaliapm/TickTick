@@ -2,3 +2,12 @@ project_id = "tuolsfukdxjzredzpfnw"
 
 [functions.generate-weekly-report]
 verify_jwt = false
+
+[functions.google-calendar-callback]
+verify_jwt = false
+
+[functions.google-calendar-sync]
+verify_jwt = false
+
+[functions.google-calendar-auth-url]
+verify_jwt = false
