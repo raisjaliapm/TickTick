@@ -8,6 +8,7 @@ import { formatLocalDateTime, parseLocalDate } from '@/lib/dateUtils';
 export type Task = Tables<'tasks'> & { recurrence?: string | null };
 export type Category = Tables<'categories'>;
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskStatus = 'not_started' | 'in_progress' | 'on_hold' | 'completed';
 export type ViewFilter = 'all' | 'today' | 'upcoming' | 'completed' | 'calendar' | 'reports' | 'weekly-reports';
 
 function getNextDueDate(currentDue: string | null, recurrence: string): string {
@@ -26,6 +27,7 @@ export function useTaskStore() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<Priority | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchTasks = useCallback(async () => {
@@ -71,6 +73,7 @@ export function useTaskStore() {
       due_date: dueDate ? formatLocalDateTime(parseLocalDate(dueDate)) : null,
       category_id: categoryId,
       recurrence,
+      status: 'not_started',
     } as any);
     await fetchTasks();
   }, [user, fetchTasks]);
@@ -78,7 +81,7 @@ export function useTaskStore() {
   const toggleTask = useCallback(async (id: string) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
-    const newStatus = task.status === 'active' ? 'completed' : 'active';
+    const newStatus = task.status === 'completed' ? 'not_started' : 'completed';
 
     await supabase.from('tasks').update({
       status: newStatus,
@@ -96,6 +99,32 @@ export function useTaskStore() {
         category_id: task.category_id,
         due_date: nextDue,
         recurrence: task.recurrence,
+        status: 'not_started',
+      } as any);
+    }
+
+    await fetchTasks();
+  }, [tasks, user, fetchTasks]);
+
+  const updateTaskStatus = useCallback(async (id: string, status: TaskStatus) => {
+    await supabase.from('tasks').update({
+      status,
+      completed_at: status === 'completed' ? new Date().toISOString() : null,
+    }).eq('id', id);
+
+    // If completing a recurring task, create the next occurrence
+    const task = tasks.find(t => t.id === id);
+    if (status === 'completed' && task?.recurrence && user) {
+      const nextDue = getNextDueDate(task.due_date, task.recurrence);
+      await supabase.from('tasks').insert({
+        user_id: user.id,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        category_id: task.category_id,
+        due_date: nextDue,
+        recurrence: task.recurrence,
+        status: 'not_started',
       } as any);
     }
 
@@ -119,8 +148,12 @@ export function useTaskStore() {
   }, [user, fetchCategories]);
 
   const filteredTasks = tasks.filter(task => {
-    if (viewFilter === 'completed' && task.status !== 'completed') return false;
-    if (viewFilter !== 'completed' && viewFilter !== 'calendar' && task.status === 'completed') return false;
+    if (statusFilter) {
+      if (task.status !== statusFilter) return false;
+    } else {
+      if (viewFilter === 'completed' && task.status !== 'completed') return false;
+      if (viewFilter !== 'completed' && viewFilter !== 'calendar' && task.status === 'completed') return false;
+    }
     if (viewFilter === 'today' && task.due_date) {
       if (!isToday(new Date(task.due_date)) && !isPast(new Date(task.due_date))) return false;
     }
@@ -136,10 +169,13 @@ export function useTaskStore() {
   });
 
   const stats = {
-    total: tasks.filter(t => t.status === 'active').length,
-    today: tasks.filter(t => t.status === 'active' && t.due_date && (isToday(new Date(t.due_date)) || isPast(new Date(t.due_date)))).length,
+    total: tasks.filter(t => t.status !== 'completed').length,
+    today: tasks.filter(t => t.status !== 'completed' && t.due_date && (isToday(new Date(t.due_date)) || isPast(new Date(t.due_date)))).length,
     completed: tasks.filter(t => t.status === 'completed').length,
-    overdue: tasks.filter(t => t.status === 'active' && t.due_date && isPast(new Date(t.due_date)) && !isToday(new Date(t.due_date))).length,
+    overdue: tasks.filter(t => t.status !== 'completed' && t.due_date && isPast(new Date(t.due_date)) && !isToday(new Date(t.due_date))).length,
+    notStarted: tasks.filter(t => t.status === 'not_started').length,
+    inProgress: tasks.filter(t => t.status === 'in_progress').length,
+    onHold: tasks.filter(t => t.status === 'on_hold').length,
   };
 
   return {
@@ -149,8 +185,9 @@ export function useTaskStore() {
     viewFilter, setViewFilter,
     categoryFilter, setCategoryFilter,
     priorityFilter, setPriorityFilter,
+    statusFilter, setStatusFilter,
     searchQuery, setSearchQuery,
-    addTask, toggleTask, updateTask, deleteTask,
+    addTask, toggleTask, updateTaskStatus, updateTask, deleteTask,
     addCategory,
     stats,
     loading,

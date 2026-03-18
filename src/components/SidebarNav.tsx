@@ -1,5 +1,5 @@
-import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText } from 'lucide-react';
-import type { ViewFilter, Category, Priority } from '@/hooks/useTaskStore';
+import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause } from 'lucide-react';
+import type { ViewFilter, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarNavProps {
@@ -9,8 +9,10 @@ interface SidebarNavProps {
   setCategoryFilter: (id: string | null) => void;
   priorityFilter: Priority | null;
   setPriorityFilter: (p: Priority | null) => void;
+  statusFilter: TaskStatus | null;
+  setStatusFilter: (s: TaskStatus | null) => void;
   categories: Category[];
-  stats: { total: number; today: number; completed: number; overdue: number };
+  stats: { total: number; today: number; completed: number; overdue: number; notStarted: number; inProgress: number; onHold: number };
 }
 
 const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] = [
@@ -30,7 +32,14 @@ const priorities: { key: Priority; label: string; color: string }[] = [
   { key: 'low', label: 'Low', color: 'bg-priority-low' },
 ];
 
-export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, categories, stats }: SidebarNavProps) {
+const statusItems: { key: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
+  { key: 'not_started', label: 'Not Started', icon: Circle, colorClass: 'text-[hsl(var(--status-not-started))]' },
+  { key: 'in_progress', label: 'In Progress', icon: Clock, colorClass: 'text-[hsl(var(--status-in-progress))]' },
+  { key: 'on_hold', label: 'On Hold', icon: Pause, colorClass: 'text-[hsl(var(--status-on-hold))]' },
+  { key: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
+];
+
+export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, categories, stats }: SidebarNavProps) {
   const { signOut, user } = useAuth();
 
   return (
@@ -64,6 +73,22 @@ export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCateg
             <div className={`h-2 w-2 rounded-full ${p.color}`} /><span>{p.label}</span>
           </button>
         ))}
+      </nav>
+
+      <nav className="space-y-0.5">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-2 mb-2">Status</p>
+        {statusItems.map(s => {
+          const Icon = s.icon;
+          const count = s.key === 'not_started' ? stats.notStarted : s.key === 'in_progress' ? stats.inProgress : s.key === 'on_hold' ? stats.onHold : s.key === 'completed' ? stats.completed : undefined;
+          return (
+            <button key={s.key} onClick={() => { setStatusFilter(statusFilter === s.key ? null : s.key); setCategoryFilter(null); setPriorityFilter(null); if (viewFilter === 'calendar') setViewFilter('all'); }}
+              className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm protocol-transition ${statusFilter === s.key ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}`}>
+              <Icon className={`h-4 w-4 ${s.colorClass}`} />
+              <span className="flex-1 text-left">{s.label}</span>
+              {count !== undefined && <span className="text-[10px] font-mono text-muted-foreground">{count}</span>}
+            </button>
+          );
+        })}
       </nav>
 
       <nav className="space-y-0.5">

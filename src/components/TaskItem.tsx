@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash } from 'lucide-react';
+import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash, Circle, Clock, Pause, CheckCircle2 } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { formatLocalDateTime } from '@/lib/dateUtils';
-import type { Task, Category } from '@/hooks/useTaskStore';
+import type { Task, Category, TaskStatus } from '@/hooks/useTaskStore';
 import type { Recurrence } from '@/components/TaskInput';
 
 const protocolCurve = [0.16, 1, 0.3, 1] as const;
@@ -18,7 +18,15 @@ interface TaskItemProps {
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
   onAddCategory?: (name: string) => Promise<void>;
+  onUpdateStatus?: (id: string, status: TaskStatus) => void;
 }
+
+const statusOptions: { value: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
+  { value: 'not_started', label: 'Not Started', icon: Circle, colorClass: 'text-[hsl(var(--status-not-started))]' },
+  { value: 'in_progress', label: 'In Progress', icon: Clock, colorClass: 'text-[hsl(var(--status-in-progress))]' },
+  { value: 'on_hold', label: 'On Hold', icon: Pause, colorClass: 'text-[hsl(var(--status-on-hold))]' },
+  { value: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
+];
 
 const priorityDot: Record<string, string> = {
   urgent: 'bg-priority-urgent',
@@ -36,7 +44,7 @@ const recurrenceOptions: { value: Recurrence; label: string }[] = [
 ];
 const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 
-export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAddCategory }: TaskItemProps) {
+export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAddCategory, onUpdateStatus }: TaskItemProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(task.title);
   const [editDescription, setEditDescription] = React.useState(task.description || '');
@@ -215,6 +223,24 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
           </div>
         </div>
 
+        {/* Status */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mr-1">Status</span>
+          {statusOptions.map(s => {
+            const Icon = s.icon;
+            return (
+              <button
+                key={s.value}
+                onClick={() => onUpdate(task.id, { status: s.value, completed_at: s.value === 'completed' ? new Date().toISOString() : null } as any)}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono protocol-transition ${task.status === s.value ? `${s.colorClass} bg-secondary border border-current/30` : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}
+              >
+                <Icon className="h-3 w-3" />
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="flex items-center gap-2 pt-1">
           <button onClick={saveEdit} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono bg-primary text-primary-foreground hover:bg-primary/90 protocol-transition">
             <Save className="h-3 w-3" /> Save
@@ -236,14 +262,32 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       transition={{ duration: 0.2, ease: [...protocolCurve] }}
       className="group flex items-center gap-3 px-3 py-2.5 rounded-lg border border-transparent hover:border-border hover:bg-task-hover protocol-transition select-none"
     >
-      <button onClick={() => onToggle(task.id)}
-        className={`relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border protocol-transition ${isCompleted ? 'bg-primary border-primary' : 'border-muted-foreground/40 hover:border-muted-foreground'}`}>
-        {isCompleted && (
-          <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }}>
-            <Check className="h-3 w-3 text-primary-foreground stroke-[3]" />
-          </motion.div>
-        )}
-      </button>
+      {/* Status button */}
+      {(() => {
+        const currentStatus = statusOptions.find(s => s.value === task.status) || statusOptions[0];
+        const StatusIcon = currentStatus.icon;
+        const nextStatusMap: Record<TaskStatus, TaskStatus> = {
+          not_started: 'in_progress',
+          in_progress: 'completed',
+          on_hold: 'in_progress',
+          completed: 'not_started',
+        };
+        return (
+          <button
+            onClick={() => onUpdateStatus ? onUpdateStatus(task.id, nextStatusMap[task.status as TaskStatus]) : onToggle(task.id)}
+            className={`relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border protocol-transition ${currentStatus.colorClass} ${isCompleted ? 'bg-[hsl(var(--status-completed))] border-[hsl(var(--status-completed))]' : 'border-current/40 hover:border-current'}`}
+            title={`${currentStatus.label} → Click to change`}
+          >
+            {isCompleted ? (
+              <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }}>
+                <Check className="h-3 w-3 text-primary-foreground stroke-[3]" />
+              </motion.div>
+            ) : (
+              <StatusIcon className="h-3 w-3" />
+            )}
+          </button>
+        );
+      })()}
 
       <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
 
@@ -262,6 +306,17 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
             {recurrenceLabels[taskRecurrence]}
           </span>
         )}
+        {!isCompleted && task.status !== 'not_started' && (() => {
+          const s = statusOptions.find(opt => opt.value === task.status);
+          if (!s) return null;
+          const Icon = s.icon;
+          return (
+            <span className={`flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary shrink-0 ${s.colorClass}`}>
+              <Icon className="h-2.5 w-2.5" />
+              {s.label}
+            </span>
+          );
+        })()}
       </div>
 
       <div className="opacity-0 group-hover:opacity-100 protocol-transition flex items-center gap-1.5 shrink-0">
