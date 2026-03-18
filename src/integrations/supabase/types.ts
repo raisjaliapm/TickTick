@@ -95,6 +95,44 @@ export type Database = {
         }
         Relationships: []
       }
+      subtasks: {
+        Row: {
+          created_at: string
+          id: string
+          is_completed: boolean
+          sort_order: number
+          task_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          task_id: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          task_id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subtasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           category_id: string | null
@@ -104,12 +142,14 @@ export type Database = {
           due_date: string | null
           google_calendar_event_id: string | null
           id: string
+          notes: string | null
           priority: string
           recurrence: string | null
           sort_order: number
           status: string
           title: string
           updated_at: string
+          urls: Json | null
           user_id: string
         }
         Insert: {
@@ -120,12 +160,14 @@ export type Database = {
           due_date?: string | null
           google_calendar_event_id?: string | null
           id?: string
+          notes?: string | null
           priority?: string
           recurrence?: string | null
           sort_order?: number
           status?: string
           title: string
           updated_at?: string
+          urls?: Json | null
           user_id: string
         }
         Update: {
@@ -136,12 +178,14 @@ export type Database = {
           due_date?: string | null
           google_calendar_event_id?: string | null
           id?: string
+          notes?: string | null
           priority?: string
           recurrence?: string | null
           sort_order?: number
           status?: string
           title?: string
           updated_at?: string
+          urls?: Json | null
           user_id?: string
         }
         Relationships: [

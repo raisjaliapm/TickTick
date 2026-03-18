@@ -1,15 +1,22 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash, Circle, Clock, Pause, CheckCircle2 } from 'lucide-react';
+import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Plus, Link, FileText, ListChecks } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { formatLocalDateTime } from '@/lib/dateUtils';
+import { supabase } from '@/integrations/supabase/client';
 import type { Task, Category, TaskStatus } from '@/hooks/useTaskStore';
 import type { Recurrence } from '@/components/TaskInput';
 
 const protocolCurve = [0.16, 1, 0.3, 1] as const;
+
+interface Subtask {
+  id: string;
+  title: string;
+  is_completed: boolean;
+}
 
 interface TaskItemProps {
   task: Task;
@@ -63,10 +70,29 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
   const [showNewCategory, setShowNewCategory] = React.useState(false);
   const [newCategoryName, setNewCategoryName] = React.useState('');
 
+  // Subtasks state
+  const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
+  const [newSubtaskTitle, setNewSubtaskTitle] = React.useState('');
+
+  // URLs state
+  const [editUrls, setEditUrls] = React.useState<string[]>(() => {
+    const urls = (task as any).urls;
+    return Array.isArray(urls) ? urls : [];
+  });
+  const [newUrl, setNewUrl] = React.useState('');
+
+  // Notes state
+  const [editNotes, setEditNotes] = React.useState<string>((task as any).notes || '');
+
   const isCompleted = task.status === 'completed';
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && !isCompleted;
   const category = categories.find(c => c.id === task.category_id);
   const taskRecurrence = (task as any).recurrence as string | null;
+
+  const fetchSubtasks = React.useCallback(async () => {
+    const { data } = await supabase.from('subtasks').select('*').eq('task_id', task.id).order('sort_order', { ascending: true });
+    if (data) setSubtasks(data as any);
+  }, [task.id]);
 
   const openEdit = () => {
     setEditTitle(task.title);
@@ -77,7 +103,10 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
     const d = task.due_date ? new Date(task.due_date) : null;
     setEditDueTime(d && (d.getHours() !== 0 || d.getMinutes() !== 0) ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '');
     setEditRecurrence((task as any).recurrence || null);
+    setEditUrls(Array.isArray((task as any).urls) ? (task as any).urls : []);
+    setEditNotes((task as any).notes || '');
     setIsEditing(true);
+    fetchSubtasks();
   };
 
   const saveEdit = () => {
@@ -100,6 +129,8 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       category_id: editCategoryId,
       due_date: finalDueDate,
       recurrence: editRecurrence,
+      urls: editUrls,
+      notes: editNotes.trim(),
     } as any);
     setIsEditing(false);
   };
@@ -111,6 +142,42 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
     await onAddCategory(newCategoryName.trim());
     setNewCategoryName('');
     setShowNewCategory(false);
+  };
+
+  // Subtask handlers
+  const addSubtask = async () => {
+    if (!newSubtaskTitle.trim()) return;
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+    await supabase.from('subtasks').insert({
+      task_id: task.id,
+      user_id: userData.user.id,
+      title: newSubtaskTitle.trim(),
+      sort_order: subtasks.length,
+    } as any);
+    setNewSubtaskTitle('');
+    fetchSubtasks();
+  };
+
+  const toggleSubtask = async (id: string, currentState: boolean) => {
+    await supabase.from('subtasks').update({ is_completed: !currentState } as any).eq('id', id);
+    fetchSubtasks();
+  };
+
+  const deleteSubtask = async (id: string) => {
+    await supabase.from('subtasks').delete().eq('id', id);
+    fetchSubtasks();
+  };
+
+  // URL handlers
+  const addUrl = () => {
+    if (!newUrl.trim()) return;
+    setEditUrls([...editUrls, newUrl.trim()]);
+    setNewUrl('');
+  };
+
+  const removeUrl = (index: number) => {
+    setEditUrls(editUrls.filter((_, i) => i !== index));
   };
 
   if (isEditing) {
@@ -272,6 +339,105 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
               </button>
             );
           })}
+        </div>
+
+        {/* Subtasks Section */}
+        <div className="space-y-2 border-t border-border pt-3">
+          <div className="flex items-center gap-1.5">
+            <ListChecks className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Subtasks</span>
+            {subtasks.length > 0 && (
+              <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+                {subtasks.filter(s => s.is_completed).length}/{subtasks.length}
+              </span>
+            )}
+          </div>
+          {subtasks.map(st => (
+            <div key={st.id} className="flex items-center gap-2 group/subtask">
+              <button
+                onClick={() => toggleSubtask(st.id, st.is_completed)}
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border protocol-transition ${st.is_completed ? 'bg-primary border-primary' : 'border-muted-foreground/40 hover:border-primary'}`}
+              >
+                {st.is_completed && <Check className="h-2.5 w-2.5 text-primary-foreground stroke-[3]" />}
+              </button>
+              <span className={`text-xs flex-1 ${st.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                {st.title}
+              </span>
+              <button
+                onClick={() => deleteSubtask(st.id)}
+                className="opacity-0 group-hover/subtask:opacity-100 p-0.5 rounded text-muted-foreground hover:text-destructive protocol-transition"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+          <div className="flex items-center gap-2">
+            <Plus className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <input
+              value={newSubtaskTitle}
+              onChange={e => setNewSubtaskTitle(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); } }}
+              placeholder="Add a subtask..."
+              className="flex-1 text-xs bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
+            />
+            {newSubtaskTitle.trim() && (
+              <button onClick={addSubtask} className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/90 protocol-transition">
+                Add
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* URLs Section */}
+        <div className="space-y-2 border-t border-border pt-3">
+          <div className="flex items-center gap-1.5">
+            <Link className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Links</span>
+          </div>
+          {editUrls.map((url, i) => (
+            <div key={i} className="flex items-center gap-2 group/url">
+              <Link className="h-3 w-3 text-muted-foreground shrink-0" />
+              <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate flex-1">
+                {url}
+              </a>
+              <button
+                onClick={() => removeUrl(i)}
+                className="opacity-0 group-hover/url:opacity-100 p-0.5 rounded text-muted-foreground hover:text-destructive protocol-transition"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+          <div className="flex items-center gap-2">
+            <Plus className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <input
+              value={newUrl}
+              onChange={e => setNewUrl(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addUrl(); } }}
+              placeholder="Add a URL..."
+              className="flex-1 text-xs bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
+            />
+            {newUrl.trim() && (
+              <button onClick={addUrl} className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/90 protocol-transition">
+                Add
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Notes Section */}
+        <div className="space-y-2 border-t border-border pt-3">
+          <div className="flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Notes</span>
+          </div>
+          <textarea
+            value={editNotes}
+            onChange={e => setEditNotes(e.target.value)}
+            placeholder="Add notes..."
+            rows={4}
+            className="w-full bg-secondary/50 rounded-md px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground resize-y min-h-[100px]"
+          />
         </div>
 
         <div className="flex items-center gap-2 pt-1">
