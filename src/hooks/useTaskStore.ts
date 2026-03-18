@@ -64,11 +64,18 @@ export function useTaskStore() {
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchTasks]);
 
-  const addTask = useCallback(async (title: string, priority: Priority = 'medium', dueDate: string | null = null, categoryId: string | null = null, recurrence: string | null = null, status: TaskStatus = 'not_started') => {
+  const addTask = useCallback(async (
+    title: string,
+    priority: Priority = 'medium',
+    dueDate: string | null = null,
+    categoryId: string | null = null,
+    recurrence: string | null = null,
+    status: TaskStatus = 'not_started',
+    extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[] }
+  ) => {
     if (!user) return;
     let formattedDueDate: string | null = null;
     if (dueDate) {
-      // If dueDate contains 'T', it has time info (e.g. "2026-03-18T14:30")
       if (dueDate.includes('T')) {
         const d = new Date(dueDate);
         formattedDueDate = formatLocalDateTime(d);
@@ -76,7 +83,7 @@ export function useTaskStore() {
         formattedDueDate = formatLocalDateTime(parseLocalDate(dueDate));
       }
     }
-    await supabase.from('tasks').insert({
+    const { data: inserted } = await supabase.from('tasks').insert({
       user_id: user.id,
       title,
       priority,
@@ -84,7 +91,22 @@ export function useTaskStore() {
       category_id: categoryId,
       recurrence,
       status,
-    } as any);
+      description: extras?.description || null,
+      notes: extras?.notes || '',
+      urls: extras?.urls?.length ? extras.urls : [],
+    } as any).select('id').single();
+
+    // Insert subtasks if provided
+    if (inserted?.id && extras?.subtasks?.length) {
+      const subtaskRows = extras.subtasks.map((st, i) => ({
+        task_id: inserted.id,
+        user_id: user.id,
+        title: st,
+        sort_order: i,
+      }));
+      await supabase.from('subtasks').insert(subtaskRows as any);
+    }
+
     await fetchTasks();
   }, [user, fetchTasks]);
 

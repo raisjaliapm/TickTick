@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff, Globe, Square } from 'lucide-react';
+import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff, Globe, Square, FileText, Link, ListChecks, X, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Priority, Category, TaskStatus } from '@/hooks/useTaskStore';
 import { parseSpeechInput } from '@/lib/speechParser';
 import { toast } from '@/hooks/use-toast';
@@ -7,7 +7,7 @@ import { toast } from '@/hooks/use-toast';
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
 
 interface TaskInputProps {
-  onAdd: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus) => void;
+  onAdd: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus, extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[] }) => void;
   categories: Category[];
   onAddCategory?: (name: string) => Promise<void>;
 }
@@ -47,6 +47,13 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
   const [status, setStatus] = useState<TaskStatus>('not_started');
   const [expanded, setExpanded] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+  const [description, setDescription] = useState('');
+  const [notes, setNotes] = useState('');
+  const [urls, setUrls] = useState<string[]>([]);
+  const [newUrl, setNewUrl] = useState('');
+  const [subtasks, setSubtasks] = useState<string[]>([]);
+  const [newSubtask, setNewSubtask] = useState('');
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -137,8 +144,15 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const handleSubmit = () => {
     if (!value.trim()) return;
     const dueDateWithTime = dueDate ? (dueTime ? `${dueDate}T${dueTime}` : dueDate) : null;
-    onAdd(value.trim(), priority, dueDateWithTime, categoryId, recurrence, status);
+    const extras = {
+      description: description.trim() || undefined,
+      notes: notes.trim() || undefined,
+      urls: urls.length ? urls : undefined,
+      subtasks: subtasks.length ? subtasks : undefined,
+    };
+    onAdd(value.trim(), priority, dueDateWithTime, categoryId, recurrence, status, extras);
     setValue(''); setPriority('medium'); setDueDate(''); setDueTime(''); setCategoryId(null); setRecurrence(null); setStatus('not_started');
+    setDescription(''); setNotes(''); setUrls([]); setNewUrl(''); setSubtasks([]); setNewSubtask(''); setShowMore(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -311,7 +325,118 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             {onAddCategory && <option value="__new__">+ New category</option>}
           </select>
 
-          <span className="text-[10px] font-mono text-muted-foreground/40 ml-auto">enter ↵</span>
+          <button
+            onClick={() => setShowMore(!showMore)}
+            className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground ml-auto protocol-transition"
+          >
+            {showMore ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {showMore ? 'Less' : 'More'}
+          </button>
+        </div>
+      )}
+      {expanded && showMore && (
+        <div className="space-y-3 mt-3 px-1">
+          {/* Description */}
+          <textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            placeholder="Add a description..."
+            rows={2}
+            className="w-full bg-secondary/50 rounded-md px-3 py-2 text-xs text-foreground outline-none placeholder:text-muted-foreground resize-none border border-border"
+          />
+
+          {/* Subtasks */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <ListChecks className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Subtasks</span>
+            </div>
+            {subtasks.map((st, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-xs text-foreground flex-1">{st}</span>
+                <button onClick={() => setSubtasks(subtasks.filter((_, idx) => idx !== i))} className="p-0.5 rounded text-muted-foreground hover:text-destructive protocol-transition">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (newSubtask.trim()) {
+                    setSubtasks([...subtasks, newSubtask.trim()]);
+                    setNewSubtask('');
+                  }
+                }}
+                className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition"
+                title="Add subtask"
+              >
+                <Plus className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+              </button>
+              <input
+                value={newSubtask}
+                onChange={e => setNewSubtask(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (newSubtask.trim()) { setSubtasks([...subtasks, newSubtask.trim()]); setNewSubtask(''); } } }}
+                placeholder="Add a subtask..."
+                className="flex-1 text-xs bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
+              />
+            </div>
+          </div>
+
+          {/* URLs */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <Link className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Links</span>
+            </div>
+            {urls.map((url, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-xs text-primary truncate flex-1">{url}</span>
+                <button onClick={() => setUrls(urls.filter((_, idx) => idx !== i))} className="p-0.5 rounded text-muted-foreground hover:text-destructive protocol-transition">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (newUrl.trim()) {
+                    setUrls([...urls, newUrl.trim()]);
+                    setNewUrl('');
+                  }
+                }}
+                className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition"
+                title="Add URL"
+              >
+                <Plus className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+              </button>
+              <input
+                value={newUrl}
+                onChange={e => setNewUrl(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (newUrl.trim()) { setUrls([...urls, newUrl.trim()]); setNewUrl(''); } } }}
+                placeholder="Add a URL..."
+                className="flex-1 text-xs bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
+              />
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Notes</span>
+            </div>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Add notes..."
+              rows={3}
+              className="w-full bg-secondary/50 rounded-md px-3 py-2 text-xs text-foreground outline-none placeholder:text-muted-foreground resize-y border border-border"
+            />
+          </div>
+
+          <span className="text-[10px] font-mono text-muted-foreground/40 block text-right">enter ↵</span>
         </div>
       )}
       {showNewCategory && (
