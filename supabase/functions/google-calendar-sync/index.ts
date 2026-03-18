@@ -114,7 +114,7 @@ async function createCalendarEvent(
 async function updateCalendarEvent(
   accessToken: string,
   eventId: string,
-  task: { title: string; description?: string; due_date: string; status: string }
+  task: { title: string; description?: string; due_date?: string | null; status: string }
 ) {
   const startTime = new Date(task.due_date);
   const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
