@@ -1,4 +1,5 @@
 import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause, Columns3 } from 'lucide-react';
+import { GoogleCalendarButton } from '@/components/GoogleCalendarButton';
 import type { ViewFilter, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
 import { useAuth } from '@/contexts/AuthContext';
 
