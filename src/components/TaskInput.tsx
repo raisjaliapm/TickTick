@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff, Globe, Square } from 'lucide-react';
 import type { Priority, Category, TaskStatus } from '@/hooks/useTaskStore';
+import { parseSpeechInput } from '@/lib/speechParser';
 
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
 
@@ -79,7 +80,11 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
         }
       }
       if (finalTranscript) {
-        setValue(prev => (prev ? prev + ' ' + finalTranscript : finalTranscript));
+        const parsed = parseSpeechInput(finalTranscript);
+        setValue(prev => (prev ? prev + ' ' + parsed.cleanedText : parsed.cleanedText));
+        if (parsed.priority) setPriority(parsed.priority);
+        if (parsed.dueDate) setDueDate(parsed.dueDate);
+        if (parsed.dueTime) setDueTime(parsed.dueTime);
       }
       setExpanded(true);
     };
