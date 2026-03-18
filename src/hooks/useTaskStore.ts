@@ -72,6 +72,7 @@ export function useTaskStore() {
       due_date: dueDate ? formatLocalDateTime(parseLocalDate(dueDate)) : null,
       category_id: categoryId,
       recurrence,
+      status: 'not_started',
     } as any);
     await fetchTasks();
   }, [user, fetchTasks]);
