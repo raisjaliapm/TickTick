@@ -318,9 +318,8 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
             {recurrenceLabels[taskRecurrence]}
           </span>
         )}
-        {!isCompleted && task.status !== 'not_started' && (() => {
-          const s = statusOptions.find(opt => opt.value === task.status);
-          if (!s) return null;
+        {(() => {
+          const s = statusOptions.find(opt => opt.value === task.status) || statusOptions[0];
           const Icon = s.icon;
           return (
             <span className={`flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary shrink-0 ${s.colorClass}`}>
