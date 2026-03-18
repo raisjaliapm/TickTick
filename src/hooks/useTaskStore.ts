@@ -64,7 +64,7 @@ export function useTaskStore() {
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchTasks]);
 
-  const addTask = useCallback(async (title: string, priority: Priority = 'medium', dueDate: string | null = null, categoryId: string | null = null, recurrence: string | null = null) => {
+  const addTask = useCallback(async (title: string, priority: Priority = 'medium', dueDate: string | null = null, categoryId: string | null = null, recurrence: string | null = null, status: TaskStatus = 'not_started') => {
     if (!user) return;
     await supabase.from('tasks').insert({
       user_id: user.id,
@@ -73,7 +73,7 @@ export function useTaskStore() {
       due_date: dueDate ? formatLocalDateTime(parseLocalDate(dueDate)) : null,
       category_id: categoryId,
       recurrence,
-      status: 'not_started',
+      status,
     } as any);
     await fetchTasks();
   }, [user, fetchTasks]);

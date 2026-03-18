@@ -262,32 +262,44 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       transition={{ duration: 0.2, ease: [...protocolCurve] }}
       className="group flex items-center gap-3 px-3 py-2.5 rounded-lg border border-transparent hover:border-border hover:bg-task-hover protocol-transition select-none"
     >
-      {/* Status button */}
-      {(() => {
-        const currentStatus = statusOptions.find(s => s.value === task.status) || statusOptions[0];
-        const StatusIcon = currentStatus.icon;
-        const nextStatusMap: Record<TaskStatus, TaskStatus> = {
-          not_started: 'in_progress',
-          in_progress: 'completed',
-          on_hold: 'in_progress',
-          completed: 'not_started',
-        };
-        return (
-          <button
-            onClick={() => onUpdateStatus ? onUpdateStatus(task.id, nextStatusMap[task.status as TaskStatus]) : onToggle(task.id)}
-            className={`relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border protocol-transition ${currentStatus.colorClass} ${isCompleted ? 'bg-[hsl(var(--status-completed))] border-[hsl(var(--status-completed))]' : 'border-current/40 hover:border-current'}`}
-            title={`${currentStatus.label} → Click to change`}
-          >
-            {isCompleted ? (
-              <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }}>
-                <Check className="h-3 w-3 text-primary-foreground stroke-[3]" />
-              </motion.div>
-            ) : (
-              <StatusIcon className="h-3 w-3" />
-            )}
-          </button>
-        );
-      })()}
+      {/* Status popover */}
+      <Popover>
+        <PopoverTrigger asChild>
+          {(() => {
+            const currentStatus = statusOptions.find(s => s.value === task.status) || statusOptions[0];
+            const StatusIcon = currentStatus.icon;
+            return (
+              <button
+                className={`relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border protocol-transition ${currentStatus.colorClass} ${isCompleted ? 'bg-[hsl(var(--status-completed))] border-[hsl(var(--status-completed))]' : 'border-current/40 hover:border-current'}`}
+                title={`Status: ${currentStatus.label}`}
+              >
+                {isCompleted ? (
+                  <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }}>
+                    <Check className="h-3 w-3 text-primary-foreground stroke-[3]" />
+                  </motion.div>
+                ) : (
+                  <StatusIcon className="h-3 w-3" />
+                )}
+              </button>
+            );
+          })()}
+        </PopoverTrigger>
+        <PopoverContent className="w-40 p-1 pointer-events-auto z-50" align="start">
+          {statusOptions.map(s => {
+            const Icon = s.icon;
+            return (
+              <button
+                key={s.value}
+                onClick={() => onUpdateStatus ? onUpdateStatus(task.id, s.value) : onToggle(task.id)}
+                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-mono protocol-transition ${task.status === s.value ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'}`}
+              >
+                <Icon className={`h-3.5 w-3.5 ${s.colorClass}`} />
+                {s.label}
+              </button>
+            );
+          })}
+        </PopoverContent>
+      </Popover>
 
       <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
 
