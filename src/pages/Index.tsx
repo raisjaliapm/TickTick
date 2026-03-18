@@ -87,6 +87,7 @@ const Index = () => {
       </main>
 
       <CommandPalette tasks={store.allTasks} onToggle={store.toggleTask} />
+      <GoogleCalendarAutoSync tasks={store.allTasks} />
     </div>
   );
 };
