@@ -147,6 +147,29 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             onFocus={() => setExpanded(true)} placeholder="Add a task..."
             className="w-full bg-surface-well border border-border rounded-xl py-3 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition placeholder:text-muted-foreground/60" />
         </div>
+        <div className="relative">
+          <button
+            onClick={() => setShowLangMenu(prev => !prev)}
+            type="button"
+            className="p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            title={`Language: ${speechLanguages.find(l => l.code === speechLang)?.label}`}
+          >
+            <Globe className="h-4 w-4" />
+          </button>
+          {showLangMenu && (
+            <div className="absolute top-full right-0 mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[140px] max-h-[200px] overflow-y-auto">
+              {speechLanguages.map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => { setSpeechLang(lang.code); setShowLangMenu(false); }}
+                  className={`w-full text-left px-3 py-1.5 text-xs font-mono hover:bg-accent hover:text-accent-foreground protocol-transition ${speechLang === lang.code ? 'bg-accent text-accent-foreground' : 'text-popover-foreground'}`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button
           onClick={toggleListening}
           type="button"
