@@ -51,6 +51,13 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
   const [editPriority, setEditPriority] = React.useState(task.priority);
   const [editCategoryId, setEditCategoryId] = React.useState<string | null>(task.category_id);
   const [editDueDate, setEditDueDate] = React.useState<Date | undefined>(task.due_date ? new Date(task.due_date) : undefined);
+  const [editDueTime, setEditDueTime] = React.useState<string>(() => {
+    if (!task.due_date) return '';
+    const d = new Date(task.due_date);
+    const h = d.getHours();
+    const m = d.getMinutes();
+    return (h === 0 && m === 0) ? '' : `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  });
   const [editRecurrence, setEditRecurrence] = React.useState<Recurrence>((task as any).recurrence || null);
   const [calendarOpen, setCalendarOpen] = React.useState(false);
   const [showNewCategory, setShowNewCategory] = React.useState(false);
@@ -67,18 +74,31 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
     setEditPriority(task.priority);
     setEditCategoryId(task.category_id);
     setEditDueDate(task.due_date ? new Date(task.due_date) : undefined);
+    const d = task.due_date ? new Date(task.due_date) : null;
+    setEditDueTime(d && (d.getHours() !== 0 || d.getMinutes() !== 0) ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '');
     setEditRecurrence((task as any).recurrence || null);
     setIsEditing(true);
   };
 
   const saveEdit = () => {
     if (!editTitle.trim()) return;
+    let finalDueDate: string | null = null;
+    if (editDueDate) {
+      const d = new Date(editDueDate);
+      if (editDueTime) {
+        const [h, m] = editDueTime.split(':').map(Number);
+        d.setHours(h, m, 0, 0);
+      } else {
+        d.setHours(0, 0, 0, 0);
+      }
+      finalDueDate = formatLocalDateTime(d);
+    }
     onUpdate(task.id, {
       title: editTitle.trim(),
       description: editDescription.trim() || null,
       priority: editPriority,
       category_id: editCategoryId,
-      due_date: editDueDate ? formatLocalDateTime(editDueDate) : null,
+      due_date: finalDueDate,
       recurrence: editRecurrence,
     } as any);
     setIsEditing(false);
@@ -208,6 +228,19 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
             </PopoverContent>
           </Popover>
 
+          {/* Due Time */}
+          {editDueDate && (
+            <div className="relative">
+              <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              <input
+                type="time"
+                value={editDueTime}
+                onChange={e => setEditDueTime(e.target.value)}
+                className="text-[11px] font-mono bg-secondary text-secondary-foreground rounded-md pl-7 pr-2 py-1 protocol-transition focus:outline-none border-none"
+              />
+            </div>
+          )}
+
           {/* Recurrence */}
           <div className="flex items-center gap-1">
             <Repeat className="h-3 w-3 text-muted-foreground" />
@@ -333,7 +366,11 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       <div className="opacity-0 group-hover:opacity-100 protocol-transition flex items-center gap-1.5 shrink-0">
         {task.due_date && (
           <span className={`text-[11px] font-mono mr-1 ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
-            {isOverdue ? 'overdue' : format(new Date(task.due_date), 'MMM d')}
+            {isOverdue ? 'overdue' : (() => {
+              const d = new Date(task.due_date!);
+              const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
+              return hasTime ? format(d, 'MMM d, h:mm a') : format(d, 'MMM d');
+            })()}
           </span>
         )}
         <button onClick={openEdit} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition" title="Edit task">
@@ -347,7 +384,11 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       {isOverdue && <span className="text-[11px] font-mono text-priority-urgent shrink-0 group-hover:hidden">overdue</span>}
       {task.due_date && !isOverdue && (
         <span className="text-[11px] font-mono text-muted-foreground/50 shrink-0 group-hover:hidden">
-          {format(new Date(task.due_date), 'MMM d')}
+          {(() => {
+            const d = new Date(task.due_date!);
+            const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
+            return hasTime ? format(d, 'MMM d, h:mm a') : format(d, 'MMM d');
+          })()}
         </span>
       )}
     </motion.div>

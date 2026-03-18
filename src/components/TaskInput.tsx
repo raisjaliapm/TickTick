@@ -25,6 +25,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const [value, setValue] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
   const [status, setStatus] = useState<TaskStatus>('not_started');
@@ -36,8 +37,9 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
 
   const handleSubmit = () => {
     if (!value.trim()) return;
-    onAdd(value.trim(), priority, dueDate || null, categoryId, recurrence, status);
-    setValue(''); setPriority('medium'); setDueDate(''); setCategoryId(null); setRecurrence(null); setStatus('not_started');
+    const dueDateWithTime = dueDate ? (dueTime ? `${dueDate}T${dueTime}` : dueDate) : null;
+    onAdd(value.trim(), priority, dueDateWithTime, categoryId, recurrence, status);
+    setValue(''); setPriority('medium'); setDueDate(''); setDueTime(''); setCategoryId(null); setRecurrence(null); setStatus('not_started');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -117,6 +119,13 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
               className="text-[11px] font-mono bg-secondary text-secondary-foreground rounded-md pl-7 pr-2 py-1 protocol-transition focus:outline-none border-none" />
           </div>
+          {dueDate && (
+            <div className="relative">
+              <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              <input type="time" value={dueTime} onChange={e => setDueTime(e.target.value)}
+                className="text-[11px] font-mono bg-secondary text-secondary-foreground rounded-md pl-7 pr-2 py-1 protocol-transition focus:outline-none border-none" />
+            </div>
+          )}
           <button onClick={cycleRecurrence} className={`flex items-center gap-1 text-[11px] font-mono px-2 py-1 rounded-md protocol-transition ${recurrence ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-secondary text-secondary-foreground'}`}>
             <Repeat className="h-3 w-3" />{recurrence ? recurrenceLabels[recurrence] : 'Once'}
           </button>
