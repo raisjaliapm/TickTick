@@ -9,7 +9,7 @@ export type Task = Tables<'tasks'> & { recurrence?: string | null };
 export type Category = Tables<'categories'>;
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
 export type TaskStatus = 'not_started' | 'in_progress' | 'on_hold' | 'completed';
-export type ViewFilter = 'all' | 'today' | 'upcoming' | 'completed' | 'calendar' | 'reports' | 'weekly-reports';
+export type ViewFilter = 'all' | 'today' | 'upcoming' | 'completed' | 'calendar' | 'kanban' | 'reports' | 'weekly-reports';
 
 function getNextDueDate(currentDue: string | null, recurrence: string): string {
   const base = currentDue ? new Date(currentDue) : new Date();
