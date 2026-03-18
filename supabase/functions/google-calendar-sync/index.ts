@@ -116,19 +116,34 @@ async function updateCalendarEvent(
   eventId: string,
   task: { title: string; description?: string; due_date?: string | null; status: string }
 ) {
-  const startTime = new Date(task.due_date);
-  const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+  let event: any;
 
-  const event: any = {
-    summary: task.title,
-    description: task.description || "",
-    start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
-    end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
-    reminders: {
-      useDefault: false,
-      overrides: [{ method: "popup", minutes: 30 }],
-    },
-  };
+  if (task.due_date) {
+    const startTime = new Date(task.due_date);
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+    event = {
+      summary: task.title,
+      description: task.description || "",
+      start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
+      end: { dateTime: endTime.toISOString(), timeZone: "UTC" },
+      reminders: {
+        useDefault: false,
+        overrides: [{ method: "popup", minutes: 30 }],
+      },
+    };
+  } else {
+    const today = new Date().toISOString().split("T")[0];
+    event = {
+      summary: task.title,
+      description: task.description || "",
+      start: { date: today },
+      end: { date: today },
+      reminders: {
+        useDefault: false,
+        overrides: [{ method: "popup", minutes: 30 }],
+      },
+    };
+  }
 
   // Mark completed tasks
   if (task.status === "completed") {
