@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Circle, Clock, Pause, CheckCircle2, GripVertical } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import type { Task, Category, TaskStatus } from '@/hooks/useTaskStore';
