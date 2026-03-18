@@ -94,6 +94,14 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
     if (data) setSubtasks(data as any);
   }, [task.id]);
 
+  // Fetch subtasks on mount for indicators
+  React.useEffect(() => {
+    fetchSubtasks();
+  }, [fetchSubtasks]);
+
+  const taskUrls: string[] = Array.isArray((task as any).urls) ? (task as any).urls : [];
+  const taskNotes: string = (task as any).notes || '';
+
   const openEdit = () => {
     setEditTitle(task.title);
     setEditDescription(task.description || '');
@@ -527,6 +535,26 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
             </span>
           );
         })()}
+        {/* Subtask indicator */}
+        {subtasks.length > 0 && (
+          <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
+            <ListChecks className="h-2.5 w-2.5" />
+            {subtasks.filter(s => s.is_completed).length}/{subtasks.length}
+          </span>
+        )}
+        {/* Links indicator */}
+        {taskUrls.length > 0 && (
+          <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
+            <Link className="h-2.5 w-2.5" />
+            {taskUrls.length}
+          </span>
+        )}
+        {/* Notes indicator */}
+        {taskNotes.trim() && (
+          <span className="flex items-center text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
+            <FileText className="h-2.5 w-2.5" />
+          </span>
+        )}
       </div>
 
       <div className="opacity-0 group-hover:opacity-100 protocol-transition flex items-center gap-1.5 shrink-0">
