@@ -144,8 +144,15 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const handleSubmit = () => {
     if (!value.trim()) return;
     const dueDateWithTime = dueDate ? (dueTime ? `${dueDate}T${dueTime}` : dueDate) : null;
-    onAdd(value.trim(), priority, dueDateWithTime, categoryId, recurrence, status);
+    const extras = {
+      description: description.trim() || undefined,
+      notes: notes.trim() || undefined,
+      urls: urls.length ? urls : undefined,
+      subtasks: subtasks.length ? subtasks : undefined,
+    };
+    onAdd(value.trim(), priority, dueDateWithTime, categoryId, recurrence, status, extras);
     setValue(''); setPriority('medium'); setDueDate(''); setDueTime(''); setCategoryId(null); setRecurrence(null); setStatus('not_started');
+    setDescription(''); setNotes(''); setUrls([]); setNewUrl(''); setSubtasks([]); setNewSubtask(''); setShowMore(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
