@@ -198,7 +198,7 @@ export function useTaskStore() {
     statusFilter, setStatusFilter,
     searchQuery, setSearchQuery,
     addTask, toggleTask, updateTaskStatus, updateTask, deleteTask,
-    addCategory,
+    addCategory, fetchTasks,
     stats,
     loading,
   };
