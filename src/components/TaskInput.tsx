@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff, Globe, Square } from 'lucide-react';
 import type { Priority, Category, TaskStatus } from '@/hooks/useTaskStore';
 import { parseSpeechInput } from '@/lib/speechParser';
+import { toast } from '@/hooks/use-toast';
 
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
 
@@ -88,6 +89,24 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
         if (parsed.status) setStatus(parsed.status);
         if (parsed.recurrence) setRecurrence(parsed.recurrence);
         if (parsed.categoryId) setCategoryId(parsed.categoryId);
+
+        // Build toast summary of detected fields
+        const detected: string[] = [];
+        if (parsed.priority) detected.push(`Priority: ${parsed.priority}`);
+        if (parsed.dueDate) detected.push(`Due: ${parsed.dueDate}${parsed.dueTime ? ' ' + parsed.dueTime : ''}`);
+        else if (parsed.dueTime) detected.push(`Time: ${parsed.dueTime}`);
+        if (parsed.status) detected.push(`Status: ${parsed.status.replace('_', ' ')}`);
+        if (parsed.recurrence) detected.push(`Repeat: ${parsed.recurrence}`);
+        if (parsed.categoryId) {
+          const cat = categories.find(c => c.id === parsed.categoryId);
+          if (cat) detected.push(`Category: ${cat.name}`);
+        }
+        if (detected.length > 0) {
+          toast({
+            title: '🎙️ Voice input parsed',
+            description: detected.join(' · '),
+          });
+        }
       }
       setExpanded(true);
     };
