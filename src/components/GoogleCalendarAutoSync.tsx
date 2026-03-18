@@ -25,8 +25,8 @@ export function GoogleCalendarAutoSync({ tasks }: GoogleCalendarAutoSyncProps) {
     // Find new tasks (in current but not in prev)
     for (const task of tasks) {
       const prev = prevMap.get(task.id);
-      if (!prev && task.due_date) {
-        // New task with due date — create event
+      if (!prev) {
+        // New task — create event
         syncTask('create', task);
       } else if (prev) {
         // Check if task was updated in relevant ways
@@ -36,7 +36,7 @@ export function GoogleCalendarAutoSync({ tasks }: GoogleCalendarAutoSyncProps) {
           prev.description !== task.description ||
           prev.status !== task.status;
 
-        if (changed && (task.due_date || (task as any).google_calendar_event_id)) {
+        if (changed && (task.google_calendar_event_id || true)) {
           syncTask('update', task);
         }
       }
