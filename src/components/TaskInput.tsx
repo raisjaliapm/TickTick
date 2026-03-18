@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2 } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff } from 'lucide-react';
 import type { Priority, Category, TaskStatus } from '@/hooks/useTaskStore';
 
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
@@ -34,6 +34,41 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const [newCategoryName, setNewCategoryName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const catInputRef = useRef<HTMLInputElement>(null);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const stopListening = useCallback(() => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+  }, []);
+
+  const startListening = useCallback(() => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      alert('Speech recognition is not supported in your browser.');
+      return;
+    }
+    const recognition = new SR();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0][0].transcript;
+      setValue(prev => (prev ? prev + ' ' + transcript : transcript));
+      setExpanded(true);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+    setExpanded(true);
+  }, []);
+
+  const toggleListening = useCallback(() => {
+    if (isListening) stopListening();
+    else startListening();
+  }, [isListening, startListening, stopListening]);
 
   const handleSubmit = () => {
     if (!value.trim()) return;
@@ -95,6 +130,14 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             onFocus={() => setExpanded(true)} placeholder="Add a task..."
             className="w-full bg-surface-well border border-border rounded-xl py-3 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition placeholder:text-muted-foreground/60" />
         </div>
+        <button
+          onClick={toggleListening}
+          type="button"
+          className={`p-3 rounded-xl protocol-transition ${isListening ? 'bg-destructive text-destructive-foreground animate-pulse' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}
+          title={isListening ? 'Stop listening' : 'Voice input'}
+        >
+          {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+        </button>
         <button
           onClick={handleSubmit}
           disabled={!value.trim()}
