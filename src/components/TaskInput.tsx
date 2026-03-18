@@ -67,20 +67,36 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
     }
     const recognition = new SR();
     recognition.lang = speechLang;
-    recognition.interimResults = false;
-    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.continuous = true;
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
-      setValue(prev => (prev ? prev + ' ' + transcript : transcript));
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        }
+      }
+      if (finalTranscript) {
+        setValue(prev => (prev ? prev + ' ' + finalTranscript : finalTranscript));
+      }
       setExpanded(true);
     };
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
+    recognition.onerror = (e: any) => {
+      if (e.error !== 'no-speech') {
+        setIsListening(false);
+      }
+    };
+    recognition.onend = () => {
+      // Auto-restart if still supposed to be listening (browser may stop after silence)
+      if (recognitionRef.current && isListening) {
+        try { recognitionRef.current.start(); } catch {}
+      }
+    };
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
     setExpanded(true);
-  }, [speechLang]);
+  }, [speechLang, isListening]);
 
   const toggleListening = useCallback(() => {
     if (isListening) stopListening();
