@@ -63,7 +63,7 @@ const Auth = () => {
             {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Reset password'}
           </h2>
           <p className="text-sm text-muted-foreground mb-6">
-            {mode === 'signin' ? 'Welcome back.' : mode === 'signup' ? 'Get started with Todoist.' : 'Enter your email to reset.'}
+            {mode === 'signin' ? 'Welcome back.' : mode === 'signup' ? 'Get started with TickTick.' : 'Enter your email to reset.'}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">

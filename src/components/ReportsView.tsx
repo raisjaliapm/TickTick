@@ -160,7 +160,7 @@ export function ReportsView({ tasks, categories }: ReportsViewProps) {
     ws2['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
 
-    XLSX.writeFile(wb, `todoist-report-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    XLSX.writeFile(wb, `ticktick-report-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
   };
 
   return (
