@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff } from 'lucide-react';
+import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff, Globe } from 'lucide-react';
 import type { Priority, Category, TaskStatus } from '@/hooks/useTaskStore';
 
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
@@ -13,6 +13,21 @@ interface TaskInputProps {
 const priorityLabels: Record<Priority, string> = { low: 'Low', medium: 'Med', high: 'High', urgent: 'Urgent' };
 const priorityColors: Record<Priority, string> = { low: 'text-priority-low', medium: 'text-priority-medium', high: 'text-priority-high', urgent: 'text-priority-urgent' };
 const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
+
+const speechLanguages = [
+  { code: 'en-US', label: 'English' },
+  { code: 'es-ES', label: 'Español' },
+  { code: 'fr-FR', label: 'Français' },
+  { code: 'de-DE', label: 'Deutsch' },
+  { code: 'pt-BR', label: 'Português' },
+  { code: 'hi-IN', label: 'हिन्दी' },
+  { code: 'zh-CN', label: '中文' },
+  { code: 'ja-JP', label: '日本語' },
+  { code: 'ko-KR', label: '한국어' },
+  { code: 'ar-SA', label: 'العربية' },
+  { code: 'ta-IN', label: 'தமிழ்' },
+  { code: 'te-IN', label: 'తెలుగు' },
+];
 
 const statusConfig: { value: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
   { value: 'not_started', label: 'Not Started', icon: Circle, colorClass: 'text-[hsl(var(--status-not-started))]' },
@@ -35,6 +50,8 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const inputRef = useRef<HTMLInputElement>(null);
   const catInputRef = useRef<HTMLInputElement>(null);
   const [isListening, setIsListening] = useState(false);
+  const [speechLang, setSpeechLang] = useState('en-US');
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const recognitionRef = useRef<any>(null);
 
   const stopListening = useCallback(() => {
@@ -49,7 +66,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
       return;
     }
     const recognition = new SR();
-    recognition.lang = 'en-US';
+    recognition.lang = speechLang;
     recognition.interimResults = false;
     recognition.continuous = false;
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -63,7 +80,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
     recognition.start();
     setIsListening(true);
     setExpanded(true);
-  }, []);
+  }, [speechLang]);
 
   const toggleListening = useCallback(() => {
     if (isListening) stopListening();
@@ -129,6 +146,29 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
           <input ref={inputRef} type="text" value={value} onChange={e => setValue(e.target.value)} onKeyDown={handleKeyDown}
             onFocus={() => setExpanded(true)} placeholder="Add a task..."
             className="w-full bg-surface-well border border-border rounded-xl py-3 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition placeholder:text-muted-foreground/60" />
+        </div>
+        <div className="relative">
+          <button
+            onClick={() => setShowLangMenu(prev => !prev)}
+            type="button"
+            className="p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            title={`Language: ${speechLanguages.find(l => l.code === speechLang)?.label}`}
+          >
+            <Globe className="h-4 w-4" />
+          </button>
+          {showLangMenu && (
+            <div className="absolute top-full right-0 mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[140px] max-h-[200px] overflow-y-auto">
+              {speechLanguages.map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => { setSpeechLang(lang.code); setShowLangMenu(false); }}
+                  className={`w-full text-left px-3 py-1.5 text-xs font-mono hover:bg-accent hover:text-accent-foreground protocol-transition ${speechLang === lang.code ? 'bg-accent text-accent-foreground' : 'text-popover-foreground'}`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <button
           onClick={toggleListening}
