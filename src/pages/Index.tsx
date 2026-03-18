@@ -67,7 +67,7 @@ const Index = () => {
             </button>
           </header>
 
-          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && (
+          {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && store.viewFilter !== 'kanban' && (
             <TaskInput onAdd={store.addTask} categories={store.categories} onAddCategory={store.addCategory} />
           )}
 
@@ -75,6 +75,8 @@ const Index = () => {
             <WeeklyReportsView />
           ) : store.viewFilter === 'reports' ? (
             <ReportsView tasks={store.allTasks} categories={store.categories} />
+          ) : store.viewFilter === 'kanban' ? (
+            <KanbanView tasks={store.allTasks} categories={store.categories} onUpdateStatus={store.updateTaskStatus} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
           ) : store.viewFilter === 'calendar' ? (
             <CalendarView tasks={store.allTasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
           ) : (
