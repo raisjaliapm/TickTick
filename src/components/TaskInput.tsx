@@ -80,11 +80,14 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
         }
       }
       if (finalTranscript) {
-        const parsed = parseSpeechInput(finalTranscript);
+        const parsed = parseSpeechInput(finalTranscript, categories);
         setValue(prev => (prev ? prev + ' ' + parsed.cleanedText : parsed.cleanedText));
         if (parsed.priority) setPriority(parsed.priority);
         if (parsed.dueDate) setDueDate(parsed.dueDate);
         if (parsed.dueTime) setDueTime(parsed.dueTime);
+        if (parsed.status) setStatus(parsed.status);
+        if (parsed.recurrence) setRecurrence(parsed.recurrence);
+        if (parsed.categoryId) setCategoryId(parsed.categoryId);
       }
       setExpanded(true);
     };
