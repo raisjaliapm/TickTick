@@ -80,7 +80,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
     recognition.start();
     setIsListening(true);
     setExpanded(true);
-  }, []);
+  }, [speechLang]);
 
   const toggleListening = useCallback(() => {
     if (isListening) stopListening();
