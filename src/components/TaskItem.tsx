@@ -74,6 +74,8 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
     setEditPriority(task.priority);
     setEditCategoryId(task.category_id);
     setEditDueDate(task.due_date ? new Date(task.due_date) : undefined);
+    const d = task.due_date ? new Date(task.due_date) : null;
+    setEditDueTime(d && (d.getHours() !== 0 || d.getMinutes() !== 0) ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '');
     setEditRecurrence((task as any).recurrence || null);
     setIsEditing(true);
   };
