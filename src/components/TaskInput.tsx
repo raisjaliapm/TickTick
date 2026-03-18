@@ -131,6 +131,14 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             className="w-full bg-surface-well border border-border rounded-xl py-3 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition placeholder:text-muted-foreground/60" />
         </div>
         <button
+          onClick={toggleListening}
+          type="button"
+          className={`p-3 rounded-xl protocol-transition ${isListening ? 'bg-destructive text-destructive-foreground animate-pulse' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}
+          title={isListening ? 'Stop listening' : 'Voice input'}
+        >
+          {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+        </button>
+        <button
           onClick={handleSubmit}
           disabled={!value.trim()}
           className="px-4 py-3 rounded-xl text-sm font-mono bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed protocol-transition"
