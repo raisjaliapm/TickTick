@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff, Globe } from 'lucide-react';
+import { Plus, Calendar, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Mic, MicOff, Globe, Square } from 'lucide-react';
 import type { Priority, Category, TaskStatus } from '@/hooks/useTaskStore';
 
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
@@ -55,7 +55,9 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const recognitionRef = useRef<any>(null);
 
   const stopListening = useCallback(() => {
-    recognitionRef.current?.stop();
+    const rec = recognitionRef.current;
+    recognitionRef.current = null;
+    rec?.stop();
     setIsListening(false);
   }, []);
 
@@ -67,15 +69,33 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
     }
     const recognition = new SR();
     recognition.lang = speechLang;
-    recognition.interimResults = false;
-    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.continuous = true;
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
-      setValue(prev => (prev ? prev + ' ' + transcript : transcript));
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        }
+      }
+      if (finalTranscript) {
+        setValue(prev => (prev ? prev + ' ' + finalTranscript : finalTranscript));
+      }
       setExpanded(true);
     };
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
+    recognition.onerror = (e: any) => {
+      if (e.error !== 'no-speech') {
+        setIsListening(false);
+      }
+    };
+    recognition.onend = () => {
+      // Auto-restart if still supposed to be listening (ref is nulled on explicit stop)
+      if (recognitionRef.current) {
+        try { recognitionRef.current.start(); } catch {}
+      } else {
+        setIsListening(false);
+      }
+    };
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
@@ -170,33 +190,39 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             </div>
           )}
         </div>
-        <button
-          onClick={toggleListening}
-          type="button"
-          className={`relative p-3 rounded-xl protocol-transition ${isListening ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}
-          title={isListening ? 'Stop listening' : 'Voice input'}
-        >
-          {isListening && (
-            <>
-              <span className="absolute inset-0 rounded-xl bg-destructive/40 animate-ping" />
-              <span className="absolute -inset-1 rounded-xl border-2 border-destructive/50 animate-pulse" />
-              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-end gap-[2px]">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <span
-                    key={i}
-                    className="w-[3px] rounded-full bg-destructive"
-                    style={{
-                      animation: `waveform 0.8s ease-in-out ${i * 0.1}s infinite alternate`,
-                    }}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-          <span className="relative z-10">
-            {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-          </span>
-        </button>
+        {!isListening ? (
+          <button
+            onClick={toggleListening}
+            type="button"
+            className="p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            title="Voice input"
+          >
+            <Mic className="h-4 w-4" />
+          </button>
+        ) : (
+          <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/30">
+            <div className="flex items-end gap-[2px] h-4">
+              {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                <span
+                  key={i}
+                  className="w-[3px] rounded-full bg-destructive"
+                  style={{
+                    animation: `waveform 0.6s ease-in-out ${i * 0.08}s infinite alternate`,
+                  }}
+                />
+              ))}
+            </div>
+            <span className="text-[10px] font-mono text-destructive ml-1 animate-pulse">REC</span>
+            <button
+              onClick={stopListening}
+              type="button"
+              className="ml-1 p-1.5 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/80 protocol-transition"
+              title="Stop recording"
+            >
+              <Square className="h-3 w-3 fill-current" />
+            </button>
+          </div>
+        )}
         <button
           onClick={handleSubmit}
           disabled={!value.trim()}
