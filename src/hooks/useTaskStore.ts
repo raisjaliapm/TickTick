@@ -148,9 +148,12 @@ export function useTaskStore() {
   }, [user, fetchCategories]);
 
   const filteredTasks = tasks.filter(task => {
-    if (viewFilter === 'completed' && task.status !== 'completed') return false;
-    if (viewFilter !== 'completed' && viewFilter !== 'calendar' && task.status === 'completed') return false;
-    if (statusFilter && task.status !== statusFilter) return false;
+    if (statusFilter) {
+      if (task.status !== statusFilter) return false;
+    } else {
+      if (viewFilter === 'completed' && task.status !== 'completed') return false;
+      if (viewFilter !== 'completed' && viewFilter !== 'calendar' && task.status === 'completed') return false;
+    }
     if (viewFilter === 'today' && task.due_date) {
       if (!isToday(new Date(task.due_date)) && !isPast(new Date(task.due_date))) return false;
     }
