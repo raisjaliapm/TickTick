@@ -24,9 +24,24 @@ const Auth = () => {
     if (!trimmed) return 'Email is required.';
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(trimmed)) return 'Please enter a valid email address.';
-    const disposableDomains = ['mailinator.com', 'tempmail.com', 'throwaway.email', 'guerrillamail.com', 'yopmail.com', 'sharklasers.com', 'trashmail.com', 'fakeinbox.com', 'tempail.com', 'dispostable.com'];
     const domain = trimmed.split('@')[1]?.toLowerCase();
+    
+    // Block disposable/temporary email providers
+    const disposableDomains = ['mailinator.com', 'tempmail.com', 'throwaway.email', 'guerrillamail.com', 'yopmail.com', 'sharklasers.com', 'trashmail.com', 'fakeinbox.com', 'tempail.com', 'dispostable.com', 'maildrop.cc', 'guerrillamailblock.com', 'grr.la', 'getairmail.com', 'mohmal.com', 'burnermail.io'];
     if (disposableDomains.includes(domain)) return 'Disposable email addresses are not allowed.';
+    
+    // Block common fake/test domains
+    const blockedDomains = ['test.com', 'example.com', 'example.org', 'example.net', 'fake.com', 'abc.com', 'xyz.com', 'asdf.com', 'qwerty.com', 'none.com', 'noemail.com', 'nope.com'];
+    if (blockedDomains.includes(domain)) return 'Please use a real email address.';
+    
+    // Block domains that look fake (very short TLD or suspicious patterns)
+    const tld = domain.split('.').pop();
+    if (tld && tld.length < 2) return 'Please enter a valid email address.';
+    
+    // Only allow well-known TLDs
+    const validTLDs = ['com', 'org', 'net', 'edu', 'gov', 'io', 'co', 'us', 'uk', 'ca', 'au', 'de', 'fr', 'in', 'jp', 'br', 'it', 'nl', 'se', 'no', 'fi', 'dk', 'es', 'pt', 'ru', 'cn', 'kr', 'za', 'mx', 'ar', 'cl', 'nz', 'ie', 'be', 'ch', 'at', 'pl', 'cz', 'hu', 'ro', 'bg', 'hr', 'sk', 'si', 'lt', 'lv', 'ee', 'app', 'dev', 'me', 'info', 'biz', 'tech', 'online', 'store', 'site', 'xyz', 'ai', 'cloud', 'live', 'pro', 'cc', 'tv', 'id', 'pk', 'bd', 'lk', 'ae', 'sa', 'qa', 'om', 'kw', 'bh', 'sg', 'my', 'ph', 'th', 'vn', 'tw', 'hk'];
+    if (tld && !validTLDs.includes(tld)) return 'Please use a valid email domain.';
+    
     return null;
   };
 
