@@ -37,8 +37,9 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
 
   const handleSubmit = () => {
     if (!value.trim()) return;
-    onAdd(value.trim(), priority, dueDate || null, categoryId, recurrence, status);
-    setValue(''); setPriority('medium'); setDueDate(''); setCategoryId(null); setRecurrence(null); setStatus('not_started');
+    const dueDateWithTime = dueDate ? (dueTime ? `${dueDate}T${dueTime}` : dueDate) : null;
+    onAdd(value.trim(), priority, dueDateWithTime, categoryId, recurrence, status);
+    setValue(''); setPriority('medium'); setDueDate(''); setDueTime(''); setCategoryId(null); setRecurrence(null); setStatus('not_started');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
