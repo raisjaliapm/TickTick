@@ -32,15 +32,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, displayName?: string) => {
+  const signUp = async (email: string, password: string, displayName?: string, phoneNumber?: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: displayName },
+        data: { full_name: displayName, phone_number: phoneNumber },
         emailRedirectTo: window.location.origin,
       },
     });
+    
+    // If signup succeeded and we have a phone number, update the profile
+    if (!error && data.user && phoneNumber) {
+      await supabase
+        .from('profiles')
+        .update({ phone_number: phoneNumber } as any)
+        .eq('user_id', data.user.id);
+    }
+    
     return { error: error as Error | null, session: data.session };
   };
 
