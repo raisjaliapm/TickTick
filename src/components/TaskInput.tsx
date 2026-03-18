@@ -7,7 +7,7 @@ import { toast } from '@/hooks/use-toast';
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | null;
 
 interface TaskInputProps {
-  onAdd: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus) => void;
+  onAdd: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus, extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[] }) => void;
   categories: Category[];
   onAddCategory?: (name: string) => Promise<void>;
 }
