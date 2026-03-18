@@ -66,11 +66,21 @@ export function useTaskStore() {
 
   const addTask = useCallback(async (title: string, priority: Priority = 'medium', dueDate: string | null = null, categoryId: string | null = null, recurrence: string | null = null, status: TaskStatus = 'not_started') => {
     if (!user) return;
+    let formattedDueDate: string | null = null;
+    if (dueDate) {
+      // If dueDate contains 'T', it has time info (e.g. "2026-03-18T14:30")
+      if (dueDate.includes('T')) {
+        const d = new Date(dueDate);
+        formattedDueDate = formatLocalDateTime(d);
+      } else {
+        formattedDueDate = formatLocalDateTime(parseLocalDate(dueDate));
+      }
+    }
     await supabase.from('tasks').insert({
       user_id: user.id,
       title,
       priority,
-      due_date: dueDate ? formatLocalDateTime(parseLocalDate(dueDate)) : null,
+      due_date: formattedDueDate,
       category_id: categoryId,
       recurrence,
       status,
