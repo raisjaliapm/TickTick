@@ -1,5 +1,5 @@
-import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText } from 'lucide-react';
-import type { ViewFilter, Category, Priority } from '@/hooks/useTaskStore';
+import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause } from 'lucide-react';
+import type { ViewFilter, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarNavProps {
@@ -9,8 +9,10 @@ interface SidebarNavProps {
   setCategoryFilter: (id: string | null) => void;
   priorityFilter: Priority | null;
   setPriorityFilter: (p: Priority | null) => void;
+  statusFilter: TaskStatus | null;
+  setStatusFilter: (s: TaskStatus | null) => void;
   categories: Category[];
-  stats: { total: number; today: number; completed: number; overdue: number };
+  stats: { total: number; today: number; completed: number; overdue: number; notStarted: number; inProgress: number; onHold: number };
 }
 
 const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] = [
