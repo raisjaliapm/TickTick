@@ -27,6 +27,7 @@ export function useTaskStore() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<Priority | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchTasks = useCallback(async () => {
