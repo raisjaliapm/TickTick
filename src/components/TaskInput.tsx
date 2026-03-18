@@ -80,7 +80,11 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
         }
       }
       if (finalTranscript) {
-        setValue(prev => (prev ? prev + ' ' + finalTranscript : finalTranscript));
+        const parsed = parseSpeechInput(finalTranscript);
+        setValue(prev => (prev ? prev + ' ' + parsed.cleanedText : parsed.cleanedText));
+        if (parsed.priority) setPriority(parsed.priority);
+        if (parsed.dueDate) setDueDate(parsed.dueDate);
+        if (parsed.dueTime) setDueTime(parsed.dueTime);
       }
       setExpanded(true);
     };
