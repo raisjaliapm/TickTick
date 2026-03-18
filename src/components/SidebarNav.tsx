@@ -44,6 +44,7 @@ const statusItems: { key: TaskStatus; label: string; icon: React.ElementType; co
 
 export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, categories, stats }: SidebarNavProps) {
   const { signOut, user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <aside className="w-56 shrink-0 border-r border-border bg-sidebar p-4 flex flex-col gap-6 h-screen sticky top-0 overflow-y-auto scrollbar-thin">
