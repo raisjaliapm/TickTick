@@ -94,6 +94,14 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
     if (data) setSubtasks(data as any);
   }, [task.id]);
 
+  // Fetch subtasks on mount for indicators
+  React.useEffect(() => {
+    fetchSubtasks();
+  }, [fetchSubtasks]);
+
+  const taskUrls: string[] = Array.isArray((task as any).urls) ? (task as any).urls : [];
+  const taskNotes: string = (task as any).notes || '';
+
   const openEdit = () => {
     setEditTitle(task.title);
     setEditDescription(task.description || '');
