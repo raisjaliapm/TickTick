@@ -19,19 +19,47 @@ const Auth = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const validateEmail = (email: string): string | null => {
+    const trimmed = email.trim();
+    if (!trimmed) return 'Email is required.';
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(trimmed)) return 'Please enter a valid email address.';
+    const disposableDomains = ['mailinator.com', 'tempmail.com', 'throwaway.email', 'guerrillamail.com', 'yopmail.com', 'sharklasers.com', 'trashmail.com', 'fakeinbox.com', 'tempail.com', 'dispostable.com'];
+    const domain = trimmed.split('@')[1]?.toLowerCase();
+    if (disposableDomains.includes(domain)) return 'Disposable email addresses are not allowed.';
+    return null;
+  };
+
+  const validatePhone = (phone: string): string | null => {
+    if (!phone) return null; // optional
+    const phoneRegex = /^\+?[1-9]\d{6,14}$/;
+    if (!phoneRegex.test(phone.replace(/[\s()-]/g, ''))) return 'Please enter a valid phone number (e.g. +1234567890).';
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setMessage('');
+
+    const emailError = validateEmail(email);
+    if (emailError) { setError(emailError); return; }
+
+    if (mode === 'signup') {
+      const phoneError = validatePhone(phoneNumber);
+      if (phoneError) { setError(phoneError); return; }
+      if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    }
+
     setLoading(true);
 
     try {
       if (mode === 'signin') {
-        const { error } = await signIn(email, password);
+        const { error } = await signIn(email.trim(), password);
         if (error) throw error;
         navigate('/');
       } else if (mode === 'signup') {
-        const { error, session } = await signUp(email, password, displayName, phoneNumber);
+        const { error, session } = await signUp(email.trim(), password, displayName.trim(), phoneNumber.trim());
         if (error) throw error;
         if (session) {
           navigate('/');
@@ -39,7 +67,7 @@ const Auth = () => {
           setMessage('Check your email to confirm your account.');
         }
       } else {
-        const { error } = await resetPassword(email);
+        const { error } = await resetPassword(email.trim());
         if (error) throw error;
         setMessage('Password reset link sent to your email.');
       }
