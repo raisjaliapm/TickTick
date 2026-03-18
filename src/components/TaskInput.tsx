@@ -89,9 +89,11 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
       }
     };
     recognition.onend = () => {
-      // Auto-restart if still supposed to be listening (browser may stop after silence)
-      if (recognitionRef.current && isListening) {
+      // Auto-restart if still supposed to be listening (ref is nulled on explicit stop)
+      if (recognitionRef.current) {
         try { recognitionRef.current.start(); } catch {}
+      } else {
+        setIsListening(false);
       }
     };
     recognitionRef.current = recognition;
