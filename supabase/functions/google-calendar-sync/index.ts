@@ -260,12 +260,11 @@ Deno.serve(async (req) => {
       // Just check if connected
       result = { success: true, connected: true };
     } else if (action === "sync_all") {
-      // Sync all tasks with due dates that don't have calendar events yet
+      // Sync all tasks that don't have calendar events yet
       const { data: tasksToSync } = await supabase
         .from("tasks")
         .select("*")
         .eq("user_id", userId)
-        .not("due_date", "is", null)
         .is("google_calendar_event_id", null)
         .neq("status", "completed");
 
