@@ -103,6 +103,11 @@ export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCateg
         ))}
       </nav>
 
+      <div className="space-y-1 px-1">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 mb-1">Integrations</p>
+        <GoogleCalendarButton />
+      </div>
+
       <div className="mt-auto space-y-2 px-2 pb-2">
         {stats.overdue > 0 && <span className="text-[11px] font-mono text-priority-urgent block">{stats.overdue} overdue</span>}
         {user && (
