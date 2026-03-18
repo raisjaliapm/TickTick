@@ -42,27 +42,147 @@ serve(async (req) => {
       due_date: t.due_date,
       category_id: t.category_id,
       recurrence: t.recurrence,
+      description: t.description,
+      created_at: t.created_at,
+      completed_at: t.completed_at,
     }));
 
     const categoriesMap = Object.fromEntries((categories || []).map((c: any) => [c.id, c.name]));
+    const categoriesList = (categories || []).map((c: any) => ({ id: c.id, name: c.name }));
 
-    const systemPrompt = `You are a helpful task management assistant. The user has the following tasks and categories.
+    const today = new Date().toISOString().split('T')[0];
+    const activeTasks = tasksSummary.filter((t: any) => t.status !== 'completed');
+    const completedToday = tasksSummary.filter((t: any) => t.status === 'completed' && t.completed_at?.startsWith(today));
+    const overdueTasks = activeTasks.filter((t: any) => t.due_date && t.due_date < new Date().toISOString());
 
-CATEGORIES: ${JSON.stringify(categoriesMap)}
+    const systemPrompt = `You are an intelligent AI task manager named "TickTick AI". You are proactive, insightful, and help users be more productive. Today is ${today}.
 
-TASKS (${tasksSummary.length} total): ${JSON.stringify(tasksSummary)}
+USER'S CATEGORIES: ${JSON.stringify(categoriesList)}
+CATEGORY MAP: ${JSON.stringify(categoriesMap)}
 
-You can help users by:
-1. Showing/filtering tasks (by status, priority, category, due date)
-2. Completing tasks (use the complete_task tool)
-3. Creating new tasks (use the create_task tool)
-4. Updating tasks (use the update_task tool)
-5. Deleting tasks (use the delete_task tool)
-6. Answering questions about their tasks
+ACTIVE TASKS (${activeTasks.length}): ${JSON.stringify(activeTasks)}
+COMPLETED TODAY (${completedToday.length}): ${JSON.stringify(completedToday)}
+OVERDUE TASKS (${overdueTasks.length}): ${JSON.stringify(overdueTasks)}
 
-When showing tasks, format them nicely with markdown. Use bullet points, bold for titles, and include status/priority info.
-When performing actions, use the appropriate tool and confirm what you did.
-Keep responses concise and helpful.`;
+YOUR CAPABILITIES:
+1. **Task Management**: Create, update, complete, delete tasks
+2. **Smart Auto-Categorize**: When creating tasks, automatically assign the best category and priority based on the task content
+3. **Task Breakdown**: Break complex tasks into smaller, actionable subtasks
+4. **Daily Planning**: Provide intelligent daily summaries, suggest what to focus on, highlight overdue items
+5. **Smart Suggestions**: Proactively suggest tasks based on patterns and context
+6. **Productivity Insights**: Analyze completion patterns and provide tips
+
+BEHAVIOR GUIDELINES:
+- When user says something vague like "plan my day" or "what should I do", give a structured daily plan with priorities
+- When creating tasks, ALWAYS auto-assign a category_id from available categories and set an appropriate priority
+- When asked to break down a task, create multiple subtasks with proper priorities and categories
+- Use markdown formatting: headers, bullet points, bold text, emojis for visual appeal
+- Be conversational but efficient. Use emojis sparingly but effectively
+- When showing tasks, format them beautifully with status indicators
+- Proactively mention overdue tasks and suggest priorities
+- If user greets you, give a brief daily summary with key metrics
+
+STATUS INDICATORS: ⭕ Not Started | 🔵 In Progress | ⏸️ On Hold | ✅ Completed
+PRIORITY INDICATORS: 🔴 Urgent | 🟠 High | 🟡 Medium | 🔵 Low`;
+
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "complete_task",
+          description: "Mark a task as completed",
+          parameters: {
+            type: "object",
+            properties: { task_id: { type: "string", description: "The task ID to complete" } },
+            required: ["task_id"],
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "create_task",
+          description: "Create a new task. Auto-assign category and priority based on content.",
+          parameters: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
+              status: { type: "string", enum: ["not_started", "in_progress", "on_hold", "completed"] },
+              due_date: { type: "string", description: "ISO date string or null" },
+              category_id: { type: "string", description: "Category ID from available categories" },
+              description: { type: "string", description: "Optional task description" },
+            },
+            required: ["title", "priority", "category_id"],
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "create_multiple_tasks",
+          description: "Create multiple tasks at once (for task breakdown). Auto-assign category and priority.",
+          parameters: {
+            type: "object",
+            properties: {
+              tasks: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
+                    category_id: { type: "string" },
+                    due_date: { type: "string" },
+                    description: { type: "string" },
+                  },
+                  required: ["title", "priority", "category_id"],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ["tasks"],
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "update_task",
+          description: "Update an existing task's properties",
+          parameters: {
+            type: "object",
+            properties: {
+              task_id: { type: "string" },
+              title: { type: "string" },
+              priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
+              status: { type: "string", enum: ["not_started", "in_progress", "on_hold", "completed"] },
+              due_date: { type: "string" },
+              category_id: { type: "string" },
+              description: { type: "string" },
+            },
+            required: ["task_id"],
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "delete_task",
+          description: "Delete a task permanently",
+          parameters: {
+            type: "object",
+            properties: { task_id: { type: "string" } },
+            required: ["task_id"],
+            additionalProperties: false,
+          },
+        },
+      },
+    ];
 
     const body: any = {
       model: "google/gemini-3-flash-preview",
@@ -70,72 +190,7 @@ Keep responses concise and helpful.`;
         { role: "system", content: systemPrompt },
         ...messages,
       ],
-      tools: [
-        {
-          type: "function",
-          function: {
-            name: "complete_task",
-            description: "Mark a task as completed",
-            parameters: {
-              type: "object",
-              properties: { task_id: { type: "string", description: "The task ID to complete" } },
-              required: ["task_id"],
-              additionalProperties: false,
-            },
-          },
-        },
-        {
-          type: "function",
-          function: {
-            name: "create_task",
-            description: "Create a new task",
-            parameters: {
-              type: "object",
-              properties: {
-                title: { type: "string" },
-                priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
-                status: { type: "string", enum: ["not_started", "in_progress", "on_hold", "completed"] },
-                due_date: { type: "string", description: "ISO date string or null" },
-                category_id: { type: "string", description: "Category ID or null" },
-              },
-              required: ["title"],
-              additionalProperties: false,
-            },
-          },
-        },
-        {
-          type: "function",
-          function: {
-            name: "update_task",
-            description: "Update an existing task's properties",
-            parameters: {
-              type: "object",
-              properties: {
-                task_id: { type: "string" },
-                title: { type: "string" },
-                priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
-                status: { type: "string", enum: ["not_started", "in_progress", "on_hold", "completed"] },
-                due_date: { type: "string" },
-              },
-              required: ["task_id"],
-              additionalProperties: false,
-            },
-          },
-        },
-        {
-          type: "function",
-          function: {
-            name: "delete_task",
-            description: "Delete a task permanently",
-            parameters: {
-              type: "object",
-              properties: { task_id: { type: "string" } },
-              required: ["task_id"],
-              additionalProperties: false,
-            },
-          },
-        },
-      ],
+      tools,
       stream: false,
     };
 
@@ -187,14 +242,35 @@ Keep responses concise and helpful.`;
             status: args.status || "not_started",
             due_date: args.due_date || null,
             category_id: args.category_id || null,
+            description: args.description || null,
           });
           toolResults.push(error ? `Failed to create task: ${error.message}` : `Task "${args.title}" created.`);
+        } else if (fn.name === "create_multiple_tasks") {
+          const results: string[] = [];
+          for (const task of args.tasks) {
+            const { error } = await supabase.from("tasks").insert({
+              user_id: user.id,
+              title: task.title,
+              priority: task.priority || "medium",
+              status: "not_started",
+              due_date: task.due_date || null,
+              category_id: task.category_id || null,
+              description: task.description || null,
+            });
+            results.push(error ? `Failed: "${task.title}"` : `Created: "${task.title}"`);
+          }
+          toolResults.push(results.join("\n"));
         } else if (fn.name === "update_task") {
           const updates: any = {};
           if (args.title) updates.title = args.title;
           if (args.priority) updates.priority = args.priority;
-          if (args.status) updates.status = args.status;
+          if (args.status) {
+            updates.status = args.status;
+            updates.completed_at = args.status === 'completed' ? new Date().toISOString() : null;
+          }
           if (args.due_date) updates.due_date = args.due_date;
+          if (args.category_id) updates.category_id = args.category_id;
+          if (args.description !== undefined) updates.description = args.description;
           const { error } = await supabase.from("tasks").update(updates).eq("id", args.task_id).eq("user_id", user.id);
           toolResults.push(error ? `Failed to update task: ${error.message}` : `Task updated.`);
         } else if (fn.name === "delete_task") {
@@ -203,7 +279,7 @@ Keep responses concise and helpful.`;
         }
       }
 
-      // Second AI call to generate a natural language response after tool execution
+      // Second AI call to generate natural language response
       const followUpMessages = [
         ...body.messages,
         choice.message,
