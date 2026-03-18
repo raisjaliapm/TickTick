@@ -189,7 +189,22 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
     <div className="mb-6">
       <div className="relative flex gap-2">
         <div className="relative flex-1">
-          <Plus className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <button
+            type="button"
+            onClick={() => {
+              if (value.trim()) {
+                handleSubmit();
+              } else {
+                inputRef.current?.focus();
+                setExpanded(true);
+              }
+            }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground protocol-transition hover:bg-secondary hover:text-foreground"
+            title="Add task"
+            aria-label="Add task"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
           <input ref={inputRef} type="text" value={value} onChange={e => setValue(e.target.value)} onKeyDown={handleKeyDown}
             onFocus={() => setExpanded(true)} placeholder="Add a task..."
             className="w-full bg-surface-well border border-border rounded-xl py-3 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition placeholder:text-muted-foreground/60" />
