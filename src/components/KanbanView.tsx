@@ -99,20 +99,14 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
                   <span className="text-[10px] font-mono text-muted-foreground">Drop here</span>
                 </div>
               )}
-              <AnimatePresence mode="popLayout">
                 {columnTasks.map(task => {
                   const category = categories.find(c => c.id === task.category_id);
                   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && task.status !== 'completed';
                   const isDragging = draggedTaskId === task.id;
 
                   return (
-                    <motion.div
+                    <div
                       key={task.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: isDragging ? 0.5 : 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
                       draggable
                       onDragStart={e => handleDragStart(e, task.id)}
                       onDragEnd={handleDragEnd}
@@ -139,10 +133,9 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
-              </AnimatePresence>
             </div>
           </div>
         );
