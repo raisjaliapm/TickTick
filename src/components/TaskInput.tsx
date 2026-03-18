@@ -34,6 +34,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const [newCategoryName, setNewCategoryName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const catInputRef = useRef<HTMLInputElement>(null);
+  const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
 
   const stopListening = useCallback(() => {
@@ -42,7 +43,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   }, []);
 
   const startListening = useCallback(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert('Speech recognition is not supported in your browser.');
       return;
