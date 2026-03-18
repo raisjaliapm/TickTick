@@ -39,6 +39,8 @@ const Index = () => {
         setCategoryFilter={store.setCategoryFilter}
         priorityFilter={store.priorityFilter}
         setPriorityFilter={store.setPriorityFilter}
+        statusFilter={store.statusFilter}
+        setStatusFilter={store.setStatusFilter}
         categories={store.categories}
         stats={store.stats}
       />
