@@ -262,14 +262,32 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       transition={{ duration: 0.2, ease: [...protocolCurve] }}
       className="group flex items-center gap-3 px-3 py-2.5 rounded-lg border border-transparent hover:border-border hover:bg-task-hover protocol-transition select-none"
     >
-      <button onClick={() => onToggle(task.id)}
-        className={`relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border protocol-transition ${isCompleted ? 'bg-primary border-primary' : 'border-muted-foreground/40 hover:border-muted-foreground'}`}>
-        {isCompleted && (
-          <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }}>
-            <Check className="h-3 w-3 text-primary-foreground stroke-[3]" />
-          </motion.div>
-        )}
-      </button>
+      {/* Status button */}
+      {(() => {
+        const currentStatus = statusOptions.find(s => s.value === task.status) || statusOptions[0];
+        const StatusIcon = currentStatus.icon;
+        const nextStatusMap: Record<TaskStatus, TaskStatus> = {
+          not_started: 'in_progress',
+          in_progress: 'completed',
+          on_hold: 'in_progress',
+          completed: 'not_started',
+        };
+        return (
+          <button
+            onClick={() => onUpdateStatus ? onUpdateStatus(task.id, nextStatusMap[task.status as TaskStatus]) : onToggle(task.id)}
+            className={`relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border protocol-transition ${currentStatus.colorClass} ${isCompleted ? 'bg-[hsl(var(--status-completed))] border-[hsl(var(--status-completed))]' : 'border-current/40 hover:border-current'}`}
+            title={`${currentStatus.label} → Click to change`}
+          >
+            {isCompleted ? (
+              <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }}>
+                <Check className="h-3 w-3 text-primary-foreground stroke-[3]" />
+              </motion.div>
+            ) : (
+              <StatusIcon className="h-3 w-3" />
+            )}
+          </button>
+        );
+      })()}
 
       <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
 
