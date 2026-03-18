@@ -223,6 +223,24 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
           </div>
         </div>
 
+        {/* Status */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mr-1">Status</span>
+          {statusOptions.map(s => {
+            const Icon = s.icon;
+            return (
+              <button
+                key={s.value}
+                onClick={() => onUpdate(task.id, { status: s.value, completed_at: s.value === 'completed' ? new Date().toISOString() : null } as any)}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono protocol-transition ${task.status === s.value ? `${s.colorClass} bg-secondary border border-current/30` : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}
+              >
+                <Icon className="h-3 w-3" />
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="flex items-center gap-2 pt-1">
           <button onClick={saveEdit} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono bg-primary text-primary-foreground hover:bg-primary/90 protocol-transition">
             <Save className="h-3 w-3" /> Save
