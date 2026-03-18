@@ -15,6 +15,7 @@ interface SidebarNavProps {
   setStatusFilter: (s: TaskStatus | null) => void;
   categories: Category[];
   stats: { total: number; today: number; completed: number; overdue: number; notStarted: number; inProgress: number; onHold: number };
+  onLogoClick?: () => void;
 }
 
 const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] = [
@@ -42,16 +43,16 @@ const statusItems: { key: TaskStatus; label: string; icon: React.ElementType; co
   { key: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
 ];
 
-export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, categories, stats }: SidebarNavProps) {
+export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, categories, stats, onLogoClick }: SidebarNavProps) {
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   return (
     <aside className="w-56 shrink-0 border-r border-border bg-sidebar p-4 flex flex-col gap-6 h-screen sticky top-0 overflow-y-auto scrollbar-thin">
-      <div className="flex items-center gap-2 px-2 pt-2">
+      <button onClick={onLogoClick} className="flex items-center gap-2 px-2 pt-2 hover:opacity-80 protocol-transition">
         <Clock className="h-4 w-4 text-primary" />
         <span className="text-base font-display font-medium tracking-tight text-foreground">TickTick</span>
-      </div>
+      </button>
 
       <nav className="space-y-0.5">
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-2 mb-2">Views</p>
