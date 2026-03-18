@@ -166,10 +166,13 @@ export function useTaskStore() {
   });
 
   const stats = {
-    total: tasks.filter(t => t.status === 'active').length,
-    today: tasks.filter(t => t.status === 'active' && t.due_date && (isToday(new Date(t.due_date)) || isPast(new Date(t.due_date)))).length,
+    total: tasks.filter(t => t.status !== 'completed').length,
+    today: tasks.filter(t => t.status !== 'completed' && t.due_date && (isToday(new Date(t.due_date)) || isPast(new Date(t.due_date)))).length,
     completed: tasks.filter(t => t.status === 'completed').length,
-    overdue: tasks.filter(t => t.status === 'active' && t.due_date && isPast(new Date(t.due_date)) && !isToday(new Date(t.due_date))).length,
+    overdue: tasks.filter(t => t.status !== 'completed' && t.due_date && isPast(new Date(t.due_date)) && !isToday(new Date(t.due_date))).length,
+    notStarted: tasks.filter(t => t.status === 'not_started').length,
+    inProgress: tasks.filter(t => t.status === 'in_progress').length,
+    onHold: tasks.filter(t => t.status === 'on_hold').length,
   };
 
   return {
@@ -179,8 +182,9 @@ export function useTaskStore() {
     viewFilter, setViewFilter,
     categoryFilter, setCategoryFilter,
     priorityFilter, setPriorityFilter,
+    statusFilter, setStatusFilter,
     searchQuery, setSearchQuery,
-    addTask, toggleTask, updateTask, deleteTask,
+    addTask, toggleTask, updateTaskStatus, updateTask, deleteTask,
     addCategory,
     stats,
     loading,
