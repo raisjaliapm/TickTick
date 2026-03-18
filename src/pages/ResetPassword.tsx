@@ -6,6 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
