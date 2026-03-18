@@ -35,24 +35,20 @@ export function useGoogleCalendar() {
   }, []);
 
   // Start OAuth flow
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     if (!user) return;
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-    const redirectUri = `https://${projectId}.supabase.co/functions/v1/google-calendar-callback`;
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-    // If no client ID in env, use the edge function approach
-    const scopes = 'https://www.googleapis.com/auth/calendar.events';
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=${clientId}&` +
-      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-      `response_type=code&` +
-      `scope=${encodeURIComponent(scopes)}&` +
-      `access_type=offline&` +
-      `prompt=consent&` +
-      `state=${user.id}`;
-
-    window.location.href = authUrl;
+    try {
+      const { data, error } = await supabase.functions.invoke('google-calendar-auth-url', {
+        body: { user_id: user.id },
+      });
+      if (error || !data?.authUrl) {
+        console.error('Failed to get auth URL:', error);
+        return;
+      }
+      window.location.href = data.authUrl;
+    } catch (err) {
+      console.error('Connect error:', err);
+    }
   }, [user]);
 
   // Disconnect
