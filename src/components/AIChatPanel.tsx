@@ -247,6 +247,18 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
               disabled={loading}
             />
             <button
+              onClick={toggleListening}
+              disabled={loading}
+              className={`p-3 rounded-xl border protocol-transition shrink-0 ${
+                isListening
+                  ? 'bg-destructive text-destructive-foreground border-destructive animate-pulse'
+                  : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-accent'
+              }`}
+              title={isListening ? 'Stop listening' : 'Voice input'}
+            >
+              {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
+            <button
               onClick={() => sendMessage()}
               disabled={!input.trim() || loading}
               className="p-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed protocol-transition shrink-0"
