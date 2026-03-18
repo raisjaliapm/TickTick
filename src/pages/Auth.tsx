@@ -14,6 +14,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,7 @@ const Auth = () => {
         if (error) throw error;
         navigate('/');
       } else if (mode === 'signup') {
-        const { error, session } = await signUp(email, password, displayName);
+        const { error, session } = await signUp(email, password, displayName, phoneNumber);
         if (error) throw error;
         if (session) {
           navigate('/');
@@ -79,13 +80,22 @@ const Auth = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
-              <input
-                type="text"
-                placeholder="Display name"
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
-                className="w-full bg-surface-well border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring protocol-transition"
-              />
+              <>
+                <input
+                  type="text"
+                  placeholder="Display name"
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  className="w-full bg-surface-well border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring protocol-transition"
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone number (e.g. +1234567890)"
+                  value={phoneNumber}
+                  onChange={e => setPhoneNumber(e.target.value)}
+                  className="w-full bg-surface-well border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring protocol-transition"
+                />
+              </>
             )}
 
             <input
