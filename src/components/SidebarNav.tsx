@@ -112,14 +112,19 @@ export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCateg
 
       <div className="mt-auto space-y-2 px-2 pb-2">
         {stats.overdue > 0 && <span className="text-[11px] font-mono text-priority-urgent block">{stats.overdue} overdue</span>}
-        {user && (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-muted-foreground truncate flex-1">{user.email}</span>
-            <button onClick={signOut} className="text-muted-foreground hover:text-foreground protocol-transition">
-              <LogOut className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground protocol-transition p-1 rounded-md hover:bg-sidebar-accent" aria-label="Toggle theme">
+            {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+          </button>
+          {user && (
+            <>
+              <span className="text-[11px] font-mono text-muted-foreground truncate flex-1">{user.email}</span>
+              <button onClick={signOut} className="text-muted-foreground hover:text-foreground protocol-transition">
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </aside>
   );

@@ -8,6 +8,7 @@ type Mode = 'signin' | 'signup' | 'forgot';
 
 const Auth = () => {
   const { signIn, signUp, resetPassword } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
