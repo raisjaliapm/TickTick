@@ -32,7 +32,14 @@ const priorities: { key: Priority; label: string; color: string }[] = [
   { key: 'low', label: 'Low', color: 'bg-priority-low' },
 ];
 
-export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, categories, stats }: SidebarNavProps) {
+const statusItems: { key: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
+  { key: 'not_started', label: 'Not Started', icon: Circle, colorClass: 'text-[hsl(var(--status-not-started))]' },
+  { key: 'in_progress', label: 'In Progress', icon: Clock, colorClass: 'text-[hsl(var(--status-in-progress))]' },
+  { key: 'on_hold', label: 'On Hold', icon: Pause, colorClass: 'text-[hsl(var(--status-on-hold))]' },
+  { key: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
+];
+
+export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, categories, stats }: SidebarNavProps) {
   const { signOut, user } = useAuth();
 
   return (
