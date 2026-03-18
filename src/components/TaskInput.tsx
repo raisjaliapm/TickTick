@@ -47,6 +47,13 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
   const [status, setStatus] = useState<TaskStatus>('not_started');
   const [expanded, setExpanded] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+  const [description, setDescription] = useState('');
+  const [notes, setNotes] = useState('');
+  const [urls, setUrls] = useState<string[]>([]);
+  const [newUrl, setNewUrl] = useState('');
+  const [subtasks, setSubtasks] = useState<string[]>([]);
+  const [newSubtask, setNewSubtask] = useState('');
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
