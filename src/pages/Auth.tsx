@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Clock } from 'lucide-react';
+import { Clock, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
 const Auth = () => {
   const { signIn, signUp, resetPassword } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
@@ -50,6 +52,15 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
+
+      {/* Theme toggle */}
+      <button
+        onClick={toggleTheme}
+        className="fixed top-4 right-4 z-20 p-2 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground protocol-transition"
+        aria-label="Toggle theme"
+      >
+        {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </button>
 
       <div className="relative z-10 w-full max-w-sm">
         {/* Logo */}
