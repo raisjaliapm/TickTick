@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, ListTodo, Zap, Calendar, BarChart3, ArrowDown } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, ListTodo, Zap, Calendar, BarChart3, ArrowDown, Mic, MicOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
@@ -19,8 +19,50 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // Setup Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event: any) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setInput(transcript);
+    };
+
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    return () => { recognition.abort(); };
+  }, []);
+
+  const toggleListening = useCallback(() => {
+    if (!recognitionRef.current) {
+      toast.error('Speech recognition is not supported in this browser.');
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      setInput('');
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  }, [isListening]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -204,6 +246,18 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
               className="flex-1 bg-surface-well border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring protocol-transition resize-none"
               disabled={loading}
             />
+            <button
+              onClick={toggleListening}
+              disabled={loading}
+              className={`p-3 rounded-xl border protocol-transition shrink-0 ${
+                isListening
+                  ? 'bg-destructive text-destructive-foreground border-destructive animate-pulse'
+                  : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-accent'
+              }`}
+              title={isListening ? 'Stop listening' : 'Voice input'}
+            >
+              {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
             <button
               onClick={() => sendMessage()}
               disabled={!input.trim() || loading}
