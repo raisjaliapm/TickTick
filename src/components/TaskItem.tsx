@@ -384,7 +384,11 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       {isOverdue && <span className="text-[11px] font-mono text-priority-urgent shrink-0 group-hover:hidden">overdue</span>}
       {task.due_date && !isOverdue && (
         <span className="text-[11px] font-mono text-muted-foreground/50 shrink-0 group-hover:hidden">
-          {format(new Date(task.due_date), 'MMM d')}
+          {(() => {
+            const d = new Date(task.due_date!);
+            const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
+            return hasTime ? format(d, 'MMM d, h:mm a') : format(d, 'MMM d');
+          })()}
         </span>
       )}
     </motion.div>
