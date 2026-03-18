@@ -91,6 +91,7 @@ export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCateg
         })}
       </nav>
 
+      <nav className="space-y-0.5">
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-2 mb-2">Categories</p>
         {categories.map(cat => (
           <button key={cat.id} onClick={() => { setCategoryFilter(categoryFilter === cat.id ? null : cat.id); setPriorityFilter(null); if (viewFilter === 'completed' || viewFilter === 'calendar') setViewFilter('all'); }}
