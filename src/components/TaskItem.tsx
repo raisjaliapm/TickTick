@@ -380,10 +380,20 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
             </div>
           ))}
           <div className="flex items-center gap-2">
-            <button onClick={addSubtask} className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition" type="button" title="Add subtask">
+            <button
+              onClick={() => {
+                if (newSubtaskTitle.trim()) {
+                  addSubtask();
+                } else {
+                  subtaskInputRef.current?.focus();
+                }
+              }}
+              className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition" type="button" title="Add subtask"
+            >
               <Plus className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
             </button>
             <input
+              ref={subtaskInputRef}
               value={newSubtaskTitle}
               onChange={e => setNewSubtaskTitle(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); } }}
