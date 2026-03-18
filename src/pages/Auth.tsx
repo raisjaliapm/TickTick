@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Circle } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
