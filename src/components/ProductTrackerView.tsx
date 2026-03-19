@@ -479,7 +479,7 @@ export function ProductTrackerView() {
                                 <Card key={item.id} className="shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card">
                                   <CardContent className="p-3 space-y-2">
                                     <p className="text-sm text-foreground font-medium leading-snug">{item.title}</p>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                       <select
                                         value={item.status}
                                         onChange={e => tracker.updateItemStatus(item.id, e.target.value as TrackerItem['status'])}
@@ -489,11 +489,40 @@ export function ProductTrackerView() {
                                           <option key={s.key} value={s.key}>{s.label}</option>
                                         ))}
                                       </select>
-                                      {item.due_date && (
-                                        <span className="text-[10px] font-mono text-muted-foreground">
-                                          {format(new Date(item.due_date), 'MMM d')}
-                                        </span>
-                                      )}
+                                      <Popover>
+                                        <PopoverTrigger asChild>
+                                          <button
+                                            className={cn(
+                                              "flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border border-border hover:border-primary/30 protocol-transition",
+                                              item.due_date ? "text-foreground bg-secondary" : "text-muted-foreground/60 border-dashed"
+                                            )}
+                                          >
+                                            <CalendarIcon className="h-2.5 w-2.5" />
+                                            {item.due_date ? format(new Date(item.due_date), 'MMM d') : 'Due date'}
+                                          </button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                          <Calendar
+                                            mode="single"
+                                            selected={item.due_date ? new Date(item.due_date) : undefined}
+                                            onSelect={(date) => {
+                                              tracker.updateItemDueDate(item.id, date ? formatLocalDate(date) : null);
+                                            }}
+                                            initialFocus
+                                            className={cn("p-3 pointer-events-auto")}
+                                          />
+                                          {item.due_date && (
+                                            <div className="px-3 pb-3">
+                                              <button
+                                                onClick={() => tracker.updateItemDueDate(item.id, null)}
+                                                className="w-full text-xs text-destructive hover:underline"
+                                              >
+                                                Clear due date
+                                              </button>
+                                            </div>
+                                          )}
+                                        </PopoverContent>
+                                      </Popover>
                                       <button
                                         onClick={(e) => { e.stopPropagation(); handleExpandItem(item.id); }}
                                         className={`p-0.5 rounded protocol-transition ${isExpanded ? 'text-primary' : 'text-muted-foreground/50 hover:text-muted-foreground'}`}
