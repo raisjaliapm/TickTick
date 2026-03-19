@@ -44,12 +44,12 @@ const statusItems: { key: TaskStatus; label: string; icon: React.ElementType; co
   { key: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
 ];
 
-export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, categories, stats, onLogoClick }: SidebarNavProps) {
+export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, categories, stats, onLogoClick, className }: SidebarNavProps) {
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <aside className="w-56 md:w-56 shrink-0 border-r border-border bg-sidebar p-4 flex flex-col gap-6 h-screen sticky top-0 overflow-y-auto scrollbar-thin">
+    <aside className={`w-56 md:w-56 shrink-0 bg-sidebar p-4 flex flex-col gap-6 h-screen sticky top-0 overflow-y-auto scrollbar-thin ${className ?? 'border-r border-border'}`}>
       <button onClick={onLogoClick} className="flex items-center gap-2 px-2 pt-2 hover:opacity-80 protocol-transition">
         <Clock className="h-4 w-4 text-primary" />
         <span className="text-base font-display font-medium tracking-tight text-foreground">TickTick</span>
