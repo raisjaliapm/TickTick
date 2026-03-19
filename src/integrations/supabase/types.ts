@@ -133,6 +133,47 @@ export type Database = {
         }
         Relationships: []
       }
+      product_tracker_item_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number
+          file_type: string | null
+          id: string
+          item_id: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number
+          file_type?: string | null
+          id?: string
+          item_id: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string | null
+          id?: string
+          item_id?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_tracker_item_attachments_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "product_tracker_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_tracker_items: {
         Row: {
           created_at: string

@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { Plus, Trash2, ChevronLeft, Package, FolderPlus } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 const statusColumns: { key: TrackerItem['status']; label: string }[] = [
@@ -18,14 +21,88 @@ const priorityColors: Record<string, string> = {
   low: 'bg-priority-low',
 };
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+interface ItemAttachment {
+  id: string;
+  file_name: string;
+  file_size: number;
+  file_type: string | null;
+  storage_path: string;
+  created_at: string;
+}
+
 export function ProductTrackerView() {
   const tracker = useProductTracker();
+  const { user } = useAuth();
   const [showCreateBoard, setShowCreateBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const [newPhaseName, setNewPhaseName] = useState('');
   const [showNewPhase, setShowNewPhase] = useState(false);
   const [addingItemPhaseId, setAddingItemPhaseId] = useState<string | null>(null);
   const [newItemTitle, setNewItemTitle] = useState('');
+  const [newItemPendingFiles, setNewItemPendingFiles] = useState<File[]>([]);
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+  const [itemAttachments, setItemAttachments] = useState<Record<string, ItemAttachment[]>>({});
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const createFileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchItemAttachments = async (itemId: string) => {
+    const { data } = await supabase.from('product_tracker_item_attachments').select('*').eq('item_id', itemId).order('created_at', { ascending: false }) as any;
+    if (data) setItemAttachments(prev => ({ ...prev, [itemId]: data }));
+  };
+
+  const handleExpandItem = (itemId: string) => {
+    if (expandedItemId === itemId) {
+      setExpandedItemId(null);
+    } else {
+      setExpandedItemId(itemId);
+      if (!itemAttachments[itemId]) fetchItemAttachments(itemId);
+    }
+  };
+
+  const handleItemFileUpload = async (files: FileList | null, itemId: string) => {
+    if (!files || !user) return;
+    const oversized = Array.from(files).filter(f => f.size > MAX_FILE_SIZE);
+    if (oversized.length > 0) {
+      toast({ title: 'File too large', description: `Max 100 MB. ${oversized.map(f => f.name).join(', ')} skipped.`, variant: 'destructive' });
+    }
+    const validFiles = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE);
+    if (validFiles.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of validFiles) {
+        const storagePath = `${user.id}/${itemId}/${Date.now()}-${file.name}`;
+        const { error } = await supabase.storage.from('task-attachments').upload(storagePath, file);
+        if (error) { toast({ title: 'Upload failed', description: `${file.name}: ${error.message}`, variant: 'destructive' }); continue; }
+        await supabase.from('product_tracker_item_attachments').insert({
+          item_id: itemId, user_id: user.id, file_name: file.name,
+          file_size: file.size, file_type: file.type || null, storage_path: storagePath,
+        } as any);
+      }
+      await fetchItemAttachments(itemId);
+      toast({ title: 'Files uploaded', description: `${validFiles.length} file(s) uploaded` });
+    } catch { toast({ title: 'Upload error', variant: 'destructive' }); }
+    finally { setUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
+  };
+
+  const deleteItemAttachment = async (att: ItemAttachment, itemId: string) => {
+    await supabase.storage.from('task-attachments').remove([att.storage_path]);
+    await supabase.from('product_tracker_item_attachments').delete().eq('id', att.id);
+    setItemAttachments(prev => ({ ...prev, [itemId]: (prev[itemId] || []).filter(a => a.id !== att.id) }));
+  };
+
+  const downloadItemAttachment = async (att: ItemAttachment) => {
+    const { data } = await supabase.storage.from('task-attachments').createSignedUrl(att.storage_path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+  };
 
   const handleAddBoard = () => {
     if (newBoardName.trim()) {
@@ -43,12 +120,51 @@ export function ProductTrackerView() {
     }
   };
 
-  const handleAddItem = (phaseId: string) => {
+  const handleAddItem = async (phaseId: string) => {
     if (newItemTitle.trim()) {
       tracker.addItem(phaseId, newItemTitle.trim());
+      
+      // If there are pending files, upload them after a short delay to let the item be created
+      if (newItemPendingFiles.length > 0 && user) {
+        // We need to find the newly created item - fetch items and find by title
+        setTimeout(async () => {
+          const { data: phaseData } = await supabase.from('product_tracker_phases').select('id').eq('board_id', tracker.activeBoardId!).eq('user_id', user.id) as any;
+          if (phaseData) {
+            const phaseIds = phaseData.map((p: any) => p.id);
+            const { data: allItems } = await supabase.from('product_tracker_items').select('*').in('phase_id', phaseIds).eq('user_id', user.id).order('created_at', { ascending: false }) as any;
+            if (allItems && allItems.length > 0) {
+              const newItem = allItems[0]; // Most recent
+              for (const file of newItemPendingFiles) {
+                if (file.size > MAX_FILE_SIZE) continue;
+                const storagePath = `${user.id}/${newItem.id}/${Date.now()}-${file.name}`;
+                const { error } = await supabase.storage.from('task-attachments').upload(storagePath, file);
+                if (!error) {
+                  await supabase.from('product_tracker_item_attachments').insert({
+                    item_id: newItem.id, user_id: user.id, file_name: file.name,
+                    file_size: file.size, file_type: file.type || null, storage_path: storagePath,
+                  } as any);
+                }
+              }
+            }
+          }
+        }, 500);
+      }
+      
       setNewItemTitle('');
+      setNewItemPendingFiles([]);
       setAddingItemPhaseId(null);
     }
+  };
+
+  const handleCreateFilesSelected = (files: FileList | null) => {
+    if (!files) return;
+    const oversized = Array.from(files).filter(f => f.size > MAX_FILE_SIZE);
+    if (oversized.length > 0) {
+      toast({ title: 'File too large', description: `Max 100 MB. ${oversized.map(f => f.name).join(', ')} skipped.`, variant: 'destructive' });
+    }
+    const valid = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE);
+    setNewItemPendingFiles(prev => [...prev, ...valid]);
+    if (createFileInputRef.current) createFileInputRef.current.value = '';
   };
 
   if (tracker.loading) {
@@ -260,18 +376,37 @@ export function ProductTrackerView() {
                   {/* Inline add item */}
                   {addingItemPhaseId === phase.id && (
                     <Card className="mb-4 border-primary/30">
-                      <CardContent className="p-3">
+                      <CardContent className="p-3 space-y-2">
                         <div className="flex gap-2">
                           <input
                             type="text"
                             value={newItemTitle}
                             onChange={e => setNewItemTitle(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleAddItem(phase.id); if (e.key === 'Escape') setAddingItemPhaseId(null); }}
+                            onKeyDown={e => { if (e.key === 'Enter') handleAddItem(phase.id); if (e.key === 'Escape') { setAddingItemPhaseId(null); setNewItemPendingFiles([]); } }}
                             placeholder="Task title..."
                             className="flex-1 text-sm bg-secondary border border-border rounded-lg px-3 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                             autoFocus
                           />
                           <button onClick={() => handleAddItem(phase.id)} className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-primary/90 protocol-transition">Add</button>
+                        </div>
+                        {/* Pending files */}
+                        {newItemPendingFiles.map((file, idx) => (
+                          <div key={idx} className="flex items-center gap-2 p-1.5 rounded bg-secondary/50 border border-border">
+                            <FileIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <span className="text-[10px] text-foreground truncate flex-1">{file.name}</span>
+                            <span className="text-[10px] text-muted-foreground">{formatFileSize(file.size)}</span>
+                            <button onClick={() => setNewItemPendingFiles(prev => prev.filter((_, i) => i !== idx))} className="p-0.5 text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
+                          </div>
+                        ))}
+                        {/* File upload button */}
+                        <div>
+                          <input ref={createFileInputRef} type="file" multiple onChange={e => handleCreateFilesSelected(e.target.files)} className="hidden" />
+                          <button
+                            onClick={() => createFileInputRef.current?.click()}
+                            className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground rounded border border-dashed border-border hover:border-primary/30 protocol-transition"
+                          >
+                            <Paperclip className="h-3 w-3" /> Attach files
+                          </button>
                         </div>
                       </CardContent>
                     </Card>
@@ -324,7 +459,10 @@ export function ProductTrackerView() {
                                 <span className="text-[10px] text-muted-foreground/60">Empty</span>
                               </div>
                             ) : (
-                              colItems.map(item => (
+                              colItems.map(item => {
+                                const atts = itemAttachments[item.id] || [];
+                                const isExpanded = expandedItemId === item.id;
+                                return (
                                 <Card key={item.id} className="shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card">
                                   <CardContent className="p-3 space-y-2">
                                     <p className="text-sm text-foreground font-medium leading-snug">{item.title}</p>
@@ -343,11 +481,51 @@ export function ProductTrackerView() {
                                           {format(new Date(item.due_date), 'MMM d')}
                                         </span>
                                       )}
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); handleExpandItem(item.id); }}
+                                        className={`p-0.5 rounded protocol-transition ${isExpanded ? 'text-primary' : 'text-muted-foreground/50 hover:text-muted-foreground'}`}
+                                      >
+                                        <Paperclip className="h-3 w-3" />
+                                      </button>
                                       <div className={`h-2 w-2 rounded-full ml-auto ${priorityColors[item.priority] || priorityColors.medium}`} />
                                     </div>
+
+                                    {/* Expanded attachment section */}
+                                    {isExpanded && (
+                                      <div className="border-t border-border pt-2 space-y-1.5">
+                                        {atts.map(att => (
+                                          <div key={att.id} className="flex items-center gap-1.5 group/att">
+                                            <FileIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+                                            <button onClick={() => downloadItemAttachment(att)} className="text-[10px] text-primary hover:underline truncate flex-1 text-left">{att.file_name}</button>
+                                            <span className="text-[9px] text-muted-foreground">{formatFileSize(att.file_size)}</span>
+                                            <button onClick={() => deleteItemAttachment(att, item.id)} className="opacity-0 group-hover/att:opacity-100 p-0.5 text-muted-foreground hover:text-destructive">
+                                              <Trash2 className="h-2.5 w-2.5" />
+                                            </button>
+                                          </div>
+                                        ))}
+                                        <div>
+                                          <input
+                                            type="file"
+                                            multiple
+                                            onChange={e => { handleItemFileUpload(e.target.files, item.id); }}
+                                            className="hidden"
+                                            id={`file-upload-${item.id}`}
+                                          />
+                                          <button
+                                            onClick={() => document.getElementById(`file-upload-${item.id}`)?.click()}
+                                            disabled={uploading}
+                                            className="flex items-center gap-1 w-full px-2 py-1 text-[10px] rounded border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/30 protocol-transition disabled:opacity-50"
+                                          >
+                                            <Upload className="h-3 w-3" />
+                                            {uploading ? 'Uploading...' : 'Upload files (max 100 MB)'}
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
                                   </CardContent>
                                 </Card>
-                              ))
+                                );
+                              })
                             )}
                           </CardContent>
                         </Card>
