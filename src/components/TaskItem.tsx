@@ -592,10 +592,13 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
             );
           })()}
           {subtasks.length > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
+            <button
+              onClick={() => setShowSubtasks(!showSubtasks)}
+              className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0 hover:bg-secondary/80 protocol-transition"
+            >
               <ListChecks className="h-2.5 w-2.5" />
               {subtasks.filter(s => s.is_completed).length}/{subtasks.length}
-            </span>
+            </button>
           )}
           {taskUrls.length > 0 && (
             <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
