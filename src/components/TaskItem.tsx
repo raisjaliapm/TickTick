@@ -54,6 +54,7 @@ const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Week
 
 export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAddCategory, onUpdateStatus }: TaskItemProps) {
   const [isEditing, setIsEditing] = React.useState(false);
+  const [showSubtasks, setShowSubtasks] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(task.title);
   const [editDescription, setEditDescription] = React.useState(task.description || '');
   const [editPriority, setEditPriority] = React.useState(task.priority);
