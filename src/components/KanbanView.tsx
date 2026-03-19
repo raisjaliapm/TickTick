@@ -51,7 +51,6 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only clear if leaving the column entirely
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
       setDragOverColumn(null);
     }
@@ -140,7 +139,7 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
                           </div>
                         </div>
 
-                        {/* Mobile: status change buttons */}
+                        {/* Mobile: inline status selector */}
                         {isMobile && (
                           <select
                             value={task.status}
@@ -161,6 +160,7 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
                 )}
               </div>
             )}
+          </div>
         );
       })}
     </div>
