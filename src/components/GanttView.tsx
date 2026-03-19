@@ -359,7 +359,7 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
                                 backgroundColor: task.status === 'completed' ? 'hsl(var(--status-completed))' : projectColor,
                                 opacity,
                               }}
-                              title={`${task.title}\n${task.due_date ? format(new Date(task.due_date), 'MMM d, yyyy') : ''}\nStatus: ${task.status?.replace('_', ' ')}\nPriority: ${task.priority}`}
+                              title={`${task.title}${(task as any).start_date ? `\nStart: ${format(new Date((task as any).start_date), 'MMM d, yyyy')}` : ''}${(task as any).end_date ? `\nEnd: ${format(new Date((task as any).end_date), 'MMM d, yyyy')}` : ''}${task.due_date ? `\nDue: ${format(new Date(task.due_date), 'MMM d, yyyy')}` : ''}\nStatus: ${task.status?.replace('_', ' ')}\nPriority: ${task.priority}`}
                             >
                               {/* Progress fill for in-progress tasks */}
                               {task.status === 'in_progress' && (
