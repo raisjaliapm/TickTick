@@ -61,7 +61,7 @@ const statusItems: { key: TaskStatus; label: string; icon: React.ElementType; co
 export function SidebarNav({ 
   viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, 
   categories, stats, onDeleteCategory, onLogoClick, className,
-  projects = [], activeProjectId, onSelectProject, onAddProject, onDeleteProject, onDashboardClick
+  projects = [], activeProjectId, onSelectProject, onAddProject, onDeleteProject, onDashboardClick, onProductTrackerClick
 }: SidebarNavProps) {
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
