@@ -16,6 +16,7 @@ import { GanttView } from '@/components/GanttView';
 import { GoogleCalendarAutoSync } from '@/components/GoogleCalendarAutoSync';
 import { AIChatPanel } from '@/components/AIChatPanel';
 import { DashboardView } from '@/components/DashboardView';
+import { ProductTrackerView } from '@/components/ProductTrackerView';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import type { Task, TaskStatus } from '@/hooks/useTaskStore';
