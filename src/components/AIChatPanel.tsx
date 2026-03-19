@@ -143,7 +143,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
               <Sparkles className="h-7 w-7 text-primary" />
             </div>
             <h2 className="text-xl font-semibold text-foreground mb-2">
-              ProjectHub AI
+              PTT AI
             </h2>
             <p className="text-muted-foreground text-sm max-w-md mb-8">
               Your intelligent project assistant. Create tasks, plan sprints, break down projects, and boost your productivity — all through conversation.
