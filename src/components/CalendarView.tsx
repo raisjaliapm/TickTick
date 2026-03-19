@@ -24,8 +24,7 @@ interface CalendarViewProps {
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
   onStopRecurrence?: (id: string, endDate: Date) => void;
-  onAdd?: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus, extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[] }) => void;
-  onAddCategory?: (name: string) => Promise<void>;
+  onCreateTask?: (date: Date, hour?: number) => void;
   mode?: 'month' | 'week';
 }
 
