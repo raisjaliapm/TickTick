@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Command, PanelLeftClose, PanelLeftOpen, Sparkles, ListTodo, Menu, Search } from 'lucide-react';
+import { Command, PanelLeftClose, PanelLeftOpen, Sparkles, ListTodo, Menu, Search, Plus } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { format } from 'date-fns';
 import { useTaskStore } from '@/hooks/useTaskStore';
 import { useProjectStore } from '@/hooks/useProjectStore';
 import { SidebarNav } from '@/components/SidebarNav';
-import { TaskInput } from '@/components/TaskInput';
+import { TaskModal, type TaskModalData } from '@/components/TaskModal';
 import { TaskList } from '@/components/TaskList';
 import { CommandPalette } from '@/components/CommandPalette';
 import { CalendarView } from '@/components/CalendarView';
@@ -18,6 +18,8 @@ import { AIChatPanel } from '@/components/AIChatPanel';
 import { DashboardView } from '@/components/DashboardView';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import type { Task, TaskStatus } from '@/hooks/useTaskStore';
+import { formatLocalDateTime } from '@/lib/dateUtils';
 
 const viewLabels: Record<string, string> = {
   all: 'All Tasks',
@@ -40,6 +42,85 @@ const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // Task modal state
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [taskModalDefaultDate, setTaskModalDefaultDate] = useState<Date | null>(null);
+  const [taskModalDefaultHour, setTaskModalDefaultHour] = useState<number | null>(null);
+
+  const handleCreateTask = () => {
+    setEditingTask(null);
+    setTaskModalDefaultDate(null);
+    setTaskModalDefaultHour(null);
+    setTaskModalOpen(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setTaskModalDefaultDate(null);
+    setTaskModalDefaultHour(null);
+    setTaskModalOpen(true);
+  };
+
+  const handleCreateTaskOnDate = (date: Date, hour?: number) => {
+    setEditingTask(null);
+    setTaskModalDefaultDate(date);
+    setTaskModalDefaultHour(hour ?? null);
+    setTaskModalOpen(true);
+  };
+
+  const handleTaskModalSave = (data: TaskModalData) => {
+    if (editingTask) {
+      // Edit mode
+      store.updateTask(editingTask.id, {
+        title: data.title,
+        description: data.description || null,
+        priority: data.priority,
+        status: data.status,
+        completed_at: data.status === 'completed' ? new Date().toISOString() : null,
+        due_date: data.dueDate ? (data.dueDate.includes('T') ? formatLocalDateTime(new Date(data.dueDate)) : formatLocalDateTime(new Date(data.dueDate + 'T00:00:00'))) : null,
+        category_id: data.categoryId,
+        recurrence: data.recurrence,
+        notes: data.notes,
+        urls: data.urls,
+        project_id: data.projectId,
+      } as any);
+      // Add new subtasks if any
+      if (data.subtasks.length > 0) {
+        import('@/integrations/supabase/client').then(({ supabase }) => {
+          supabase.auth.getUser().then(({ data: userData }) => {
+            if (userData.user) {
+              const rows = data.subtasks.map((st, i) => ({
+                task_id: editingTask.id,
+                user_id: userData.user!.id,
+                title: st,
+                sort_order: i + 100,
+              }));
+              supabase.from('subtasks').insert(rows as any);
+            }
+          });
+        });
+      }
+    } else {
+      // Create mode
+      store.addTask(
+        data.title,
+        data.priority,
+        data.dueDate,
+        data.categoryId,
+        data.recurrence,
+        data.status,
+        {
+          description: data.description || undefined,
+          notes: data.notes || undefined,
+          urls: data.urls.length ? data.urls : undefined,
+          subtasks: data.subtasks.length ? data.subtasks : undefined,
+          projectId: data.projectId,
+        }
+      );
+    }
+  };
 
   // Filter tasks by active project
   const filteredByProject = projectStore.activeProjectId
@@ -205,8 +286,15 @@ const Index = () => {
                   )}
                 </h1>
 
-                {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && store.viewFilter !== 'kanban' && store.viewFilter !== 'gantt' && (
-                  <TaskInput onAdd={(title, priority, dueDate, categoryId, recurrence, status, extras) => store.addTask(title, priority, dueDate, categoryId, recurrence, status, { ...extras, projectId: projectStore.activeProjectId })} categories={store.categories} onAddCategory={store.addCategory} />
+                {store.viewFilter !== 'completed' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && (
+                  <button
+                    onClick={handleCreateTask}
+                    className="mb-4 flex items-center gap-2 w-full px-4 py-3 rounded-xl border border-dashed border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60 hover:border-primary/30 protocol-transition active:scale-[0.99]"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="text-sm">Add a task...</span>
+                    <kbd className="hidden sm:inline ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">⌘N</kbd>
+                  </button>
                 )}
 
                 {store.viewFilter === 'weekly-reports' ? (
@@ -218,9 +306,9 @@ const Index = () => {
                 ) : store.viewFilter === 'kanban' ? (
                   <KanbanView tasks={allTasksFilteredByProject} categories={store.categories} onUpdateStatus={store.updateTaskStatus} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
                 ) : store.viewFilter === 'calendar' ? (
-                  <CalendarView tasks={allTasksFilteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAdd={store.addTask} onAddCategory={store.addCategory} />
+                  <CalendarView tasks={allTasksFilteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onCreateTask={handleCreateTaskOnDate} />
                 ) : (
-                  <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} />
+                  <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} onEditTask={handleEditTask} />
                 )}
               </div>
             </div>

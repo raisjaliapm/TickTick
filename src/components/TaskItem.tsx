@@ -27,6 +27,7 @@ interface TaskItemProps {
   onStopRecurrence?: (id: string, endDate: Date) => void;
   onAddCategory?: (name: string) => Promise<void>;
   onUpdateStatus?: (id: string, status: TaskStatus) => void;
+  onEditTask?: (task: Task) => void;
 }
 
 const statusOptions: { value: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
@@ -52,7 +53,7 @@ const recurrenceOptions: { value: Recurrence; label: string }[] = [
 ];
 const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 
-export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAddCategory, onUpdateStatus }: TaskItemProps) {
+export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAddCategory, onUpdateStatus, onEditTask }: TaskItemProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [showSubtasks, setShowSubtasks] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(task.title);

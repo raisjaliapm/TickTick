@@ -24,8 +24,7 @@ interface CalendarViewProps {
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
   onStopRecurrence?: (id: string, endDate: Date) => void;
-  onAdd?: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus, extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[] }) => void;
-  onAddCategory?: (name: string) => Promise<void>;
+  onCreateTask?: (date: Date, hour?: number) => void;
   mode?: 'month' | 'week';
 }
 
@@ -387,21 +386,14 @@ function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete, onSt
   );
 }
 
-export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAdd, onAddCategory, mode: initialMode = 'month' }: CalendarViewProps) {
+export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onCreateTask, mode: initialMode = 'month' }: CalendarViewProps) {
   const [mode, setMode] = useState<'month' | 'week'>(initialMode);
   const [currentDate, setCurrentDate] = useState(new Date());
   const isMobile = useIsMobile();
 
-  // Add-task dialog state
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [addDialogDate, setAddDialogDate] = useState<Date>(new Date());
-  const [addDialogHour, setAddDialogHour] = useState<number | undefined>(undefined);
-
   const openAddDialog = useCallback((date: Date, hour?: number) => {
-    setAddDialogDate(date);
-    setAddDialogHour(hour);
-    setAddDialogOpen(true);
-  }, []);
+    if (onCreateTask) onCreateTask(date, hour);
+  }, [onCreateTask]);
 
   // ---------- MONTH helpers ----------
   const monthDays = useMemo(() => {
@@ -491,14 +483,14 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
               return (
                 <div
                   key={key}
-                  onClick={() => onAdd && openAddDialog(day)}
-                  className={`min-h-[56px] sm:min-h-[80px] p-1 sm:p-1.5 bg-background ${!inMonth ? 'opacity-30' : ''} ${onAdd ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
+                  onClick={() => onCreateTask && openAddDialog(day)}
+                  className={`min-h-[56px] sm:min-h-[80px] p-1 sm:p-1.5 bg-background ${!inMonth ? 'opacity-30' : ''} ${onCreateTask ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
                 >
                   <div className="flex items-center justify-between">
                     <div className={`text-[10px] sm:text-[11px] font-mono mb-0.5 sm:mb-1 ${today ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
                       {format(day, 'd')}
                     </div>
-                    {onAdd && (
+                    {onCreateTask && (
                       <Plus className="h-3 w-3 text-muted-foreground/30 hover:text-primary protocol-transition" />
                     )}
                   </div>
@@ -530,8 +522,8 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                 return (
                   <div key={key} className={`rounded-lg border border-border overflow-hidden ${today ? 'ring-1 ring-primary/30' : ''}`}>
                     <div
-                      onClick={() => onAdd && openAddDialog(day)}
-                      className={`px-3 py-2 flex items-center justify-between ${today ? 'bg-primary/5' : 'bg-secondary/50'} ${onAdd ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
+                      onClick={() => onCreateTask && openAddDialog(day)}
+                      className={`px-3 py-2 flex items-center justify-between ${today ? 'bg-primary/5' : 'bg-secondary/50'} ${onCreateTask ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
                     >
                       <div>
                         <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{format(day, 'EEE')}</span>
@@ -539,7 +531,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                           {format(day, 'MMM d')}
                         </span>
                       </div>
-                      {onAdd && <Plus className="h-4 w-4 text-muted-foreground/40" />}
+                      {onCreateTask && <Plus className="h-4 w-4 text-muted-foreground/40" />}
                     </div>
                     <div className="p-2 space-y-0.5 min-h-[40px]">
                       {dayTasks.length === 0 && (
@@ -611,8 +603,8 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                       return (
                         <div
                           key={`${key}-${hour}`}
-                          onClick={() => onAdd && openAddDialog(day, hour)}
-                          className={`min-h-[48px] border-r border-border last:border-r-0 p-0.5 ${today ? 'bg-primary/[0.02]' : ''} ${onAdd ? 'cursor-pointer hover:bg-accent/20 protocol-transition' : ''}`}
+                          onClick={() => onCreateTask && openAddDialog(day, hour)}
+                          className={`min-h-[48px] border-r border-border last:border-r-0 p-0.5 ${today ? 'bg-primary/[0.02]' : ''} ${onCreateTask ? 'cursor-pointer hover:bg-accent/20 protocol-transition' : ''}`}
                         >
                           {hourTasks.map(task => (
                             <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
@@ -649,18 +641,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
         </>
       )}
 
-      {/* Add Task Dialog */}
-      {onAdd && (
-        <CalendarAddTaskDialog
-          open={addDialogOpen}
-          onOpenChange={setAddDialogOpen}
-          date={addDialogDate}
-          hour={addDialogHour}
-          categories={categories}
-          onAdd={onAdd}
-          onAddCategory={onAddCategory}
-        />
-      )}
+      {/* Task creation now handled by parent TaskModal */}
     </div>
     </DeleteAllWrapper>
   );

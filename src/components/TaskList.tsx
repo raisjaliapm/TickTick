@@ -15,9 +15,10 @@ interface TaskListProps {
   onStopRecurrence?: (id: string, endDate: Date) => void;
   onAddCategory?: (name: string) => Promise<void>;
   onUpdateStatus?: (id: string, status: TaskStatus) => void;
+  onEditTask?: (task: Task) => void;
 }
 
-export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDeleteAll, onStopRecurrence, onAddCategory, onUpdateStatus }: TaskListProps) {
+export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDeleteAll, onStopRecurrence, onAddCategory, onUpdateStatus, onEditTask }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="py-20 text-center border border-dashed border-border rounded-2xl">
@@ -54,7 +55,7 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDe
       <div className="space-y-0.5">
         <AnimatePresence mode="popLayout">
           {tasks.map(task => (
-            <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} onAddCategory={onAddCategory} onUpdateStatus={onUpdateStatus} />
+            <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} onAddCategory={onAddCategory} onUpdateStatus={onUpdateStatus} onEditTask={onEditTask} />
           ))}
         </AnimatePresence>
       </div>
