@@ -92,7 +92,7 @@ export function useTaskStore() {
     categoryId: string | null = null,
     recurrence: string | null = null,
     status: TaskStatus = 'not_started',
-    extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[]; projectId?: string | null }
+    extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[]; projectId?: string | null; startDate?: string | null; endDate?: string | null }
   ) => {
     if (!user) return;
     let formattedDueDate: string | null = null;
