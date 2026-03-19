@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { TrackerBoard, TrackerItem, TrackerPhase } from '@/hooks/useProductTracker';
 import * as XLSX from 'xlsx';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
 interface ProductTrackerDashboardProps {
   boards: TrackerBoard[];
