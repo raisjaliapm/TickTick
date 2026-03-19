@@ -448,6 +448,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
   const dayHeaders = isMobile ? dayHeadersShort : dayHeadersFull;
 
   return (
+    <DeleteAllWrapper taskCount={tasks.length} onDeleteAll={() => tasks.forEach(t => onDelete(t.id))}>
     <div className="overflow-x-auto">
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-4 min-w-0">
