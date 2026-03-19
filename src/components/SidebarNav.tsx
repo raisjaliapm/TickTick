@@ -1,4 +1,4 @@
-import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause, Columns3, Sun, Moon } from 'lucide-react';
+import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause, Columns3, Sun, Moon, X } from 'lucide-react';
 import { GoogleCalendarButton } from '@/components/GoogleCalendarButton';
 import type { ViewFilter, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +15,7 @@ interface SidebarNavProps {
   setStatusFilter: (s: TaskStatus | null) => void;
   categories: Category[];
   stats: { total: number; today: number; completed: number; overdue: number; notStarted: number; inProgress: number; onHold: number };
+  onDeleteCategory?: (id: string) => void;
   onLogoClick?: () => void;
   className?: string;
 }
