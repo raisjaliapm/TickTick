@@ -276,9 +276,9 @@ const Index = () => {
                 <span className="hidden sm:inline">Overview</span>
               </button>
               <button
-                onClick={() => setMainView('ai')}
+                onClick={() => setMainView(mainView === 'product-tracker' || mainView === 'product-tracker-ai' ? 'product-tracker-ai' : 'ai')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium protocol-transition ${
-                  mainView === 'ai' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  mainView === 'ai' || mainView === 'product-tracker-ai' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Sparkles className="h-3.5 w-3.5" />
@@ -292,6 +292,15 @@ const Index = () => {
               >
                 <ListTodo className="h-3.5 w-3.5" />
                 <span>Tasks</span>
+              </button>
+              <button
+                onClick={() => setMainView('product-tracker')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium protocol-transition ${
+                  mainView === 'product-tracker' || mainView === 'product-tracker-ai' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Package className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Tracker</span>
               </button>
             </div>
 
