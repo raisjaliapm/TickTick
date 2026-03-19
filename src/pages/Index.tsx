@@ -37,7 +37,7 @@ const viewLabels: Record<string, string> = {
   'weekly-reports': 'Weekly Reports',
 };
 
-type MainView = 'dashboard' | 'ai' | 'tasks';
+type MainView = 'dashboard' | 'ai' | 'tasks' | 'product-tracker';
 
 const Index = () => {
   const store = useTaskStore();
