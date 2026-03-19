@@ -551,10 +551,33 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
             </span>
           )}
           {taskRecurrence && (
-            <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">
-              <Repeat className="h-2.5 w-2.5" />
-              {recurrenceLabels[taskRecurrence]}
-            </span>
+            <Popover open={endRecurrenceOpen} onOpenChange={setEndRecurrenceOpen}>
+              <PopoverTrigger asChild>
+                <button className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0 hover:bg-destructive/10 hover:text-destructive protocol-transition" title="Click to set end date for recurrence">
+                  <Repeat className="h-2.5 w-2.5" />
+                  {recurrenceLabels[taskRecurrence]}
+                  <CalendarX2 className="h-2.5 w-2.5 ml-0.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
+                <div className="p-2 border-b border-border">
+                  <span className="text-[11px] font-mono text-muted-foreground">End recurrence after:</span>
+                </div>
+                <Calendar
+                  mode="single"
+                  selected={undefined}
+                  onSelect={(date) => {
+                    if (date && onStopRecurrence) {
+                      onStopRecurrence(task.id, date);
+                      setEndRecurrenceOpen(false);
+                    }
+                  }}
+                  disabled={(date) => date < new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
           )}
           {(() => {
             const s = statusOptions.find(opt => opt.value === task.status) || statusOptions[0];
