@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User, Copy } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User, Copy, Pencil } from 'lucide-react';
 import { format, isPast, startOfDay, differenceInDays } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ProductTrackerDashboard } from '@/components/ProductTrackerDashboard';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { TrackerItemModal } from '@/components/TrackerItemModal';
 import { cn } from '@/lib/utils';
 import { formatLocalDate, parseLocalDate } from '@/lib/dateUtils';
 
