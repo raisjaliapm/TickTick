@@ -39,6 +39,8 @@ export interface TaskModalData {
   priority: Priority;
   status: TaskStatus;
   dueDate: string | null;
+  startDate: string | null;
+  endDate: string | null;
   categoryId: string | null;
   recurrence: Recurrence;
   notes: string;
