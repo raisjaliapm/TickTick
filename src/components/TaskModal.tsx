@@ -272,6 +272,8 @@ export function TaskModal({
       priority,
       status,
       dueDate: finalDueDate,
+      startDate: startDate ? format(startDate, 'yyyy-MM-dd') : null,
+      endDate: endDate ? format(endDate, 'yyyy-MM-dd') : null,
       categoryId,
       recurrence,
       notes: notes.trim(),
