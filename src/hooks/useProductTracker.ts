@@ -107,6 +107,11 @@ export function useProductTracker() {
     await fetchPhases(boardId);
   }, [user, phases.length, fetchPhases]);
 
+  const renamePhase = useCallback(async (phaseId: string, name: string) => {
+    await supabase.from('product_tracker_phases').update({ name } as any).eq('id', phaseId);
+    if (activeBoardId) await fetchPhases(activeBoardId);
+  }, [activeBoardId, fetchPhases]);
+
   const deletePhase = useCallback(async (phaseId: string) => {
     await supabase.from('product_tracker_phases').delete().eq('id', phaseId);
     if (activeBoardId) {
@@ -174,6 +179,6 @@ export function useProductTracker() {
 
   return {
     boards, phases, items, activeBoard, activeBoardId, setActiveBoardId, loading,
-    addBoard, deleteBoard, addPhase, deletePhase, addItem, updateItem, updateItemStatus, updateItemDueDate, updateItemAssignee, deleteItem, duplicateItem,
+    addBoard, deleteBoard, addPhase, renamePhase, deletePhase, addItem, updateItem, updateItemStatus, updateItemDueDate, updateItemAssignee, deleteItem, duplicateItem,
   };
 }

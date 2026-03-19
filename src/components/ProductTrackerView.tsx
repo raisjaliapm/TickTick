@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User, Copy, Pencil } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User, Copy, Pencil, Check } from 'lucide-react';
 import { format, isPast, startOfDay, differenceInDays } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
 import { useAuth } from '@/contexts/AuthContext';
@@ -73,6 +73,8 @@ export function ProductTrackerView() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [modalPhaseId, setModalPhaseId] = useState<string | null>(null);
   const [modalItem, setModalItem] = useState<TrackerItem | null>(null);
+  const [editingPhaseId, setEditingPhaseId] = useState<string | null>(null);
+  const [editingPhaseName, setEditingPhaseName] = useState('');
 
   const openCreateModal = (phaseId: string) => {
     setModalPhaseId(phaseId);
@@ -396,7 +398,43 @@ export function ProductTrackerView() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <CardTitle className="text-base">{phase.name}</CardTitle>
+                      {editingPhaseId === phase.id ? (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={editingPhaseName}
+                            onChange={e => setEditingPhaseName(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && editingPhaseName.trim()) {
+                                tracker.renamePhase(phase.id, editingPhaseName.trim());
+                                setEditingPhaseId(null);
+                              }
+                              if (e.key === 'Escape') setEditingPhaseId(null);
+                            }}
+                            className="text-base font-semibold bg-secondary border border-border rounded-md px-2 py-0.5 text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-40"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => {
+                              if (editingPhaseName.trim()) {
+                                tracker.renamePhase(phase.id, editingPhaseName.trim());
+                                setEditingPhaseId(null);
+                              }
+                            }}
+                            className="p-1 rounded-md text-primary hover:bg-primary/10 protocol-transition"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setEditingPhaseId(null)}
+                            className="p-1 rounded-md text-muted-foreground hover:bg-accent protocol-transition"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <CardTitle className="text-base">{phase.name}</CardTitle>
+                      )}
                       {totalItems > 0 && (
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
                           {doneItems}/{totalItems} done
@@ -412,8 +450,20 @@ export function ProductTrackerView() {
                         Task
                       </button>
                       <button
-                        onClick={() => tracker.deletePhase(phase.id)}
+                        onClick={() => { setEditingPhaseId(phase.id); setEditingPhaseName(phase.name); }}
+                        className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-accent protocol-transition"
+                        title="Rename phase"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete phase "${phase.name}" and all its items?`)) {
+                            tracker.deletePhase(phase.id);
+                          }
+                        }}
                         className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition"
+                        title="Delete phase"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
