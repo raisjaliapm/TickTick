@@ -30,6 +30,9 @@ interface SidebarNavProps {
 
 const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] = [
   { key: 'all', label: 'All Tasks', icon: Inbox },
+  { key: 'active', label: 'Active Tasks', icon: ListTodo },
+  { key: 'in_progress_view', label: 'In Progress', icon: Clock },
+  { key: 'overdue', label: 'Overdue', icon: AlertTriangle },
   { key: 'today', label: 'Today', icon: CalendarDays },
   { key: 'upcoming', label: 'Upcoming', icon: ListTodo },
   { key: 'completed', label: 'Completed', icon: CheckCircle2 },
