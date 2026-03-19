@@ -130,7 +130,8 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
   }, [input]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-3 md:p-6">
+      <div className="flex-1 flex flex-col rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       {/* Messages area */}
       <div
         ref={scrollRef}
@@ -143,10 +144,10 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
               <Sparkles className="h-7 w-7 text-primary" />
             </div>
             <h2 className="text-xl font-semibold text-foreground mb-2">
-              ProjectHub AI
+              PTT AI
             </h2>
             <p className="text-muted-foreground text-sm max-w-md mb-8">
-              Your intelligent project assistant. Create tasks, plan sprints, break down projects, and boost your productivity — all through conversation.
+              Your intelligent PTT assistant. Create tasks, plan sprints, break down projects, and boost your productivity — all through conversation.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
@@ -267,9 +268,10 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
             </button>
           </div>
           <p className="text-[10px] font-mono text-muted-foreground/40 text-center mt-2">
-            ProjectHub AI can create, update & manage your tasks • Press Enter to send
+            PTT AI can create, update &amp; manage your tasks • Press Enter to send
           </p>
         </div>
+      </div>
       </div>
     </div>
   );

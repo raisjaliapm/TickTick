@@ -142,7 +142,7 @@ const Index = () => {
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <Sparkles className="h-5 w-5 text-primary animate-pulse" />
           </div>
-          <p className="text-muted-foreground text-sm">Loading ProjectHub...</p>
+          <p className="text-muted-foreground text-sm">Loading PTT...</p>
         </div>
       </div>
     );
@@ -269,51 +269,57 @@ const Index = () => {
         <div className="relative z-10 flex-1 overflow-hidden">
           {mainView === 'dashboard' ? (
             <div className="h-full overflow-y-auto overscroll-contain">
-              <DashboardView
-                tasks={store.allTasks}
-                categories={store.categories}
-                projects={projectStore.projects}
-                onNavigate={(view) => { store.setViewFilter(view as any); setMainView('tasks'); }}
-              />
+              <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+                <div className="rounded-xl border border-border bg-card shadow-sm p-4 md:p-6">
+                  <DashboardView
+                    tasks={store.allTasks}
+                    categories={store.categories}
+                    projects={projectStore.projects}
+                    onNavigate={(view) => { store.setViewFilter(view as any); setMainView('tasks'); }}
+                  />
+                </div>
+              </div>
             </div>
           ) : mainView === 'ai' ? (
             <AIChatPanel onTasksChanged={() => store.fetchTasks?.()} />
           ) : (
             <div className="h-full overflow-y-auto overscroll-contain">
               <div className={`mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 pb-8 sm:pb-6 ${store.viewFilter === 'calendar' || store.viewFilter === 'reports' || store.viewFilter === 'weekly-reports' || store.viewFilter === 'kanban' || store.viewFilter === 'gantt' ? 'max-w-5xl' : 'max-w-2xl'}`}>
-                <h1 className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6">
-                  {viewLabels[store.viewFilter]}
-                  {projectStore.activeProject && (
-                    <span className="text-muted-foreground font-normal text-sm ml-2">
-                      in {projectStore.activeProject.name}
-                    </span>
+                <div className="rounded-xl border border-border bg-card shadow-sm p-4 md:p-6">
+                  <h1 className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6">
+                    {viewLabels[store.viewFilter]}
+                    {projectStore.activeProject && (
+                      <span className="text-muted-foreground font-normal text-sm ml-2">
+                        in {projectStore.activeProject.name}
+                      </span>
+                    )}
+                  </h1>
+
+                  {store.viewFilter !== 'completed' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && (
+                    <button
+                      onClick={handleCreateTask}
+                      className="mb-4 flex items-center gap-2 w-full px-4 py-3 rounded-xl border border-dashed border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60 hover:border-primary/30 protocol-transition active:scale-[0.99]"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="text-sm">Add a task...</span>
+                      <kbd className="hidden sm:inline ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">⌘N</kbd>
+                    </button>
                   )}
-                </h1>
 
-                {store.viewFilter !== 'completed' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && (
-                  <button
-                    onClick={handleCreateTask}
-                    className="mb-4 flex items-center gap-2 w-full px-4 py-3 rounded-xl border border-dashed border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60 hover:border-primary/30 protocol-transition active:scale-[0.99]"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span className="text-sm">Add a task...</span>
-                    <kbd className="hidden sm:inline ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">⌘N</kbd>
-                  </button>
-                )}
-
-                {store.viewFilter === 'weekly-reports' ? (
-                  <WeeklyReportsView />
-                ) : store.viewFilter === 'reports' ? (
-                  <ReportsView tasks={allTasksFilteredByProject} categories={store.categories} />
-                ) : store.viewFilter === 'gantt' ? (
-                  <GanttView tasks={allTasksFilteredByProject} categories={store.categories} projects={projectStore.projects} />
-                ) : store.viewFilter === 'kanban' ? (
-                  <KanbanView tasks={allTasksFilteredByProject} categories={store.categories} onUpdateStatus={store.updateTaskStatus} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
-                ) : store.viewFilter === 'calendar' ? (
-                  <CalendarView tasks={allTasksFilteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onCreateTask={handleCreateTaskOnDate} />
-                ) : (
-                  <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} onEditTask={handleEditTask} />
-                )}
+                  {store.viewFilter === 'weekly-reports' ? (
+                    <WeeklyReportsView />
+                  ) : store.viewFilter === 'reports' ? (
+                    <ReportsView tasks={allTasksFilteredByProject} categories={store.categories} />
+                  ) : store.viewFilter === 'gantt' ? (
+                    <GanttView tasks={allTasksFilteredByProject} categories={store.categories} projects={projectStore.projects} />
+                  ) : store.viewFilter === 'kanban' ? (
+                    <KanbanView tasks={allTasksFilteredByProject} categories={store.categories} onUpdateStatus={store.updateTaskStatus} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
+                  ) : store.viewFilter === 'calendar' ? (
+                    <CalendarView tasks={allTasksFilteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onCreateTask={handleCreateTaskOnDate} />
+                  ) : (
+                    <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} onEditTask={handleEditTask} />
+                  )}
+                </div>
               </div>
             </div>
           )}
