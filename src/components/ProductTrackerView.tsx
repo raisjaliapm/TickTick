@@ -54,6 +54,56 @@ export function ProductTrackerView() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createFileInputRef = useRef<HTMLInputElement>(null);
 
+  const fetchItemAttachments = async (itemId: string) => {
+    const { data } = await supabase.from('product_tracker_item_attachments').select('*').eq('item_id', itemId).order('created_at', { ascending: false }) as any;
+    if (data) setItemAttachments(prev => ({ ...prev, [itemId]: data }));
+  };
+
+  const handleExpandItem = (itemId: string) => {
+    if (expandedItemId === itemId) {
+      setExpandedItemId(null);
+    } else {
+      setExpandedItemId(itemId);
+      if (!itemAttachments[itemId]) fetchItemAttachments(itemId);
+    }
+  };
+
+  const handleItemFileUpload = async (files: FileList | null, itemId: string) => {
+    if (!files || !user) return;
+    const oversized = Array.from(files).filter(f => f.size > MAX_FILE_SIZE);
+    if (oversized.length > 0) {
+      toast({ title: 'File too large', description: `Max 100 MB. ${oversized.map(f => f.name).join(', ')} skipped.`, variant: 'destructive' });
+    }
+    const validFiles = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE);
+    if (validFiles.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of validFiles) {
+        const storagePath = `${user.id}/${itemId}/${Date.now()}-${file.name}`;
+        const { error } = await supabase.storage.from('task-attachments').upload(storagePath, file);
+        if (error) { toast({ title: 'Upload failed', description: `${file.name}: ${error.message}`, variant: 'destructive' }); continue; }
+        await supabase.from('product_tracker_item_attachments').insert({
+          item_id: itemId, user_id: user.id, file_name: file.name,
+          file_size: file.size, file_type: file.type || null, storage_path: storagePath,
+        } as any);
+      }
+      await fetchItemAttachments(itemId);
+      toast({ title: 'Files uploaded', description: `${validFiles.length} file(s) uploaded` });
+    } catch { toast({ title: 'Upload error', variant: 'destructive' }); }
+    finally { setUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
+  };
+
+  const deleteItemAttachment = async (att: ItemAttachment, itemId: string) => {
+    await supabase.storage.from('task-attachments').remove([att.storage_path]);
+    await supabase.from('product_tracker_item_attachments').delete().eq('id', att.id);
+    setItemAttachments(prev => ({ ...prev, [itemId]: (prev[itemId] || []).filter(a => a.id !== att.id) }));
+  };
+
+  const downloadItemAttachment = async (att: ItemAttachment) => {
+    const { data } = await supabase.storage.from('task-attachments').createSignedUrl(att.storage_path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+  };
+
   const handleAddBoard = () => {
     if (newBoardName.trim()) {
       tracker.addBoard(newBoardName.trim());
@@ -70,12 +120,51 @@ export function ProductTrackerView() {
     }
   };
 
-  const handleAddItem = (phaseId: string) => {
+  const handleAddItem = async (phaseId: string) => {
     if (newItemTitle.trim()) {
       tracker.addItem(phaseId, newItemTitle.trim());
+      
+      // If there are pending files, upload them after a short delay to let the item be created
+      if (newItemPendingFiles.length > 0 && user) {
+        // We need to find the newly created item - fetch items and find by title
+        setTimeout(async () => {
+          const { data: phaseData } = await supabase.from('product_tracker_phases').select('id').eq('board_id', tracker.activeBoardId!).eq('user_id', user.id) as any;
+          if (phaseData) {
+            const phaseIds = phaseData.map((p: any) => p.id);
+            const { data: allItems } = await supabase.from('product_tracker_items').select('*').in('phase_id', phaseIds).eq('user_id', user.id).order('created_at', { ascending: false }) as any;
+            if (allItems && allItems.length > 0) {
+              const newItem = allItems[0]; // Most recent
+              for (const file of newItemPendingFiles) {
+                if (file.size > MAX_FILE_SIZE) continue;
+                const storagePath = `${user.id}/${newItem.id}/${Date.now()}-${file.name}`;
+                const { error } = await supabase.storage.from('task-attachments').upload(storagePath, file);
+                if (!error) {
+                  await supabase.from('product_tracker_item_attachments').insert({
+                    item_id: newItem.id, user_id: user.id, file_name: file.name,
+                    file_size: file.size, file_type: file.type || null, storage_path: storagePath,
+                  } as any);
+                }
+              }
+            }
+          }
+        }, 500);
+      }
+      
       setNewItemTitle('');
+      setNewItemPendingFiles([]);
       setAddingItemPhaseId(null);
     }
+  };
+
+  const handleCreateFilesSelected = (files: FileList | null) => {
+    if (!files) return;
+    const oversized = Array.from(files).filter(f => f.size > MAX_FILE_SIZE);
+    if (oversized.length > 0) {
+      toast({ title: 'File too large', description: `Max 100 MB. ${oversized.map(f => f.name).join(', ')} skipped.`, variant: 'destructive' });
+    }
+    const valid = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE);
+    setNewItemPendingFiles(prev => [...prev, ...valid]);
+    if (createFileInputRef.current) createFileInputRef.current.value = '';
   };
 
   if (tracker.loading) {
