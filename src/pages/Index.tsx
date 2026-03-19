@@ -142,7 +142,7 @@ const Index = () => {
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <Sparkles className="h-5 w-5 text-primary animate-pulse" />
           </div>
-          <p className="text-muted-foreground text-sm">Loading ProjectHub...</p>
+          <p className="text-muted-foreground text-sm">Loading PTT...</p>
         </div>
       </div>
     );
