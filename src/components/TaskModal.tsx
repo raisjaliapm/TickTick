@@ -47,6 +47,7 @@ export interface TaskModalData {
   urls: string[];
   subtasks: string[];
   projectId: string | null;
+  pendingFiles?: File[];
 }
 
 const priorityOptions: { value: Priority; label: string; color: string }[] = [
