@@ -638,6 +638,13 @@ export function ProductTrackerView() {
                                       >
                                         <Paperclip className="h-3 w-3" />
                                       </button>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); tracker.duplicateItem(item); }}
+                                        className="p-0.5 rounded text-muted-foreground/50 hover:text-primary protocol-transition"
+                                        title="Duplicate (⌘+D)"
+                                      >
+                                        <Copy className="h-3 w-3" />
+                                      </button>
                                       <div className={`h-2 w-2 rounded-full ml-auto ${priorityColors[item.priority] || priorityColors.medium}`} />
                                     </div>
 
