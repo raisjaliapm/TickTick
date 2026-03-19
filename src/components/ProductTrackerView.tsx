@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User, Copy, Pencil, Check } from 'lucide-react';
 import { format, isPast, startOfDay, differenceInDays } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
@@ -55,7 +55,7 @@ function overdueDays(item: TrackerItem): number {
   return differenceInDays(startOfDay(new Date()), startOfDay(new Date(item.due_date)));
 }
 
-export function ProductTrackerView() {
+export function ProductTrackerView({ onBoardChange }: { onBoardChange?: (boardId: string | null) => void }) {
   const tracker = useProductTracker();
   const { user } = useAuth();
   const [showCreateBoard, setShowCreateBoard] = useState(false);
@@ -77,6 +77,11 @@ export function ProductTrackerView() {
   const [editingPhaseId, setEditingPhaseId] = useState<string | null>(null);
   const [editingPhaseName, setEditingPhaseName] = useState('');
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; description: string; onConfirm: () => void }>({ open: false, title: '', description: '', onConfirm: () => {} });
+
+  // Sync board ID to parent
+  useEffect(() => {
+    onBoardChange?.(tracker.activeBoardId);
+  }, [tracker.activeBoardId, onBoardChange]);
 
   const openCreateModal = (phaseId: string) => {
     setModalPhaseId(phaseId);
