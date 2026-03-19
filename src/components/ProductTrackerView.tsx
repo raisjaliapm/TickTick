@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { useState, useRef, useCallback } from 'react';
+import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle } from 'lucide-react';
+import { format, isPast, startOfDay, differenceInDays } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,6 +43,16 @@ interface ItemAttachment {
   created_at: string;
 }
 
+function isOverdue(item: TrackerItem): boolean {
+  if (!item.due_date || item.status === 'done') return false;
+  return isPast(startOfDay(new Date(new Date(item.due_date).getTime() + 86400000)));
+}
+
+function overdueDays(item: TrackerItem): number {
+  if (!item.due_date) return 0;
+  return differenceInDays(startOfDay(new Date()), startOfDay(new Date(item.due_date)));
+}
+
 export function ProductTrackerView() {
   const tracker = useProductTracker();
   const { user } = useAuth();
@@ -58,6 +68,34 @@ export function ProductTrackerView() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createFileInputRef = useRef<HTMLInputElement>(null);
+  const [dragItemId, setDragItemId] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+
+  const handleDragStart = useCallback((e: React.DragEvent, itemId: string) => {
+    setDragItemId(itemId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', itemId);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, colKey: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverCol(colKey);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverCol(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, colKey: string) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData('text/plain');
+    if (itemId) {
+      tracker.updateItemStatus(itemId, colKey as TrackerItem['status']);
+    }
+    setDragItemId(null);
+    setDragOverCol(null);
+  }, [tracker]);
 
   const fetchItemAttachments = async (itemId: string) => {
     const { data } = await supabase.from('product_tracker_item_attachments').select('*').eq('item_id', itemId).order('created_at', { ascending: false }) as any;
@@ -430,7 +468,16 @@ export function ProductTrackerView() {
                     {statusColumns.map(col => {
                       const colItems = phaseItems.filter(i => i.status === col.key);
                       return (
-                        <Card key={col.key} className="shadow-none bg-secondary/30 border-border/50">
+                        <Card
+                          key={col.key}
+                          className={cn(
+                            "shadow-none bg-secondary/30 border-border/50 protocol-transition",
+                            dragOverCol === `${phase.id}:${col.key}` && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                          )}
+                          onDragOver={e => handleDragOver(e, `${phase.id}:${col.key}`)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={e => handleDrop(e, col.key)}
+                        >
                           <CardHeader className="p-3 pb-2">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-1.5">
@@ -475,10 +522,30 @@ export function ProductTrackerView() {
                               colItems.map(item => {
                                 const atts = itemAttachments[item.id] || [];
                                 const isExpanded = expandedItemId === item.id;
+                                const itemOverdue = isOverdue(item);
+                                const days = overdueDays(item);
                                 return (
-                                <Card key={item.id} className="shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card">
+                                <Card
+                                  key={item.id}
+                                  draggable
+                                  onDragStart={e => handleDragStart(e, item.id)}
+                                  onDragEnd={() => { setDragItemId(null); setDragOverCol(null); }}
+                                  className={cn(
+                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing",
+                                    dragItemId === item.id && "opacity-50",
+                                    itemOverdue && "border-destructive/50 bg-destructive/5"
+                                  )}
+                                >
                                   <CardContent className="p-3 space-y-2">
-                                    <p className="text-sm text-foreground font-medium leading-snug">{item.title}</p>
+                                    <div className="flex items-start gap-2">
+                                      <p className="text-sm text-foreground font-medium leading-snug flex-1">{item.title}</p>
+                                      {itemOverdue && (
+                                        <span className="flex items-center gap-0.5 shrink-0 text-[9px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
+                                          <AlertTriangle className="h-2.5 w-2.5" />
+                                          {days}d overdue
+                                        </span>
+                                      )}
+                                    </div>
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <select
                                         value={item.status}
@@ -493,8 +560,12 @@ export function ProductTrackerView() {
                                         <PopoverTrigger asChild>
                                           <button
                                             className={cn(
-                                              "flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border border-border hover:border-primary/30 protocol-transition",
-                                              item.due_date ? "text-foreground bg-secondary" : "text-muted-foreground/60 border-dashed"
+                                              "flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border hover:border-primary/30 protocol-transition",
+                                              itemOverdue
+                                                ? "text-destructive bg-destructive/10 border-destructive/30"
+                                                : item.due_date
+                                                  ? "text-foreground bg-secondary border-border"
+                                                  : "text-muted-foreground/60 border-dashed border-border"
                                             )}
                                           >
                                             <CalendarIcon className="h-2.5 w-2.5" />
