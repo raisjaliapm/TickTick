@@ -47,6 +47,7 @@ export interface TaskModalData {
   urls: string[];
   subtasks: string[];
   projectId: string | null;
+  pendingFiles?: File[];
 }
 
 const priorityOptions: { value: Priority; label: string; color: string }[] = [
@@ -140,6 +141,7 @@ export function TaskModal({
 
   // Attachments
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -202,6 +204,7 @@ export function TaskModal({
       setProjectId(activeProjectId || null);
       setExistingSubtasks([]);
       setAttachments([]);
+      setPendingFiles([]);
       setStartDate(undefined);
       setEndDate(undefined);
     }
@@ -233,7 +236,21 @@ export function TaskModal({
   };
 
   const handleFileUpload = async (files: FileList | null) => {
-    if (!files || !task || mode !== 'edit') return;
+    if (!files) return;
+    
+    // In create mode, just store files locally
+    if (mode === 'create') {
+      const oversized = Array.from(files).filter(f => f.size > MAX_FILE_SIZE);
+      if (oversized.length > 0) {
+        toast({ title: 'File too large', description: `Max file size is 100 MB. ${oversized.map(f => f.name).join(', ')} skipped.`, variant: 'destructive' });
+      }
+      const validFiles = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE);
+      setPendingFiles(prev => [...prev, ...validFiles]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    
+    if (!task || mode !== 'edit') return;
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return;
 
@@ -358,6 +375,7 @@ export function TaskModal({
       urls,
       subtasks: newSubtaskItems,
       projectId,
+      pendingFiles: mode === 'create' && pendingFiles.length > 0 ? pendingFiles : undefined,
     });
 
     if (isListening) stopListening();
@@ -781,52 +799,70 @@ export function TaskModal({
             <div className="flex items-center gap-1.5">
               <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
               <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Attachments</label>
-              {attachments.length > 0 && (
-                <span className="text-[10px] font-mono text-muted-foreground ml-auto">{attachments.length} file{attachments.length !== 1 ? 's' : ''}</span>
-              )}
-            </div>
-
-            {/* Existing attachments */}
-            {attachments.map(att => (
-              <div key={att.id} className="flex items-center gap-2 group/att p-2 rounded-lg bg-secondary/50 border border-border">
-                <File className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <button onClick={() => downloadAttachment(att)} className="text-xs text-primary hover:underline truncate block max-w-full text-left">
-                    {att.file_name}
-                  </button>
-                  <span className="text-[10px] text-muted-foreground">{formatFileSize(att.file_size)}</span>
-                </div>
-                <button onClick={() => deleteAttachment(att)} className="opacity-0 group-hover/att:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive protocol-transition">
-                  <Trash2 className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-
-            {/* Upload area */}
-            {mode === 'edit' && task && (
-              <div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  onChange={e => handleFileUpload(e.target.files)}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg border border-dashed border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/50 hover:border-primary/30 protocol-transition disabled:opacity-50"
-                >
-                  <Upload className="h-4 w-4" />
-                  <span className="text-xs">{uploading ? 'Uploading...' : 'Upload files (max 100 MB each)'}</span>
-                </button>
-              </div>
+            {attachments.length > 0 && (
+              <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+                {attachments.length + pendingFiles.length} file{(attachments.length + pendingFiles.length) !== 1 ? 's' : ''}
+              </span>
             )}
-
-            {mode === 'create' && (
-              <p className="text-[10px] text-muted-foreground">Save the task first, then add attachments by editing it.</p>
+            {attachments.length === 0 && pendingFiles.length > 0 && (
+              <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+                {pendingFiles.length} file{pendingFiles.length !== 1 ? 's' : ''} selected
+              </span>
             )}
           </div>
+
+          {/* Existing attachments (edit mode) */}
+          {attachments.map(att => (
+            <div key={att.id} className="flex items-center gap-2 group/att p-2 rounded-lg bg-secondary/50 border border-border">
+              <File className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="flex-1 min-w-0">
+                <button onClick={() => downloadAttachment(att)} className="text-xs text-primary hover:underline truncate block max-w-full text-left">
+                  {att.file_name}
+                </button>
+                <span className="text-[10px] text-muted-foreground">{formatFileSize(att.file_size)}</span>
+              </div>
+              <button onClick={() => deleteAttachment(att)} className="opacity-0 group-hover/att:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive protocol-transition">
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+
+          {/* Pending files (create mode) */}
+          {pendingFiles.map((file, idx) => (
+            <div key={`pending-${idx}`} className="flex items-center gap-2 group/att p-2 rounded-lg bg-secondary/50 border border-border">
+              <File className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-xs text-foreground truncate block max-w-full">{file.name}</span>
+                <span className="text-[10px] text-muted-foreground">{formatFileSize(file.size)}</span>
+              </div>
+              <button
+                onClick={() => setPendingFiles(prev => prev.filter((_, i) => i !== idx))}
+                className="opacity-0 group-hover/att:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive protocol-transition"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+
+          {/* Upload area - always available */}
+          <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={e => handleFileUpload(e.target.files)}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg border border-dashed border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/50 hover:border-primary/30 protocol-transition disabled:opacity-50"
+            >
+              <Upload className="h-4 w-4" />
+              <span className="text-xs">{uploading ? 'Uploading...' : 'Upload files (max 100 MB each)'}</span>
+            </button>
+          </div>
+        </div>
 
           {/* Notes */}
           <div className="space-y-1.5 border-t border-border pt-4">

@@ -153,6 +153,7 @@ export function useTaskStore() {
     }
 
     await fetchTasks();
+    return inserted?.id || null;
   }, [user, fetchTasks]);
 
   const toggleTask = useCallback(async (id: string) => {
