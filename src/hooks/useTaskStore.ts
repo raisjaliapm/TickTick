@@ -133,6 +133,27 @@ export function useTaskStore() {
       await supabase.from('subtasks').insert(subtaskRows as any);
     }
 
+    // Auto-generate future recurring instances
+    if (recurrence && formattedDueDate) {
+      const count = getRecurrenceCount(recurrence);
+      const futureDates = generateFutureInstances(formattedDueDate, recurrence, count);
+      const futureRows = futureDates.map(date => ({
+        user_id: user.id,
+        title,
+        priority,
+        due_date: date,
+        category_id: categoryId,
+        recurrence,
+        status: 'not_started',
+        description: extras?.description || null,
+        notes: extras?.notes || '',
+        urls: extras?.urls?.length ? extras.urls : [],
+      }));
+      if (futureRows.length > 0) {
+        await supabase.from('tasks').insert(futureRows as any);
+      }
+    }
+
     await fetchTasks();
   }, [user, fetchTasks]);
 
