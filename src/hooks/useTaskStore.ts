@@ -173,24 +173,21 @@ export function useTaskStore() {
     await fetchTasks();
   }, [fetchTasks]);
 
-  const stopRecurrence = useCallback(async (id: string) => {
+  const stopRecurrence = useCallback(async (id: string, endDate: Date) => {
     const task = tasks.find(t => t.id === id);
     if (!task || !task.recurrence) return;
 
-    // Remove recurrence from this task
-    await supabase.from('tasks').update({ recurrence: null } as any).eq('id', id);
+    const endDateStr = formatLocalDateTime(endDate);
 
-    // Delete all future non-completed instances of this recurring task
+    // Delete all non-completed instances after the chosen end date
     if (user) {
-      const now = formatLocalDateTime(new Date());
       await supabase.from('tasks')
         .delete()
         .eq('user_id', user.id)
         .eq('title', task.title)
         .eq('recurrence', task.recurrence)
         .neq('status', 'completed')
-        .gt('due_date', now)
-        .neq('id', id);
+        .gt('due_date', endDateStr);
     }
 
     await fetchTasks();

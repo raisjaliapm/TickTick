@@ -8,7 +8,7 @@ interface TaskListProps {
   onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
-  onStopRecurrence?: (id: string) => void;
+  onStopRecurrence?: (id: string, endDate: Date) => void;
   onAddCategory?: (name: string) => Promise<void>;
   onUpdateStatus?: (id: string, status: TaskStatus) => void;
 }
