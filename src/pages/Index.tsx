@@ -383,7 +383,7 @@ const Index = () => {
                   ) : store.viewFilter === 'calendar' ? (
                     <CalendarView tasks={allTasksFilteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onCreateTask={handleCreateTaskOnDate} />
                   ) : (
-                    <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} onEditTask={handleEditTask} />
+                    <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} onEditTask={handleEditTask} onDuplicate={handleDuplicateTask} />
                   )}
                 </div>
               </div>
