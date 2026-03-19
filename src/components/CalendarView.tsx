@@ -544,7 +544,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                         <p className="text-[10px] font-mono text-muted-foreground/40 text-center py-2">No tasks</p>
                       )}
                       {dayTasks.map(task => (
-                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
+                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
                       ))}
                     </div>
                   </div>
