@@ -776,6 +776,58 @@ export function TaskModal({
             </div>
           </div>
 
+          {/* Attachments */}
+          <div className="space-y-2 border-t border-border pt-4">
+            <div className="flex items-center gap-1.5">
+              <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+              <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Attachments</label>
+              {attachments.length > 0 && (
+                <span className="text-[10px] font-mono text-muted-foreground ml-auto">{attachments.length} file{attachments.length !== 1 ? 's' : ''}</span>
+              )}
+            </div>
+
+            {/* Existing attachments */}
+            {attachments.map(att => (
+              <div key={att.id} className="flex items-center gap-2 group/att p-2 rounded-lg bg-secondary/50 border border-border">
+                <File className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <button onClick={() => downloadAttachment(att)} className="text-xs text-primary hover:underline truncate block max-w-full text-left">
+                    {att.file_name}
+                  </button>
+                  <span className="text-[10px] text-muted-foreground">{formatFileSize(att.file_size)}</span>
+                </div>
+                <button onClick={() => deleteAttachment(att)} className="opacity-0 group-hover/att:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive protocol-transition">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+
+            {/* Upload area */}
+            {mode === 'edit' && task && (
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  onChange={e => handleFileUpload(e.target.files)}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg border border-dashed border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/50 hover:border-primary/30 protocol-transition disabled:opacity-50"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span className="text-xs">{uploading ? 'Uploading...' : 'Upload files (max 100 MB each)'}</span>
+                </button>
+              </div>
+            )}
+
+            {mode === 'create' && (
+              <p className="text-[10px] text-muted-foreground">Save the task first, then add attachments by editing it.</p>
+            )}
+          </div>
+
           {/* Notes */}
           <div className="space-y-1.5 border-t border-border pt-4">
             <div className="flex items-center gap-1.5">
