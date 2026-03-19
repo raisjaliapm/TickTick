@@ -405,7 +405,7 @@ export function ProductTrackerView() {
                     </div>
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => { setAddingItemPhaseId(phase.id); setNewItemTitle(''); }}
+                        onClick={() => openCreateModal(phase.id)}
                         className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md protocol-transition"
                       >
                         <Plus className="h-3.5 w-3.5" />
