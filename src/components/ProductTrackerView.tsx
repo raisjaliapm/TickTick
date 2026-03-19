@@ -422,45 +422,6 @@ export function ProductTrackerView() {
                 </CardHeader>
 
                 <CardContent>
-                  {/* Inline add item */}
-                  {addingItemPhaseId === phase.id && (
-                    <Card className="mb-4 border-primary/30">
-                      <CardContent className="p-3 space-y-2">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={newItemTitle}
-                            onChange={e => setNewItemTitle(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleAddItem(phase.id); if (e.key === 'Escape') { setAddingItemPhaseId(null); setNewItemPendingFiles([]); } }}
-                            placeholder="Task title..."
-                            className="flex-1 text-sm bg-secondary border border-border rounded-lg px-3 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                            autoFocus
-                          />
-                          <button onClick={() => handleAddItem(phase.id)} className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-primary/90 protocol-transition">Add</button>
-                        </div>
-                        {/* Pending files */}
-                        {newItemPendingFiles.map((file, idx) => (
-                          <div key={idx} className="flex items-center gap-2 p-1.5 rounded bg-secondary/50 border border-border">
-                            <FileIcon className="h-3 w-3 text-muted-foreground shrink-0" />
-                            <span className="text-[10px] text-foreground truncate flex-1">{file.name}</span>
-                            <span className="text-[10px] text-muted-foreground">{formatFileSize(file.size)}</span>
-                            <button onClick={() => setNewItemPendingFiles(prev => prev.filter((_, i) => i !== idx))} className="p-0.5 text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
-                          </div>
-                        ))}
-                        {/* File upload button */}
-                        <div>
-                          <input ref={createFileInputRef} type="file" multiple onChange={e => handleCreateFilesSelected(e.target.files)} className="hidden" />
-                          <button
-                            onClick={() => createFileInputRef.current?.click()}
-                            className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground rounded border border-dashed border-border hover:border-primary/30 protocol-transition"
-                          >
-                            <Paperclip className="h-3 w-3" /> Attach files
-                          </button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
                   {/* Mini kanban columns */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {statusColumns.map(col => {
