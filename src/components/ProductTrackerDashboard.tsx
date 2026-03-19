@@ -8,7 +8,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { TrackerBoard, TrackerItem, TrackerPhase } from '@/hooks/useProductTracker';
 import * as XLSX from 'xlsx';
-
+import {
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
 interface ProductTrackerDashboardProps {
   boards: TrackerBoard[];
   onSelectBoard: (boardId: string) => void;
