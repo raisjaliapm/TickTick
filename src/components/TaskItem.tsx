@@ -67,6 +67,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
     return (h === 0 && m === 0) ? '' : `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   });
   const [editRecurrence, setEditRecurrence] = React.useState<Recurrence>((task as any).recurrence || null);
+  const [endRecurrenceOpen, setEndRecurrenceOpen] = React.useState(false);
   const [calendarOpen, setCalendarOpen] = React.useState(false);
   const [showNewCategory, setShowNewCategory] = React.useState(false);
   const [newCategoryName, setNewCategoryName] = React.useState('');
