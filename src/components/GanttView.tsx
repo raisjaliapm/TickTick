@@ -96,21 +96,34 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
   const LABEL_WIDTH = 220;
 
   const getTaskPosition = (task: Task) => {
-    if (!task.due_date) return null;
-    const dueDate = startOfDay(new Date(task.due_date));
-    const createdDate = startOfDay(new Date(task.created_at));
+    const taskStartDate = (task as any).start_date;
+    const taskEndDate = (task as any).end_date;
+    const taskDueDate = task.due_date;
 
-    // Task bar spans from created_at to due_date (or min 1 day)
-    const start = createdDate < timeline.rangeStart ? timeline.rangeStart : createdDate;
-    const end = dueDate;
+    // Determine bar start: start_date > created_at
+    const barStartRaw = taskStartDate
+      ? startOfDay(new Date(taskStartDate))
+      : startOfDay(new Date(task.created_at));
+
+    // Determine bar end: end_date > due_date > start_date + 1 day
+    const barEndRaw = taskEndDate
+      ? startOfDay(new Date(taskEndDate))
+      : taskDueDate
+        ? startOfDay(new Date(taskDueDate))
+        : addDays(barStartRaw, 1);
+
+    const start = barStartRaw < timeline.rangeStart ? timeline.rangeStart : barStartRaw;
+    const end = barEndRaw;
 
     const startOffset = differenceInDays(start, timeline.rangeStart);
     const duration = Math.max(differenceInDays(end, start), 1);
 
+    const overdueDate = taskDueDate ? startOfDay(new Date(taskDueDate)) : taskEndDate ? startOfDay(new Date(taskEndDate)) : null;
+
     return {
       left: startOffset * config.dayWidth,
       width: duration * config.dayWidth,
-      isOverdue: dueDate < startOfDay(new Date()) && task.status !== 'completed',
+      isOverdue: overdueDate ? overdueDate < startOfDay(new Date()) && task.status !== 'completed' : false,
     };
   };
 
