@@ -61,14 +61,14 @@ const Index = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen min-h-[100dvh] bg-background">
       {/* Desktop Sidebar */}
       {!isMobile && sidebarOpen && <SidebarNav {...sidebarProps} />}
 
       {/* Mobile Sidebar Sheet */}
       {isMobile && (
         <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-          <SheetContent side="left" className="p-0 w-64">
+          <SheetContent side="left" className="p-0 w-[280px]">
             <SheetTitle className="sr-only">Navigation</SheetTitle>
             <SidebarNav {...sidebarProps} className="border-0" />
           </SheetContent>
@@ -80,14 +80,14 @@ const Index = () => {
         <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
 
         {/* Top bar */}
-        <header className="relative z-10 flex items-center justify-between px-3 md:px-6 py-2.5 md:py-3 border-b border-border bg-card/80 backdrop-blur-sm">
-          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+        <header className="relative z-10 flex items-center justify-between px-2 sm:px-3 md:px-6 py-2 md:py-3 border-b border-border bg-card/80 backdrop-blur-sm safe-area-top">
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
             {isMobile ? (
               <button
                 onClick={() => setMobileSidebarOpen(true)}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent protocol-transition"
+                className="p-2 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent protocol-transition active:scale-95"
               >
-                <Menu className="h-4 w-4" />
+                <Menu className="h-5 w-5" />
               </button>
             ) : (
               <button
@@ -102,17 +102,16 @@ const Index = () => {
             <div className="flex items-center bg-secondary rounded-lg p-0.5">
               <button
                 onClick={() => setMainView('ai')}
-                className={`flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium protocol-transition ${
+                className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium protocol-transition active:scale-95 ${
                   mainView === 'ai' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Sparkles className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">AI Assistant</span>
-                <span className="sm:hidden">AI</span>
+                <span className="hidden xs:inline sm:inline">AI</span>
               </button>
               <button
                 onClick={() => setMainView('tasks')}
-                className={`flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium protocol-transition ${
+                className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium protocol-transition active:scale-95 ${
                   mainView === 'tasks' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -122,9 +121,12 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <span className="text-[11px] font-mono text-muted-foreground hidden md:block">
               {store.stats.total} active · {format(new Date(), 'EEE, MMM d')}
+            </span>
+            <span className="text-[10px] font-mono text-muted-foreground block md:hidden">
+              {store.stats.total}
             </span>
             <button
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
@@ -140,9 +142,9 @@ const Index = () => {
           {mainView === 'ai' ? (
             <AIChatPanel onTasksChanged={() => store.fetchTasks?.()} />
           ) : (
-            <div className="h-full overflow-y-auto">
-              <div className={`mx-auto px-4 md:px-6 py-6 md:py-8 ${store.viewFilter === 'calendar' || store.viewFilter === 'reports' || store.viewFilter === 'weekly-reports' || store.viewFilter === 'kanban' ? 'max-w-5xl' : 'max-w-2xl'}`}>
-                <h1 className="text-lg md:text-xl font-display font-medium tracking-tight text-foreground mb-4 md:mb-6">
+            <div className="h-full overflow-y-auto overscroll-contain">
+              <div className={`mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 pb-8 sm:pb-6 ${store.viewFilter === 'calendar' || store.viewFilter === 'reports' || store.viewFilter === 'weekly-reports' || store.viewFilter === 'kanban' ? 'max-w-5xl' : 'max-w-2xl'}`}>
+                <h1 className="text-base sm:text-lg md:text-xl font-display font-medium tracking-tight text-foreground mb-3 sm:mb-4 md:mb-6">
                   {viewLabels[store.viewFilter]}
                 </h1>
 
