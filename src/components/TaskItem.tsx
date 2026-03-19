@@ -515,6 +515,9 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
         const isEditShortcut = isMac
           ? e.metaKey && e.key.toLowerCase() === 'e'
           : e.altKey && e.key.toLowerCase() === 'e';
+        const isCompleteShortcut = isMac
+          ? e.metaKey && e.key.toLowerCase() === 'c'
+          : e.altKey && e.key.toLowerCase() === 'c';
 
         if (isDeleteShortcut) {
           e.preventDefault();
@@ -523,6 +526,10 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
         if (isEditShortcut) {
           e.preventDefault();
           openEdit();
+        }
+        if (isCompleteShortcut) {
+          e.preventDefault();
+          onUpdateStatus?.(task.id, 'completed');
         }
       }}
       initial={{ opacity: 0, y: 8 }}
