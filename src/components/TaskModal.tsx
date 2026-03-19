@@ -178,6 +178,8 @@ export function TaskModal({
       setNewSubtaskItems([]);
       setProjectId(activeProjectId || null);
       setExistingSubtasks([]);
+      setStartDate(undefined);
+      setEndDate(undefined);
     }
     setNewUrl('');
     setNewSubtask('');
