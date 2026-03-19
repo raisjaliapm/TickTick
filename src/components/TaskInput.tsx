@@ -200,8 +200,8 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
   const StatusIcon = currentStatusConfig.icon;
 
   return (
-    <div className="mb-6">
-      <div className="relative flex flex-col sm:flex-row gap-2">
+    <div className="mb-4 sm:mb-6">
+      <div className="relative flex flex-col gap-2">
         <div className="relative flex-1">
           <button
             type="button"
@@ -223,12 +223,12 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             onFocus={() => setExpanded(true)} placeholder="Add a task..."
             className="w-full bg-surface-well border border-border rounded-xl py-3 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition placeholder:text-muted-foreground/60" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           <div className="relative">
             <button
               onClick={() => setShowLangMenu(prev => !prev)}
               type="button"
-              className="p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              className="p-2.5 sm:p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-95"
               title={`Language: ${speechLanguages.find(l => l.code === speechLang)?.label}`}
             >
               <Globe className="h-4 w-4" />
@@ -239,7 +239,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
                   <button
                     key={lang.code}
                     onClick={() => { setSpeechLang(lang.code); setShowLangMenu(false); }}
-                    className={`w-full text-left px-3 py-1.5 text-xs font-mono hover:bg-accent hover:text-accent-foreground protocol-transition ${speechLang === lang.code ? 'bg-accent text-accent-foreground' : 'text-popover-foreground'}`}
+                    className={`w-full text-left px-3 py-2 text-xs font-mono hover:bg-accent hover:text-accent-foreground protocol-transition ${speechLang === lang.code ? 'bg-accent text-accent-foreground' : 'text-popover-foreground'}`}
                   >
                     {lang.label}
                   </button>
@@ -251,13 +251,13 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             <button
               onClick={toggleListening}
               type="button"
-              className="p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              className="p-2.5 sm:p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-95"
               title="Voice input"
             >
               <Mic className="h-4 w-4" />
             </button>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/30">
+            <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/30">
               <div className="flex items-end gap-[2px] h-4">
                 {[1, 2, 3, 4, 5, 6, 7].map(i => (
                   <span
@@ -273,7 +273,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
               <button
                 onClick={stopListening}
                 type="button"
-                className="ml-1 p-1.5 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/80 protocol-transition"
+                className="ml-1 p-1.5 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/80 protocol-transition active:scale-95"
                 title="Stop recording"
               >
                 <Square className="h-3 w-3 fill-current" />
@@ -283,7 +283,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
           <button
             onClick={handleSubmit}
             disabled={!value.trim()}
-            className="px-4 py-3 rounded-xl text-sm font-mono bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed protocol-transition"
+            className="flex-1 sm:flex-none px-4 py-2.5 sm:py-3 rounded-xl text-sm font-mono bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed protocol-transition active:scale-95"
           >
             Add
           </button>
