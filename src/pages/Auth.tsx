@@ -112,7 +112,7 @@ const Auth = () => {
         {/* Logo */}
         <div className="flex items-center gap-2 justify-center mb-8">
           <Clock className="h-5 w-5 text-primary" />
-          <span className="text-xl font-display font-medium tracking-tight text-foreground">TickTick</span>
+          <span className="text-xl font-display font-medium tracking-tight text-foreground">PTT</span>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-6">
