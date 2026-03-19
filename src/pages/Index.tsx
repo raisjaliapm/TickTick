@@ -159,7 +159,7 @@ const Index = () => {
                 ) : store.viewFilter === 'kanban' ? (
                   <KanbanView tasks={store.allTasks} categories={store.categories} onUpdateStatus={store.updateTaskStatus} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
                 ) : store.viewFilter === 'calendar' ? (
-                  <CalendarView tasks={store.allTasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
+                  <CalendarView tasks={store.allTasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onAdd={store.addTask} onAddCategory={store.addCategory} />
                 ) : (
                   <TaskList tasks={store.tasks} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} />
                 )}
