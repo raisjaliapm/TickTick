@@ -598,6 +598,11 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
         <button onClick={openEdit} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition" title="Edit task">
           <Pencil className="h-3.5 w-3.5" />
         </button>
+        {taskRecurrence && onStopRecurrence && (
+          <button onClick={() => onStopRecurrence(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="End recurrence">
+            <Ban className="h-3.5 w-3.5" />
+          </button>
+        )}
         <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="Delete task">
           <Trash2 className="h-3.5 w-3.5" />
         </button>
