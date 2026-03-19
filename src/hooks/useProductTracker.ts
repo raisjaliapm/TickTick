@@ -144,6 +144,6 @@ export function useProductTracker() {
 
   return {
     boards, phases, items, activeBoard, activeBoardId, setActiveBoardId, loading,
-    addBoard, deleteBoard, addPhase, deletePhase, addItem, updateItemStatus, updateItemDueDate, deleteItem,
+    addBoard, deleteBoard, addPhase, deletePhase, addItem, updateItemStatus, updateItemDueDate, updateItemAssignee, deleteItem,
   };
 }
