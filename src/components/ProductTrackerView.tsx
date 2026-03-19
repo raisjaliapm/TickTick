@@ -78,6 +78,11 @@ export function ProductTrackerView({ onBoardChange }: { onBoardChange?: (boardId
   const [editingPhaseName, setEditingPhaseName] = useState('');
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; description: string; onConfirm: () => void }>({ open: false, title: '', description: '', onConfirm: () => {} });
 
+  // Sync board ID to parent
+  useEffect(() => {
+    onBoardChange?.(tracker.activeBoardId);
+  }, [tracker.activeBoardId, onBoardChange]);
+
   const openCreateModal = (phaseId: string) => {
     setModalPhaseId(phaseId);
     setModalMode('create');
