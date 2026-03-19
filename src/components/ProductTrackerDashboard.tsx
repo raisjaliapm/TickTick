@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ListTodo, Clock, CheckCircle2, AlertTriangle, Pause, Circle,
-  TrendingUp, FolderKanban, Package, BarChart3, Filter
+  TrendingUp, FolderKanban, Package, BarChart3, Filter, Download
 } from 'lucide-react';
 import { format, isPast, isToday, isWithinInterval, addDays, startOfDay } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { TrackerBoard, TrackerItem, TrackerPhase } from '@/hooks/useProductTracker';
+import * as XLSX from 'xlsx';
 
 interface ProductTrackerDashboardProps {
   boards: TrackerBoard[];
