@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Command, PanelLeftClose, PanelLeftOpen, Sparkles, ListTodo, Menu, Search, Plus } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { format } from 'date-fns';
