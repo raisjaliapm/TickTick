@@ -537,11 +537,11 @@ export function ProductTrackerView() {
                                   )}
                                 >
                                   <CardContent className="p-3 space-y-2 overflow-hidden">
-                                    <div className="flex items-start gap-2">
-                                      <p className="text-sm text-foreground font-medium leading-snug flex-1">{item.title}</p>
+                                    <div className="flex items-start gap-1.5 min-w-0">
+                                      <p className="text-sm text-foreground font-medium leading-snug flex-1 min-w-0 break-words">{item.title}</p>
                                       {itemOverdue && (
-                                        <span className="flex items-center gap-0.5 shrink-0 text-[9px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
-                                          <AlertTriangle className="h-2.5 w-2.5" />
+                                        <span className="flex items-center gap-0.5 shrink-0 text-[9px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                          <AlertTriangle className="h-2.5 w-2.5 shrink-0" />
                                           {days}d overdue
                                         </span>
                                       )}
