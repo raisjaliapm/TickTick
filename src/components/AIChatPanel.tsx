@@ -130,7 +130,8 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
   }, [input]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-3 md:p-6">
+      <div className="flex-1 flex flex-col rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       {/* Messages area */}
       <div
         ref={scrollRef}
