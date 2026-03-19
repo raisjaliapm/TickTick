@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, ChevronLeft, Package } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, Package, FolderPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,6 +20,7 @@ const priorityColors: Record<string, string> = {
 
 export function ProductTrackerView() {
   const tracker = useProductTracker();
+  const [showCreateBoard, setShowCreateBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const [newPhaseName, setNewPhaseName] = useState('');
   const [showNewPhase, setShowNewPhase] = useState(false);
@@ -30,6 +31,7 @@ export function ProductTrackerView() {
     if (newBoardName.trim()) {
       tracker.addBoard(newBoardName.trim());
       setNewBoardName('');
+      setShowCreateBoard(false);
     }
   };
 
@@ -61,68 +63,94 @@ export function ProductTrackerView() {
   if (!tracker.activeBoardId) {
     return (
       <div className="space-y-6">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Product Management Tracker</CardTitle>
-            <CardDescription>Organize product phases with mini Kanban boards</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newBoardName}
-                onChange={e => setNewBoardName(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleAddBoard()}
-                placeholder="New board name..."
-                className="flex-1 text-sm bg-secondary border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-              <button
-                onClick={handleAddBoard}
-                disabled={!newBoardName.trim()}
-                className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 protocol-transition"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-          </CardContent>
-        </Card>
+        <div>
+          <h2 className="text-xl font-semibold text-foreground">Product Management Tracker</h2>
+          <p className="text-sm text-muted-foreground mt-1">Organize product phases with mini Kanban boards</p>
+        </div>
 
-        {tracker.boards.length === 0 ? (
-          <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Existing boards as cards */}
+          {tracker.boards.map(board => (
+            <Card
+              key={board.id}
+              className="cursor-pointer hover:border-primary/40 hover:shadow-lg protocol-transition group relative overflow-hidden"
+              onClick={() => tracker.setActiveBoardId(board.id)}
+            >
+              <div className="absolute top-0 left-0 right-0 h-1 bg-primary/60" />
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">{board.name}</CardTitle>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); tracker.deleteBoard(board.id); }}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <CardDescription>
+                  Created {format(new Date(board.created_at), 'MMM d, yyyy')}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
+
+          {/* Create New Board card */}
+          {!showCreateBoard ? (
+            <Card
+              className="cursor-pointer border-dashed hover:border-primary/40 hover:shadow-md protocol-transition flex items-center justify-center min-h-[120px]"
+              onClick={() => setShowCreateBoard(true)}
+            >
+              <CardContent className="flex flex-col items-center gap-2 py-6">
+                <div className="p-2.5 rounded-xl bg-primary/10">
+                  <FolderPlus className="h-5 w-5 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">Create New Board</span>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-primary/30 shadow-md">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">New Board</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <input
+                  type="text"
+                  value={newBoardName}
+                  onChange={e => setNewBoardName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleAddBoard(); if (e.key === 'Escape') { setShowCreateBoard(false); setNewBoardName(''); } }}
+                  placeholder="Board name..."
+                  className="w-full text-sm bg-secondary border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddBoard}
+                    disabled={!newBoardName.trim()}
+                    className="flex-1 px-3 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 protocol-transition"
+                  >
+                    Create
+                  </button>
+                  <button
+                    onClick={() => { setShowCreateBoard(false); setNewBoardName(''); }}
+                    className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent border border-border protocol-transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {tracker.boards.length === 0 && !showCreateBoard && (
+          <Card className="border-dashed">
             <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <Package className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No boards yet. Create one to get started!</p>
+              <div className="text-center py-6">
+                <Package className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">No boards yet. Click "Create New Board" to get started!</p>
               </div>
             </CardContent>
           </Card>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {tracker.boards.map(board => (
-              <Card
-                key={board.id}
-                className="cursor-pointer hover:border-primary/40 hover:shadow-md protocol-transition group"
-                onClick={() => tracker.setActiveBoardId(board.id)}
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">{board.name}</CardTitle>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); tracker.deleteBoard(board.id); }}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-muted-foreground">
-                    Created {format(new Date(board.created_at), 'MMM d, yyyy')}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         )}
       </div>
     );
@@ -141,16 +169,16 @@ export function ProductTrackerView() {
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <div className="flex-1">
-              <CardTitle className="text-xl">{tracker.activeBoard?.name}</CardTitle>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-xl truncate">{tracker.activeBoard?.name}</CardTitle>
               <CardDescription className="mt-0.5">{tracker.phases.length} phase{tracker.phases.length !== 1 ? 's' : ''}</CardDescription>
             </div>
             <button
               onClick={() => setShowNewPhase(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg protocol-transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 protocol-transition"
             >
               <Plus className="h-4 w-4" />
-              Add Phase
+              <span className="hidden sm:inline">Add Phase</span>
             </button>
           </div>
         </CardHeader>
@@ -158,29 +186,34 @@ export function ProductTrackerView() {
         {/* New phase input */}
         {showNewPhase && (
           <CardContent className="pt-0">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newPhaseName}
-                onChange={e => setNewPhaseName(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') handleAddPhase(); if (e.key === 'Escape') setShowNewPhase(false); }}
-                placeholder="Phase name..."
-                className="flex-1 text-sm bg-secondary border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                autoFocus
-              />
-              <button onClick={handleAddPhase} className="px-3 py-2 bg-primary text-primary-foreground text-sm rounded-lg hover:bg-primary/90 protocol-transition">Add</button>
-              <button onClick={() => setShowNewPhase(false)} className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent protocol-transition">Cancel</button>
-            </div>
+            <Card className="border-primary/30">
+              <CardContent className="p-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newPhaseName}
+                    onChange={e => setNewPhaseName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleAddPhase(); if (e.key === 'Escape') setShowNewPhase(false); }}
+                    placeholder="Phase name..."
+                    className="flex-1 text-sm bg-secondary border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    autoFocus
+                  />
+                  <button onClick={handleAddPhase} className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 protocol-transition">Add</button>
+                  <button onClick={() => setShowNewPhase(false)} className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent border border-border protocol-transition">Cancel</button>
+                </div>
+              </CardContent>
+            </Card>
           </CardContent>
         )}
       </Card>
 
       {/* Phases */}
       {tracker.phases.length === 0 && !showNewPhase ? (
-        <Card>
+        <Card className="border-dashed">
           <CardContent className="pt-6">
             <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground">No phases yet. Add one to start organizing!</p>
+              <Package className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No phases yet. Click "Add Phase" to start organizing!</p>
             </div>
           </CardContent>
         </Card>
@@ -188,23 +221,34 @@ export function ProductTrackerView() {
         <div className="space-y-5">
           {tracker.phases.map(phase => {
             const phaseItems = tracker.items.filter(i => i.phase_id === phase.id);
+            const totalItems = phaseItems.length;
+            const doneItems = phaseItems.filter(i => i.status === 'done').length;
 
             return (
-              <Card key={phase.id}>
+              <Card key={phase.id} className="overflow-hidden">
+                {/* Phase header with accent bar */}
+                <div className="h-0.5 bg-primary/40" />
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">{phase.name}</CardTitle>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                      <CardTitle className="text-base">{phase.name}</CardTitle>
+                      {totalItems > 0 && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                          {doneItems}/{totalItems} done
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={() => { setAddingItemPhaseId(phase.id); setNewItemTitle(''); }}
-                        className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground protocol-transition"
+                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md protocol-transition"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         Task
                       </button>
                       <button
                         onClick={() => tracker.deletePhase(phase.id)}
-                        className="p-1 rounded text-muted-foreground hover:text-destructive protocol-transition"
+                        className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -215,69 +259,75 @@ export function ProductTrackerView() {
                 <CardContent>
                   {/* Inline add item */}
                   {addingItemPhaseId === phase.id && (
-                    <div className="flex gap-2 mb-4">
-                      <input
-                        type="text"
-                        value={newItemTitle}
-                        onChange={e => setNewItemTitle(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleAddItem(phase.id); if (e.key === 'Escape') setAddingItemPhaseId(null); }}
-                        placeholder="Task title..."
-                        className="flex-1 text-sm bg-secondary border border-border rounded-lg px-3 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                        autoFocus
-                      />
-                      <button onClick={() => handleAddItem(phase.id)} className="px-3 py-1.5 bg-primary text-primary-foreground text-xs rounded-lg hover:bg-primary/90 protocol-transition">Add</button>
-                    </div>
+                    <Card className="mb-4 border-primary/30">
+                      <CardContent className="p-3">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newItemTitle}
+                            onChange={e => setNewItemTitle(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleAddItem(phase.id); if (e.key === 'Escape') setAddingItemPhaseId(null); }}
+                            placeholder="Task title..."
+                            className="flex-1 text-sm bg-secondary border border-border rounded-lg px-3 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                            autoFocus
+                          />
+                          <button onClick={() => handleAddItem(phase.id)} className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-primary/90 protocol-transition">Add</button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
 
                   {/* Mini kanban columns */}
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {statusColumns.map(col => {
                       const colItems = phaseItems.filter(i => i.status === col.key);
                       return (
-                        <div key={col.key} className="space-y-2">
-                          <div className="flex items-center gap-2 pb-1 border-b border-border/50">
-                            <span className="text-[11px] font-mono font-medium text-muted-foreground uppercase tracking-wider">{col.label}</span>
-                            <span className="text-[10px] font-mono text-muted-foreground">{colItems.length}</span>
-                            <button
-                              onClick={() => { setAddingItemPhaseId(phase.id + ':' + col.key); setNewItemTitle(''); }}
-                              className="ml-auto text-muted-foreground/50 hover:text-muted-foreground protocol-transition"
-                            >
-                              <Plus className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
+                        <Card key={col.key} className="shadow-none bg-secondary/30 border-border/50">
+                          <CardHeader className="p-3 pb-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">{col.label}</span>
+                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-background text-muted-foreground">{colItems.length}</span>
+                              </div>
+                              <button
+                                onClick={() => { setAddingItemPhaseId(phase.id + ':' + col.key); setNewItemTitle(''); }}
+                                className="p-0.5 rounded text-muted-foreground/50 hover:text-muted-foreground protocol-transition"
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </CardHeader>
 
-                          {/* Inline add for specific column */}
-                          {addingItemPhaseId === phase.id + ':' + col.key && (
-                            <input
-                              type="text"
-                              value={newItemTitle}
-                              onChange={e => setNewItemTitle(e.target.value)}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter' && newItemTitle.trim()) {
-                                  tracker.addItem(phase.id, newItemTitle.trim());
-                                  setNewItemTitle('');
-                                  setAddingItemPhaseId(null);
-                                }
-                                if (e.key === 'Escape') setAddingItemPhaseId(null);
-                              }}
-                              placeholder="Task..."
-                              className="w-full text-xs bg-secondary border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                              autoFocus
-                            />
-                          )}
+                          <CardContent className="p-3 pt-0 space-y-2 min-h-[60px]">
+                            {/* Inline add for specific column */}
+                            {addingItemPhaseId === phase.id + ':' + col.key && (
+                              <input
+                                type="text"
+                                value={newItemTitle}
+                                onChange={e => setNewItemTitle(e.target.value)}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter' && newItemTitle.trim()) {
+                                    tracker.addItem(phase.id, newItemTitle.trim());
+                                    setNewItemTitle('');
+                                    setAddingItemPhaseId(null);
+                                  }
+                                  if (e.key === 'Escape') setAddingItemPhaseId(null);
+                                }}
+                                placeholder="Task..."
+                                className="w-full text-xs bg-background border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                                autoFocus
+                              />
+                            )}
 
-                          <div className="space-y-1.5 min-h-[48px]">
                             {colItems.length === 0 && addingItemPhaseId !== phase.id + ':' + col.key ? (
-                              <Card className="border-dashed shadow-none">
-                                <CardContent className="p-3 text-center">
-                                  <span className="text-[10px] text-muted-foreground">Empty</span>
-                                </CardContent>
-                              </Card>
+                              <div className="border border-dashed border-border/60 rounded-lg p-4 text-center">
+                                <span className="text-[10px] text-muted-foreground/60">Empty</span>
+                              </div>
                             ) : (
                               colItems.map(item => (
-                                <Card key={item.id} className="shadow-none hover:border-muted-foreground/30 protocol-transition">
-                                  <CardContent className="p-2.5 space-y-2">
-                                    <p className="text-sm text-foreground font-medium">{item.title}</p>
+                                <Card key={item.id} className="shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card">
+                                  <CardContent className="p-3 space-y-2">
+                                    <p className="text-sm text-foreground font-medium leading-snug">{item.title}</p>
                                     <div className="flex items-center gap-2">
                                       <select
                                         value={item.status}
@@ -293,14 +343,14 @@ export function ProductTrackerView() {
                                           {format(new Date(item.due_date), 'MMM d')}
                                         </span>
                                       )}
-                                      <div className={`h-1.5 w-1.5 rounded-full ml-auto ${priorityColors[item.priority] || priorityColors.medium}`} />
+                                      <div className={`h-2 w-2 rounded-full ml-auto ${priorityColors[item.priority] || priorityColors.medium}`} />
                                     </div>
                                   </CardContent>
                                 </Card>
                               ))
                             )}
-                          </div>
-                        </div>
+                          </CardContent>
+                        </Card>
                       );
                     })}
                   </div>
