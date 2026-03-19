@@ -111,7 +111,7 @@
     --grid-line: 0 0% 100%;
 
     /* Status tokens */
-    --status-not-started: 240 5% 54%;
+    --status-not-started: 0 72% 58%;
     --status-in-progress: 217 91% 60%;
     --status-on-hold: 45 93% 47%;
     --status-completed: 142 71% 45%;
