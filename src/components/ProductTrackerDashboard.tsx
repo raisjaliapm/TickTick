@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ListTodo, Clock, CheckCircle2, AlertTriangle, Pause, Circle,
-  TrendingUp, FolderKanban, Package, BarChart3, Filter, Download, Users
+  TrendingUp, FolderKanban, Package, BarChart3, Filter, Download, Users,
+  Award, Target, Zap, Shield, Star, ArrowUpRight, ArrowDownRight, Minus
 } from 'lucide-react';
 import { format, isPast, isToday, isWithinInterval, addDays, startOfDay } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
