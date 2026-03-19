@@ -286,8 +286,15 @@ const Index = () => {
                   )}
                 </h1>
 
-                {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && store.viewFilter !== 'kanban' && store.viewFilter !== 'gantt' && (
-                  <TaskInput onAdd={(title, priority, dueDate, categoryId, recurrence, status, extras) => store.addTask(title, priority, dueDate, categoryId, recurrence, status, { ...extras, projectId: projectStore.activeProjectId })} categories={store.categories} onAddCategory={store.addCategory} />
+                {store.viewFilter !== 'completed' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && (
+                  <button
+                    onClick={handleCreateTask}
+                    className="mb-4 flex items-center gap-2 w-full px-4 py-3 rounded-xl border border-dashed border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60 hover:border-primary/30 protocol-transition active:scale-[0.99]"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="text-sm">Add a task...</span>
+                    <kbd className="hidden sm:inline ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">⌘N</kbd>
+                  </button>
                 )}
 
                 {store.viewFilter === 'weekly-reports' ? (
@@ -299,9 +306,9 @@ const Index = () => {
                 ) : store.viewFilter === 'kanban' ? (
                   <KanbanView tasks={allTasksFilteredByProject} categories={store.categories} onUpdateStatus={store.updateTaskStatus} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
                 ) : store.viewFilter === 'calendar' ? (
-                  <CalendarView tasks={allTasksFilteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAdd={store.addTask} onAddCategory={store.addCategory} />
+                  <CalendarView tasks={allTasksFilteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onCreateTask={handleCreateTaskOnDate} />
                 ) : (
-                  <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} />
+                  <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} onEditTask={handleEditTask} />
                 )}
               </div>
             </div>
