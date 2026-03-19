@@ -82,7 +82,7 @@ export function SidebarNav({
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <FolderKanban className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="text-sm font-semibold text-foreground tracking-tight">ProjectHub</span>
+          <span className="text-sm font-semibold text-foreground tracking-tight">PTT</span>
         </button>
       </div>
 
