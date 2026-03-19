@@ -92,7 +92,7 @@ export function useTaskStore() {
     categoryId: string | null = null,
     recurrence: string | null = null,
     status: TaskStatus = 'not_started',
-    extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[] }
+    extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[]; projectId?: string | null }
   ) => {
     if (!user) return;
     let formattedDueDate: string | null = null;
@@ -115,6 +115,7 @@ export function useTaskStore() {
       description: extras?.description || null,
       notes: extras?.notes || '',
       urls: extras?.urls?.length ? extras.urls : [],
+      project_id: extras?.projectId || null,
     } as any).select('id').single();
 
     // Insert subtasks if provided
@@ -142,6 +143,7 @@ export function useTaskStore() {
         description: extras?.description || null,
         notes: extras?.notes || '',
         urls: extras?.urls?.length ? extras.urls : [],
+        project_id: extras?.projectId || null,
       }));
       if (futureRows.length > 0) {
         await supabase.from('tasks').insert(futureRows as any);

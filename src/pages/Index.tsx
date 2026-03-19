@@ -206,7 +206,7 @@ const Index = () => {
                 </h1>
 
                 {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && store.viewFilter !== 'kanban' && store.viewFilter !== 'gantt' && (
-                  <TaskInput onAdd={store.addTask} categories={store.categories} onAddCategory={store.addCategory} />
+                  <TaskInput onAdd={(title, priority, dueDate, categoryId, recurrence, status, extras) => store.addTask(title, priority, dueDate, categoryId, recurrence, status, { ...extras, projectId: projectStore.activeProjectId })} categories={store.categories} onAddCategory={store.addCategory} />
                 )}
 
                 {store.viewFilter === 'weekly-reports' ? (
