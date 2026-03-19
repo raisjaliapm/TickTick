@@ -297,6 +297,14 @@ const Index = () => {
                 </div>
               </div>
             </div>
+          ) : mainView === 'product-tracker' ? (
+            <div className="h-full overflow-y-auto overscroll-contain">
+              <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+                <div className="rounded-xl border border-border bg-card shadow-sm p-4 md:p-6">
+                  <ProductTrackerView />
+                </div>
+              </div>
+            </div>
           ) : mainView === 'ai' ? (
             <AIChatPanel onTasksChanged={() => store.fetchTasks?.()} />
           ) : (
