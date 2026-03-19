@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Plus, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2,
   X, CalendarDays, Link as LinkIcon, FileText, ListChecks, Save,
-  Mic, Square, Globe
+  Mic, Square, Globe, Paperclip, Upload, Trash2, File
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
