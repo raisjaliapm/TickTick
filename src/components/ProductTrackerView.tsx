@@ -43,6 +43,16 @@ interface ItemAttachment {
   created_at: string;
 }
 
+function isOverdue(item: TrackerItem): boolean {
+  if (!item.due_date || item.status === 'done') return false;
+  return isPast(startOfDay(new Date(new Date(item.due_date).getTime() + 86400000)));
+}
+
+function overdueDays(item: TrackerItem): number {
+  if (!item.due_date) return 0;
+  return differenceInDays(startOfDay(new Date()), startOfDay(new Date(item.due_date)));
+}
+
 export function ProductTrackerView() {
   const tracker = useProductTracker();
   const { user } = useAuth();
@@ -58,6 +68,34 @@ export function ProductTrackerView() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createFileInputRef = useRef<HTMLInputElement>(null);
+  const [dragItemId, setDragItemId] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+
+  const handleDragStart = useCallback((e: React.DragEvent, itemId: string) => {
+    setDragItemId(itemId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', itemId);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, colKey: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverCol(colKey);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverCol(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, colKey: string) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData('text/plain');
+    if (itemId) {
+      tracker.updateItemStatus(itemId, colKey as TrackerItem['status']);
+    }
+    setDragItemId(null);
+    setDragOverCol(null);
+  }, [tracker]);
 
   const fetchItemAttachments = async (itemId: string) => {
     const { data } = await supabase.from('product_tracker_item_attachments').select('*').eq('item_id', itemId).order('created_at', { ascending: false }) as any;
