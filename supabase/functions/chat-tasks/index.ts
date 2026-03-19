@@ -55,7 +55,7 @@ serve(async (req) => {
     const completedToday = tasksSummary.filter((t: any) => t.status === 'completed' && t.completed_at?.startsWith(today));
     const overdueTasks = activeTasks.filter((t: any) => t.due_date && t.due_date < new Date().toISOString());
 
-    const systemPrompt = `You are an intelligent AI task manager named "TickTick AI". You are proactive, insightful, and help users be more productive. Today is ${today}.
+    const systemPrompt = `You are an intelligent AI task manager named "PTT AI". You are proactive, insightful, and help users be more productive. Today is ${today}.
 
 USER'S CATEGORIES: ${JSON.stringify(categoriesList)}
 CATEGORY MAP: ${JSON.stringify(categoriesMap)}

@@ -272,6 +272,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
           </p>
         </div>
       </div>
+      </div>
     </div>
   );
 }
