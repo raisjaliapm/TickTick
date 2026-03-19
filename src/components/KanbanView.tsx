@@ -166,5 +166,6 @@ export function KanbanView({ tasks, categories, onUpdateStatus, onDelete }: Kanb
         );
       })}
     </div>
+    </DeleteAllWrapper>
   );
 }
