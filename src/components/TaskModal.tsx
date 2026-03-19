@@ -138,6 +138,11 @@ export function TaskModal({
   // Existing subtasks (edit mode)
   const [existingSubtasks, setExistingSubtasks] = useState<Subtask[]>([]);
 
+  // Attachments
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Voice input
   const [isListening, setIsListening] = useState(false);
   const [speechLang, setSpeechLang] = useState('en-US');
