@@ -37,6 +37,7 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDe
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
   const editShortcut = isMac ? '⌘+E' : 'Alt+E';
   const deleteShortcut = isMac ? '⌘+D' : 'Alt+D';
+  const completeShortcut = isMac ? '⌘+C' : 'Alt+C';
 
   return (
     <DeleteAllWrapper taskCount={tasks.length} onDeleteAll={handleDeleteAll}>
@@ -56,6 +57,10 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDe
         <span className="flex items-center gap-1.5">
           <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">{deleteShortcut}</kbd>
           <span>Delete</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">{completeShortcut}</kbd>
+          <span>Complete</span>
         </span>
       </div>
     </DeleteAllWrapper>
