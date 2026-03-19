@@ -143,6 +143,7 @@ export function useTaskStore() {
         description: extras?.description || null,
         notes: extras?.notes || '',
         urls: extras?.urls?.length ? extras.urls : [],
+        project_id: extras?.projectId || null,
       }));
       if (futureRows.length > 0) {
         await supabase.from('tasks').insert(futureRows as any);
