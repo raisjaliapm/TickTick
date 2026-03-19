@@ -43,6 +43,85 @@ const Index = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
 
+  // Task modal state
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [taskModalDefaultDate, setTaskModalDefaultDate] = useState<Date | null>(null);
+  const [taskModalDefaultHour, setTaskModalDefaultHour] = useState<number | null>(null);
+
+  const handleCreateTask = () => {
+    setEditingTask(null);
+    setTaskModalDefaultDate(null);
+    setTaskModalDefaultHour(null);
+    setTaskModalOpen(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setTaskModalDefaultDate(null);
+    setTaskModalDefaultHour(null);
+    setTaskModalOpen(true);
+  };
+
+  const handleCreateTaskOnDate = (date: Date, hour?: number) => {
+    setEditingTask(null);
+    setTaskModalDefaultDate(date);
+    setTaskModalDefaultHour(hour ?? null);
+    setTaskModalOpen(true);
+  };
+
+  const handleTaskModalSave = (data: TaskModalData) => {
+    if (editingTask) {
+      // Edit mode
+      store.updateTask(editingTask.id, {
+        title: data.title,
+        description: data.description || null,
+        priority: data.priority,
+        status: data.status,
+        completed_at: data.status === 'completed' ? new Date().toISOString() : null,
+        due_date: data.dueDate ? (data.dueDate.includes('T') ? formatLocalDateTime(new Date(data.dueDate)) : formatLocalDateTime(new Date(data.dueDate + 'T00:00:00'))) : null,
+        category_id: data.categoryId,
+        recurrence: data.recurrence,
+        notes: data.notes,
+        urls: data.urls,
+        project_id: data.projectId,
+      } as any);
+      // Add new subtasks if any
+      if (data.subtasks.length > 0) {
+        import('@/integrations/supabase/client').then(({ supabase }) => {
+          supabase.auth.getUser().then(({ data: userData }) => {
+            if (userData.user) {
+              const rows = data.subtasks.map((st, i) => ({
+                task_id: editingTask.id,
+                user_id: userData.user!.id,
+                title: st,
+                sort_order: i + 100,
+              }));
+              supabase.from('subtasks').insert(rows as any);
+            }
+          });
+        });
+      }
+    } else {
+      // Create mode
+      store.addTask(
+        data.title,
+        data.priority,
+        data.dueDate,
+        data.categoryId,
+        data.recurrence,
+        data.status,
+        {
+          description: data.description || undefined,
+          notes: data.notes || undefined,
+          urls: data.urls.length ? data.urls : undefined,
+          subtasks: data.subtasks.length ? data.subtasks : undefined,
+          projectId: data.projectId,
+        }
+      );
+    }
+  };
+
   // Filter tasks by active project
   const filteredByProject = projectStore.activeProjectId
     ? store.tasks.filter(t => (t as any).project_id === projectStore.activeProjectId)
