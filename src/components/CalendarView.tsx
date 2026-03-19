@@ -522,8 +522,8 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                 return (
                   <div key={key} className={`rounded-lg border border-border overflow-hidden ${today ? 'ring-1 ring-primary/30' : ''}`}>
                     <div
-                      onClick={() => onAdd && openAddDialog(day)}
-                      className={`px-3 py-2 flex items-center justify-between ${today ? 'bg-primary/5' : 'bg-secondary/50'} ${onAdd ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
+                      onClick={() => onCreateTask && openAddDialog(day)}
+                      className={`px-3 py-2 flex items-center justify-between ${today ? 'bg-primary/5' : 'bg-secondary/50'} ${onCreateTask ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
                     >
                       <div>
                         <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{format(day, 'EEE')}</span>
