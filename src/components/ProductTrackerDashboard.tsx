@@ -81,6 +81,8 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
     { label: 'Due Today', value: stats.dueToday.length, icon: AlertTriangle, color: 'text-destructive', bg: 'bg-destructive/10' },
   ];
 
+  const completionRate = stats.total > 0 ? Math.round((stats.done.length / stats.total) * 100) : 0;
+
   if (loading) {
     return (
       <div className="bg-card border border-border rounded-xl p-8 text-center">
@@ -90,8 +92,6 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
   }
 
   if (boards.length === 0) return null;
-
-  const completionRate = stats.total > 0 ? Math.round((stats.done.length / stats.total) * 100) : 0;
 
   const exportToExcel = useCallback(() => {
     // Sheet 1: All Items
