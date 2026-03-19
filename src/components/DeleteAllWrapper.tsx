@@ -29,7 +29,7 @@ export function DeleteAllWrapper({ children, taskCount, onDeleteAll }: DeleteAll
   return (
     <>
       <ContextMenu>
-        <ContextMenuTrigger asChild>
+        <ContextMenuTrigger className="block">
           {children}
         </ContextMenuTrigger>
         <ContextMenuContent>
