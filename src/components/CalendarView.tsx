@@ -7,6 +7,8 @@ import {
 import { ChevronLeft, ChevronRight, Grid3X3, Rows3, Trash2, Plus, Repeat, Circle, Clock, Pause, CheckCircle2, CalendarX2 } from 'lucide-react';
 import type { Task, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DeleteAllWrapper } from './DeleteAllWrapper';
 
