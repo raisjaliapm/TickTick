@@ -492,6 +492,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
   }
 
   return (
+    <div>
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
