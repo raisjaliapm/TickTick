@@ -13,12 +13,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+
 interface CalendarViewProps {
   tasks: Task[];
   categories: Category[];
   onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
+  onStopRecurrence?: (id: string, endDate: Date) => void;
   onAdd?: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus, extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[] }) => void;
   onAddCategory?: (name: string) => Promise<void>;
   mode?: 'month' | 'week';
