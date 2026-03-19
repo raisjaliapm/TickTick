@@ -254,10 +254,11 @@ PRIORITY INDICATORS: 🔴 Urgent | 🟠 High | 🟡 Medium | 🔵 Low`;
           }
           if (fn === "create_phase") {
             if (!activeBoardId) return "No active board selected.";
-            const { error } = await supabase.from("product_tracker_phases").insert({
+            const { data: newPhase, error } = await supabase.from("product_tracker_phases").insert({
               board_id: activeBoardId, user_id: user.id, name: args.name, sort_order: phasesData.length,
-            });
-            return error ? `Failed: ${error.message}` : `Phase "${args.name}" created.`;
+            }).select('id').single();
+            if (error) return `Failed: ${error.message}`;
+            return `Phase "${args.name}" created with ID: ${newPhase.id}. Use this ID as phase_id when creating items in this phase.`;
           }
           if (fn === "rename_phase") {
             const { error } = await supabase.from("product_tracker_phases").update({ name: args.name }).eq("id", args.phase_id).eq("user_id", user.id);
@@ -472,85 +473,85 @@ PRIORITY INDICATORS: 🔴 Urgent | 🟠 High | 🟡 Medium | 🔵 Low`;
   }
 });
 
-// Shared helper for AI call + tool handling
+// Shared helper for AI call + tool handling with multi-round loop
 async function callAIAndHandleTools({ LOVABLE_API_KEY, supabase, user, messages, systemPrompt, tools, handleToolCall }: {
   LOVABLE_API_KEY: string; supabase: any; user: any; messages: any[]; systemPrompt: string; tools: any[]; handleToolCall: (fn: string, args: any) => Promise<string>;
 }) {
-  const body: any = {
-    model: "google/gemini-3-flash-preview",
-    messages: [{ role: "system", content: systemPrompt }, ...messages],
-    tools,
-    stream: false,
-  };
+  let currentMessages: any[] = [{ role: "system", content: systemPrompt }, ...messages];
+  const allActions: string[] = [];
+  const MAX_ROUNDS = 5;
 
-  const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!aiResponse.ok) {
-    const status = aiResponse.status;
-    if (status === 429) {
-      return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    if (status === 402) {
-      return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
-        status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const errText = await aiResponse.text();
-    console.error("AI error:", status, errText);
-    throw new Error("AI gateway error");
-  }
-
-  const aiData = await aiResponse.json();
-  const choice = aiData.choices?.[0];
-
-  if (choice?.message?.tool_calls?.length) {
-    const toolResults: string[] = [];
-    for (const toolCall of choice.message.tool_calls) {
-      const fn = toolCall.function;
-      const args = JSON.parse(fn.arguments);
-      toolResults.push(await handleToolCall(fn.name, args));
-    }
-
-    const followUpMessages = [
-      ...body.messages,
-      choice.message,
-      ...choice.message.tool_calls.map((tc: any, i: number) => ({
-        role: "tool", tool_call_id: tc.id, content: toolResults[i],
-      })),
-    ];
-
-    const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  for (let round = 0; round < MAX_ROUNDS; round++) {
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: followUpMessages, stream: false }),
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: currentMessages,
+        tools,
+        stream: false,
+      }),
     });
 
-    if (followUpResponse.ok) {
-      const followUpData = await followUpResponse.json();
-      const content = followUpData.choices?.[0]?.message?.content || toolResults.join("\n");
-      return new Response(JSON.stringify({ content, actions: toolResults }), {
+    if (!aiResponse.ok) {
+      const status = aiResponse.status;
+      if (status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (status === 402) {
+        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const errText = await aiResponse.text();
+      console.error("AI error:", status, errText);
+      throw new Error("AI gateway error");
+    }
+
+    const aiData = await aiResponse.json();
+    const choice = aiData.choices?.[0];
+
+    // If no tool calls, return the text response
+    if (!choice?.message?.tool_calls?.length) {
+      const content = choice?.message?.content || "I'm not sure how to help with that.";
+      return new Response(JSON.stringify({ 
+        content, 
+        actions: allActions.length > 0 ? allActions : undefined 
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ content: toolResults.join("\n"), actions: toolResults }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Execute tool calls
+    const toolResults: string[] = [];
+    for (const toolCall of choice.message.tool_calls) {
+      const fn = toolCall.function;
+      const args = JSON.parse(fn.arguments);
+      const result = await handleToolCall(fn.name, args);
+      toolResults.push(result);
+      allActions.push(result);
+    }
+
+    // Append assistant message and tool results, then loop
+    currentMessages = [
+      ...currentMessages,
+      choice.message,
+      ...choice.message.tool_calls.map((tc: any, i: number) => ({
+        role: "tool", tool_call_id: tc.id, content: toolResults[i],
+      })),
+    ];
   }
 
-  return new Response(JSON.stringify({ content: choice?.message?.content || "I'm not sure how to help with that." }), {
+  // If we exhausted rounds, return what we have
+  return new Response(JSON.stringify({ 
+    content: allActions.join("\n") || "Completed actions.", 
+    actions: allActions 
+  }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
