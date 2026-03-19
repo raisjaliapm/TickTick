@@ -52,7 +52,7 @@ const Index = () => {
   // Global ⌘T shortcut to create task
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 't') {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 't') {
         e.preventDefault();
         handleCreateTask();
       }
