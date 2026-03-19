@@ -146,7 +146,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
               PTT AI
             </h2>
             <p className="text-muted-foreground text-sm max-w-md mb-8">
-              Your intelligent project assistant. Create tasks, plan sprints, break down projects, and boost your productivity — all through conversation.
+              Your intelligent PTT assistant. Create tasks, plan sprints, break down projects, and boost your productivity — all through conversation.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
