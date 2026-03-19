@@ -71,6 +71,7 @@ export function KanbanView({ tasks, categories, onUpdateStatus, onDelete }: Kanb
   };
 
   return (
+    <DeleteAllWrapper taskCount={tasks.length} onDeleteAll={() => tasks.forEach(t => onDelete(t.id))}>
     <div className={isMobile ? 'space-y-3' : 'grid grid-cols-4 gap-3 min-h-[60vh]'}>
       {columns.map(col => {
         const Icon = col.icon;
