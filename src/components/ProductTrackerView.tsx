@@ -546,7 +546,7 @@ export function ProductTrackerView() {
                                         </span>
                                       )}
                                     </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
+                                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                                       <select
                                         value={item.status}
                                         onChange={e => tracker.updateItemStatus(item.id, e.target.value as TrackerItem['status'])}
