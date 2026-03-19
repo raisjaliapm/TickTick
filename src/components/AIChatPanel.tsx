@@ -139,14 +139,14 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-              <Sparkles className="h-8 w-8 text-primary" />
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
+              <Sparkles className="h-7 w-7 text-primary" />
             </div>
-            <h2 className="text-2xl font-display font-semibold text-foreground mb-2">
-              TickTick AI
+            <h2 className="text-xl font-semibold text-foreground mb-2">
+              ProjectHub AI
             </h2>
             <p className="text-muted-foreground text-sm max-w-md mb-8">
-              Your intelligent task manager. Create tasks, get daily plans, break down complex projects, and boost your productivity — all through conversation.
+              Your intelligent project assistant. Create tasks, plan sprints, break down projects, and boost your productivity — all through conversation.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
@@ -157,7 +157,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
                   className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-card hover:bg-accent/50 text-left protocol-transition group"
                 >
                   <action.icon className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-sm text-foreground group-hover:text-foreground">{action.label}</span>
+                  <span className="text-sm text-foreground">{action.label}</span>
                 </button>
               ))}
             </div>
@@ -167,7 +167,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} max-w-3xl mx-auto`}>
             {msg.role === 'assistant' && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center mt-1">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mt-1">
                 <Bot className="h-4 w-4 text-primary" />
               </div>
             )}
@@ -185,7 +185,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
               )}
             </div>
             {msg.role === 'user' && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-primary flex items-center justify-center mt-1">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary flex items-center justify-center mt-1">
                 <User className="h-4 w-4 text-primary-foreground" />
               </div>
             )}
@@ -194,7 +194,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
 
         {loading && (
           <div className="flex gap-3 justify-start max-w-3xl mx-auto">
-            <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center mt-1">
+            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mt-1">
               <Bot className="h-4 w-4 text-primary" />
             </div>
             <div className="bg-card border border-border rounded-2xl px-4 py-3">
@@ -218,7 +218,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
       )}
 
       {/* Input area */}
-      <div className="border-t border-border bg-card/50 backdrop-blur-sm px-4 md:px-6 py-4">
+      <div className="border-t border-border bg-card/80 backdrop-blur-sm px-4 md:px-6 py-4">
         <div className="max-w-3xl mx-auto">
           {messages.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -267,7 +267,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
             </button>
           </div>
           <p className="text-[10px] font-mono text-muted-foreground/40 text-center mt-2">
-            TickTick AI can create, update & manage your tasks • Press Enter to send
+            ProjectHub AI can create, update & manage your tasks • Press Enter to send
           </p>
         </div>
       </div>
