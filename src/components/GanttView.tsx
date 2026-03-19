@@ -211,21 +211,30 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
                 </div>
 
                 {/* Task rows */}
-                {group.tasks.map(task => (
-                  <div
-                    key={task.id}
-                    className="flex items-center gap-2 px-4 border-b border-border/50 hover:bg-accent/30 protocol-transition"
-                    style={{ height: ROW_HEIGHT }}
-                  >
+                {group.tasks.map(task => {
+                  const taskStart = (task as any).start_date;
+                  const taskEnd = (task as any).end_date;
+                  return (
                     <div
-                      className="h-2 w-2 rounded-full shrink-0"
-                      style={{ backgroundColor: STATUS_COLORS[task.status] || STATUS_COLORS.not_started }}
-                    />
-                    <span className={`text-xs truncate ${task.status === 'completed' ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                      {task.title}
-                    </span>
-                  </div>
-                ))}
+                      key={task.id}
+                      className="flex items-center gap-2 px-4 border-b border-border/50 hover:bg-accent/30 protocol-transition"
+                      style={{ height: ROW_HEIGHT }}
+                    >
+                      <div
+                        className="h-2 w-2 rounded-full shrink-0"
+                        style={{ backgroundColor: STATUS_COLORS[task.status] || STATUS_COLORS.not_started }}
+                      />
+                      <span className={`text-xs truncate flex-1 ${task.status === 'completed' ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                        {task.title}
+                      </span>
+                      <span className="text-[9px] font-mono text-muted-foreground/60 shrink-0">
+                        {taskStart ? format(new Date(taskStart), 'M/d') : '—'}
+                        {' → '}
+                        {taskEnd ? format(new Date(taskEnd), 'M/d') : task.due_date ? format(new Date(task.due_date), 'M/d') : '—'}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             ))}
 
