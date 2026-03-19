@@ -430,9 +430,69 @@ export function TaskModal({
             </div>
           </div>
 
+          {/* Start Date & End Date */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Start Date</label>
+              <Popover open={startCalendarOpen} onOpenChange={setStartCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1.5 w-full px-3 py-1.5 rounded-lg text-xs font-mono bg-secondary text-muted-foreground hover:bg-secondary/80 border border-border protocol-transition">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {startDate ? format(startDate, 'MMM d, yyyy') : 'Set start date'}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={d => { setStartDate(d); setStartCalendarOpen(false); }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                  {startDate && (
+                    <div className="px-3 pb-3">
+                      <button onClick={() => { setStartDate(undefined); setStartCalendarOpen(false); }} className="text-[11px] font-mono text-destructive hover:underline">
+                        Clear date
+                      </button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">End Date</label>
+              <Popover open={endCalendarOpen} onOpenChange={setEndCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1.5 w-full px-3 py-1.5 rounded-lg text-xs font-mono bg-secondary text-muted-foreground hover:bg-secondary/80 border border-border protocol-transition">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {endDate ? format(endDate, 'MMM d, yyyy') : 'Set end date'}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={d => { setEndDate(d); setEndCalendarOpen(false); }}
+                    disabled={startDate ? (date) => date < startDate : undefined}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                  {endDate && (
+                    <div className="px-3 pb-3">
+                      <button onClick={() => { setEndDate(undefined); setEndCalendarOpen(false); }} className="text-[11px] font-mono text-destructive hover:underline">
+                        Clear date
+                      </button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
           {/* Due Date, Time, Recurrence */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Schedule</label>
+            <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Due Date & Recurrence</label>
             <div className="flex flex-wrap items-center gap-2">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>

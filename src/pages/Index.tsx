@@ -80,6 +80,8 @@ const Index = () => {
         status: data.status,
         completed_at: data.status === 'completed' ? new Date().toISOString() : null,
         due_date: data.dueDate ? (data.dueDate.includes('T') ? formatLocalDateTime(new Date(data.dueDate)) : formatLocalDateTime(new Date(data.dueDate + 'T00:00:00'))) : null,
+        start_date: data.startDate ? formatLocalDateTime(new Date(data.startDate + 'T00:00:00')) : null,
+        end_date: data.endDate ? formatLocalDateTime(new Date(data.endDate + 'T00:00:00')) : null,
         category_id: data.categoryId,
         recurrence: data.recurrence,
         notes: data.notes,
