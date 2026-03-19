@@ -444,7 +444,7 @@ export function ProductTrackerView() {
                                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-background text-muted-foreground">{colItems.length}</span>
                               </div>
                               <button
-                                onClick={() => { setAddingItemPhaseId(phase.id + ':' + col.key); setNewItemTitle(''); }}
+                                onClick={() => openCreateModal(phase.id)}
                                 className="p-0.5 rounded text-muted-foreground/50 hover:text-muted-foreground protocol-transition"
                               >
                                 <Plus className="h-3.5 w-3.5" />
