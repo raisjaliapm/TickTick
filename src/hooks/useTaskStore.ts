@@ -19,6 +19,32 @@ function getNextDueDate(currentDue: string | null, recurrence: string): string {
   return formatLocalDateTime(base);
 }
 
+function getRecurrenceCount(recurrence: string): number {
+  if (recurrence === 'daily') return 30;
+  if (recurrence === 'weekly') return 12;
+  if (recurrence === 'monthly') return 6;
+  return 0;
+}
+
+function generateFutureInstances(
+  baseDue: string,
+  recurrence: string,
+  count: number
+): string[] {
+  const dates: string[] = [];
+  let current = new Date(baseDue);
+  for (let i = 0; i < count; i++) {
+    if (recurrence === 'daily') current = new Date(current.getTime() + 86400000);
+    else if (recurrence === 'weekly') current = new Date(current.getTime() + 7 * 86400000);
+    else if (recurrence === 'monthly') {
+      current = new Date(current);
+      current.setMonth(current.getMonth() + 1);
+    }
+    dates.push(formatLocalDateTime(current));
+  }
+  return dates;
+}
+
 export function useTaskStore() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
