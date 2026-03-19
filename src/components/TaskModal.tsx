@@ -236,7 +236,21 @@ export function TaskModal({
   };
 
   const handleFileUpload = async (files: FileList | null) => {
-    if (!files || !task || mode !== 'edit') return;
+    if (!files) return;
+    
+    // In create mode, just store files locally
+    if (mode === 'create') {
+      const oversized = Array.from(files).filter(f => f.size > MAX_FILE_SIZE);
+      if (oversized.length > 0) {
+        toast({ title: 'File too large', description: `Max file size is 100 MB. ${oversized.map(f => f.name).join(', ')} skipped.`, variant: 'destructive' });
+      }
+      const validFiles = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE);
+      setPendingFiles(prev => [...prev, ...validFiles]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    
+    if (!task || mode !== 'edit') return;
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return;
 
