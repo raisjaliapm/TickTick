@@ -140,10 +140,26 @@ export function useProductTracker() {
     if (activeBoardId) await fetchItems(activeBoardId);
   }, [activeBoardId, fetchItems]);
 
+  const duplicateItem = useCallback(async (item: TrackerItem) => {
+    if (!user) return;
+    const phaseItems = items.filter(i => i.phase_id === item.phase_id);
+    await supabase.from('product_tracker_items').insert({
+      phase_id: item.phase_id,
+      user_id: user.id,
+      title: item.title + ' (copy)',
+      status: item.status,
+      priority: item.priority,
+      due_date: item.due_date,
+      assignee: (item as any).assignee || null,
+      sort_order: phaseItems.length,
+    } as any);
+    if (activeBoardId) await fetchItems(activeBoardId);
+  }, [user, items, activeBoardId, fetchItems]);
+
   const activeBoard = boards.find(b => b.id === activeBoardId) || null;
 
   return {
     boards, phases, items, activeBoard, activeBoardId, setActiveBoardId, loading,
-    addBoard, deleteBoard, addPhase, deletePhase, addItem, updateItemStatus, updateItemDueDate, updateItemAssignee, deleteItem,
+    addBoard, deleteBoard, addPhase, deletePhase, addItem, updateItemStatus, updateItemDueDate, updateItemAssignee, deleteItem, duplicateItem,
   };
 }
