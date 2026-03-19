@@ -560,8 +560,12 @@ export function ProductTrackerView() {
                                         <PopoverTrigger asChild>
                                           <button
                                             className={cn(
-                                              "flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border border-border hover:border-primary/30 protocol-transition",
-                                              item.due_date ? "text-foreground bg-secondary" : "text-muted-foreground/60 border-dashed"
+                                              "flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border hover:border-primary/30 protocol-transition",
+                                              itemOverdue
+                                                ? "text-destructive bg-destructive/10 border-destructive/30"
+                                                : item.due_date
+                                                  ? "text-foreground bg-secondary border-border"
+                                                  : "text-muted-foreground/60 border-dashed border-border"
                                             )}
                                           >
                                             <CalendarIcon className="h-2.5 w-2.5" />
