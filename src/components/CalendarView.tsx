@@ -662,5 +662,6 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
         />
       )}
     </div>
+    </DeleteAllWrapper>
   );
 }
