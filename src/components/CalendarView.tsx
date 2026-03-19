@@ -340,6 +340,36 @@ function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete, onSt
         {category && (
           <div className="text-[10px] font-mono text-muted-foreground">Category: {category.name}</div>
         )}
+        {(task as any).recurrence && onStopRecurrence && (
+          <div className="pt-1 border-t border-border">
+            <Popover open={endRecurrenceOpen} onOpenChange={setEndRecurrenceOpen}>
+              <PopoverTrigger asChild>
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground hover:text-destructive w-full justify-start">
+                  <CalendarX2 className="h-3 w-3 mr-1" /> End recurrence
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
+                <div className="p-2 border-b border-border">
+                  <span className="text-[11px] font-mono text-muted-foreground">End recurrence after:</span>
+                </div>
+                <Calendar
+                  mode="single"
+                  selected={undefined}
+                  onSelect={(date) => {
+                    if (date) {
+                      onStopRecurrence(task.id, date);
+                      setEndRecurrenceOpen(false);
+                      setOpen(false);
+                    }
+                  }}
+                  disabled={(date) => date < new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
         <div className="flex items-center justify-between pt-1">
           <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground hover:text-destructive" onClick={() => { onDelete(task.id); setOpen(false); }}>
             <Trash2 className="h-3 w-3 mr-1" /> Delete
