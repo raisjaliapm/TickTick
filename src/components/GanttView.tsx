@@ -57,7 +57,8 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
 
   // Group tasks by project
   const groupedTasks = useMemo(() => {
-    const tasksWithDates = tasks.filter(t => t.due_date);
+    // Include tasks that have any date (due_date, start_date, or end_date)
+    const tasksWithDates = tasks.filter(t => t.due_date || (t as any).start_date || (t as any).end_date);
 
     const projectMap = new Map<string, { project: Project | null; tasks: Task[] }>();
 
@@ -83,9 +84,9 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
         key,
         project: group.project,
         tasks: group.tasks.sort((a, b) => {
-          const aDate = a.due_date ? new Date(a.due_date).getTime() : 0;
-          const bDate = b.due_date ? new Date(b.due_date).getTime() : 0;
-          return aDate - bDate;
+          const aStart = (a as any).start_date || a.due_date || a.created_at;
+          const bStart = (b as any).start_date || b.due_date || b.created_at;
+          return new Date(aStart).getTime() - new Date(bStart).getTime();
         }),
       }));
   }, [tasks, projects]);
@@ -95,21 +96,34 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
   const LABEL_WIDTH = 220;
 
   const getTaskPosition = (task: Task) => {
-    if (!task.due_date) return null;
-    const dueDate = startOfDay(new Date(task.due_date));
-    const createdDate = startOfDay(new Date(task.created_at));
+    const taskStartDate = (task as any).start_date;
+    const taskEndDate = (task as any).end_date;
+    const taskDueDate = task.due_date;
 
-    // Task bar spans from created_at to due_date (or min 1 day)
-    const start = createdDate < timeline.rangeStart ? timeline.rangeStart : createdDate;
-    const end = dueDate;
+    // Determine bar start: start_date > created_at
+    const barStartRaw = taskStartDate
+      ? startOfDay(new Date(taskStartDate))
+      : startOfDay(new Date(task.created_at));
+
+    // Determine bar end: end_date > due_date > start_date + 1 day
+    const barEndRaw = taskEndDate
+      ? startOfDay(new Date(taskEndDate))
+      : taskDueDate
+        ? startOfDay(new Date(taskDueDate))
+        : addDays(barStartRaw, 1);
+
+    const start = barStartRaw < timeline.rangeStart ? timeline.rangeStart : barStartRaw;
+    const end = barEndRaw;
 
     const startOffset = differenceInDays(start, timeline.rangeStart);
     const duration = Math.max(differenceInDays(end, start), 1);
 
+    const overdueDate = taskDueDate ? startOfDay(new Date(taskDueDate)) : taskEndDate ? startOfDay(new Date(taskEndDate)) : null;
+
     return {
       left: startOffset * config.dayWidth,
       width: duration * config.dayWidth,
-      isOverdue: dueDate < startOfDay(new Date()) && task.status !== 'completed',
+      isOverdue: overdueDate ? overdueDate < startOfDay(new Date()) && task.status !== 'completed' : false,
     };
   };
 
@@ -197,28 +211,37 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
                 </div>
 
                 {/* Task rows */}
-                {group.tasks.map(task => (
-                  <div
-                    key={task.id}
-                    className="flex items-center gap-2 px-4 border-b border-border/50 hover:bg-accent/30 protocol-transition"
-                    style={{ height: ROW_HEIGHT }}
-                  >
+                {group.tasks.map(task => {
+                  const taskStart = (task as any).start_date;
+                  const taskEnd = (task as any).end_date;
+                  return (
                     <div
-                      className="h-2 w-2 rounded-full shrink-0"
-                      style={{ backgroundColor: STATUS_COLORS[task.status] || STATUS_COLORS.not_started }}
-                    />
-                    <span className={`text-xs truncate ${task.status === 'completed' ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                      {task.title}
-                    </span>
-                  </div>
-                ))}
+                      key={task.id}
+                      className="flex items-center gap-2 px-4 border-b border-border/50 hover:bg-accent/30 protocol-transition"
+                      style={{ height: ROW_HEIGHT }}
+                    >
+                      <div
+                        className="h-2 w-2 rounded-full shrink-0"
+                        style={{ backgroundColor: STATUS_COLORS[task.status] || STATUS_COLORS.not_started }}
+                      />
+                      <span className={`text-xs truncate flex-1 ${task.status === 'completed' ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                        {task.title}
+                      </span>
+                      <span className="text-[9px] font-mono text-muted-foreground/60 shrink-0">
+                        {taskStart ? format(new Date(taskStart), 'M/d') : '—'}
+                        {' → '}
+                        {taskEnd ? format(new Date(taskEnd), 'M/d') : task.due_date ? format(new Date(task.due_date), 'M/d') : '—'}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             ))}
 
             {groupedTasks.length === 0 && (
               <div className="px-4 py-8 text-center">
-                <p className="text-sm text-muted-foreground">No tasks with due dates</p>
-                <p className="text-xs text-muted-foreground mt-1">Add due dates to see tasks on the timeline</p>
+                <p className="text-sm text-muted-foreground">No tasks with dates</p>
+                <p className="text-xs text-muted-foreground mt-1">Add start/end or due dates to see tasks on the timeline</p>
               </div>
             )}
           </div>
@@ -336,7 +359,7 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
                                 backgroundColor: task.status === 'completed' ? 'hsl(var(--status-completed))' : projectColor,
                                 opacity,
                               }}
-                              title={`${task.title}\n${task.due_date ? format(new Date(task.due_date), 'MMM d, yyyy') : ''}\nStatus: ${task.status?.replace('_', ' ')}\nPriority: ${task.priority}`}
+                              title={`${task.title}${(task as any).start_date ? `\nStart: ${format(new Date((task as any).start_date), 'MMM d, yyyy')}` : ''}${(task as any).end_date ? `\nEnd: ${format(new Date((task as any).end_date), 'MMM d, yyyy')}` : ''}${task.due_date ? `\nDue: ${format(new Date(task.due_date), 'MMM d, yyyy')}` : ''}\nStatus: ${task.status?.replace('_', ' ')}\nPriority: ${task.priority}`}
                             >
                               {/* Progress fill for in-progress tasks */}
                               {task.status === 'in_progress' && (
