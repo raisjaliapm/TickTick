@@ -522,31 +522,33 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
               <button
                 onPointerDown={e => e.stopPropagation()}
                 onContextMenu={e => e.stopPropagation()}
-                className={`relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border protocol-transition ${currentStatus.colorClass} ${isCompleted ? 'bg-[hsl(var(--status-completed))] border-[hsl(var(--status-completed))]' : 'border-current/40 hover:border-current'}`}
-                title={`Status: ${currentStatus.label}`}
+                className={`relative flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 protocol-transition cursor-pointer hover:scale-110 active:scale-95 ${currentStatus.colorClass} ${isCompleted ? 'bg-[hsl(var(--status-completed))] border-[hsl(var(--status-completed))]' : 'border-current/30 hover:border-current bg-current/5'}`}
+                title={`Click to change status: ${currentStatus.label}`}
               >
                 {isCompleted ? (
                   <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }}>
-                    <Check className="h-3 w-3 text-primary-foreground stroke-[3]" />
+                    <Check className="h-3.5 w-3.5 text-primary-foreground stroke-[3]" />
                   </motion.div>
                 ) : (
-                  <StatusIcon className="h-3 w-3" />
+                  <StatusIcon className="h-3.5 w-3.5" />
                 )}
               </button>
             );
           })()}
         </PopoverTrigger>
-        <PopoverContent className="w-40 p-1 pointer-events-auto z-50" align="start">
+        <PopoverContent className="w-44 p-1.5 pointer-events-auto z-50" align="start" sideOffset={6}>
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider px-2 py-1">Change Status</p>
           {statusOptions.map(s => {
             const Icon = s.icon;
             return (
               <button
                 key={s.value}
                 onClick={() => onUpdateStatus ? onUpdateStatus(task.id, s.value) : onToggle(task.id)}
-                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-mono protocol-transition ${task.status === s.value ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'}`}
+                className={`w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs font-mono protocol-transition ${task.status === s.value ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'}`}
               >
-                <Icon className={`h-3.5 w-3.5 ${s.colorClass}`} />
+                <Icon className={`h-4 w-4 ${s.colorClass}`} />
                 {s.label}
+                {task.status === s.value && <Check className="h-3 w-3 ml-auto text-primary" />}
               </button>
             );
           })}
