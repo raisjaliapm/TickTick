@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { DeleteAllWrapper } from './DeleteAllWrapper';
 
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -447,6 +448,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
   const dayHeaders = isMobile ? dayHeadersShort : dayHeadersFull;
 
   return (
+    <DeleteAllWrapper taskCount={tasks.length} onDeleteAll={() => tasks.forEach(t => onDelete(t.id))}>
     <div className="overflow-x-auto">
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-4 min-w-0">
@@ -660,5 +662,6 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
         />
       )}
     </div>
+    </DeleteAllWrapper>
   );
 }

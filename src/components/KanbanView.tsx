@@ -3,6 +3,7 @@ import { Circle, Clock, Pause, CheckCircle2, GripVertical } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import type { Task, Category, TaskStatus } from '@/hooks/useTaskStore';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { DeleteAllWrapper } from './DeleteAllWrapper';
 
 interface KanbanViewProps {
   tasks: Task[];
@@ -27,7 +28,7 @@ const priorityDot: Record<string, string> = {
   low: 'bg-priority-low',
 };
 
-export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProps) {
+export function KanbanView({ tasks, categories, onUpdateStatus, onDelete }: KanbanViewProps) {
   const isMobile = useIsMobile();
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
@@ -70,6 +71,7 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
   };
 
   return (
+    <DeleteAllWrapper taskCount={tasks.length} onDeleteAll={() => tasks.forEach(t => onDelete(t.id))}>
     <div className={isMobile ? 'space-y-3' : 'grid grid-cols-4 gap-3 min-h-[60vh]'}>
       {columns.map(col => {
         const Icon = col.icon;
@@ -164,5 +166,6 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
         );
       })}
     </div>
+    </DeleteAllWrapper>
   );
 }
