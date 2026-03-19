@@ -643,13 +643,13 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
         </button>
       </div>
 
-      {isOverdue && <span className="text-[11px] font-mono text-priority-urgent shrink-0 group-hover:hidden">overdue</span>}
-      {task.due_date && !isOverdue && (
-        <span className="text-[11px] font-mono text-muted-foreground/50 shrink-0 group-hover:hidden">
-          {(() => {
+      {/* Mobile date display */}
+      {task.due_date && (
+        <span className={`text-[10px] font-mono shrink-0 sm:hidden ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground/60'}`}>
+          {isOverdue ? 'overdue' : (() => {
             const d = new Date(task.due_date!);
             const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
-            return hasTime ? format(d, 'MMM d, h:mm a') : format(d, 'MMM d');
+            return hasTime ? format(d, 'M/d h:mma') : format(d, 'M/d');
           })()}
         </span>
       )}
@@ -657,14 +657,14 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
 
     {/* Expandable subtasks with checkboxes */}
     {showSubtasks && subtasks.length > 0 && (
-      <div className="ml-8 sm:ml-10 py-1 space-y-1">
+      <div className="ml-7 sm:ml-10 py-1 space-y-1.5">
         {subtasks.map(st => (
           <div key={st.id} className="flex items-center gap-2 group/subtask">
             <button
               onClick={() => toggleSubtask(st.id, st.is_completed)}
-              className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border protocol-transition ${st.is_completed ? 'bg-primary border-primary' : 'border-muted-foreground/40 hover:border-primary'}`}
+              className={`flex h-5 w-5 sm:h-4 sm:w-4 shrink-0 items-center justify-center rounded border protocol-transition active:scale-90 ${st.is_completed ? 'bg-primary border-primary' : 'border-muted-foreground/40 hover:border-primary'}`}
             >
-              {st.is_completed && <Check className="h-2.5 w-2.5 text-primary-foreground stroke-[3]" />}
+              {st.is_completed && <Check className="h-3 w-3 sm:h-2.5 sm:w-2.5 text-primary-foreground stroke-[3]" />}
             </button>
             <span className={`text-xs ${st.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
               {st.title}
