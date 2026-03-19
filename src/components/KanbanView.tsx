@@ -123,7 +123,7 @@ export function KanbanView({ tasks, categories, onUpdateStatus, onDelete }: Kanb
                       <div className="flex items-start gap-2">
                         {!isMobile && <GripVertical className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-muted-foreground/60 shrink-0 mt-0.5 protocol-transition" />}
                         <div className="flex-1 min-w-0">
-                          <p className={`text-xs leading-relaxed ${task.status === 'completed' ? 'text-task-completed line-through' : 'text-foreground'}`}>
+                          <p className={`text-xs leading-relaxed ${task.status === 'completed' ? 'text-task-completed line-through' : task.status === 'not_started' ? 'text-destructive' : 'text-foreground'}`}>
                             {task.title}
                           </p>
                           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
