@@ -495,7 +495,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.2, ease: [...protocolCurve] }}
-      className="group flex items-center gap-3 px-3 py-2.5 rounded-lg border border-transparent hover:border-border hover:bg-task-hover protocol-transition select-none"
+      className="group flex items-start sm:items-center gap-2 sm:gap-3 px-3 py-2.5 rounded-lg border border-transparent hover:border-border hover:bg-task-hover protocol-transition select-none"
     >
       {/* Status popover */}
       <Popover>
@@ -538,54 +538,53 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
 
       <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
 
-      <div className="flex flex-1 items-center gap-3 min-w-0">
+      <div className="flex flex-1 flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
         <span className={`text-sm truncate protocol-transition ${isCompleted ? 'text-task-completed line-through' : 'text-foreground'}`}>
           {task.title}
         </span>
-        {category && (
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground uppercase tracking-wider shrink-0">
-            {category.name}
-          </span>
-        )}
-        {taskRecurrence && (
-          <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">
-            <Repeat className="h-2.5 w-2.5" />
-            {recurrenceLabels[taskRecurrence]}
-          </span>
-        )}
-        {(() => {
-          const s = statusOptions.find(opt => opt.value === task.status) || statusOptions[0];
-          const Icon = s.icon;
-          return (
-            <span className={`flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary shrink-0 ${s.colorClass}`}>
-              <Icon className="h-2.5 w-2.5" />
-              {s.label}
+        <div className="flex flex-wrap items-center gap-1">
+          {category && (
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground uppercase tracking-wider shrink-0">
+              {category.name}
             </span>
-          );
-        })()}
-        {/* Subtask indicator */}
-        {subtasks.length > 0 && (
-          <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
-            <ListChecks className="h-2.5 w-2.5" />
-            {subtasks.filter(s => s.is_completed).length}/{subtasks.length}
-          </span>
-        )}
-        {/* Links indicator */}
-        {taskUrls.length > 0 && (
-          <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
-            <Link className="h-2.5 w-2.5" />
-            {taskUrls.length}
-          </span>
-        )}
-        {/* Notes indicator */}
-        {taskNotes.trim() && (
-          <span className="flex items-center text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
-            <FileText className="h-2.5 w-2.5" />
-          </span>
-        )}
+          )}
+          {taskRecurrence && (
+            <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">
+              <Repeat className="h-2.5 w-2.5" />
+              {recurrenceLabels[taskRecurrence]}
+            </span>
+          )}
+          {(() => {
+            const s = statusOptions.find(opt => opt.value === task.status) || statusOptions[0];
+            const Icon = s.icon;
+            return (
+              <span className={`flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary shrink-0 ${s.colorClass}`}>
+                <Icon className="h-2.5 w-2.5" />
+                {s.label}
+              </span>
+            );
+          })()}
+          {subtasks.length > 0 && (
+            <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
+              <ListChecks className="h-2.5 w-2.5" />
+              {subtasks.filter(s => s.is_completed).length}/{subtasks.length}
+            </span>
+          )}
+          {taskUrls.length > 0 && (
+            <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
+              <Link className="h-2.5 w-2.5" />
+              {taskUrls.length}
+            </span>
+          )}
+          {taskNotes.trim() && (
+            <span className="flex items-center text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
+              <FileText className="h-2.5 w-2.5" />
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="opacity-0 group-hover:opacity-100 protocol-transition flex items-center gap-1.5 shrink-0">
+      <div className="flex sm:opacity-0 sm:group-hover:opacity-100 protocol-transition items-center gap-1.5 shrink-0">
         {task.due_date && (
           <span className={`text-[11px] font-mono mr-1 ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
             {isOverdue ? 'overdue' : (() => {
