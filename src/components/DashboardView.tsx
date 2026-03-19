@@ -33,10 +33,10 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
   }, [tasks]);
 
   const statCards = [
-    { label: 'Active Tasks', value: stats.active.length, icon: ListTodo, color: 'text-primary', bg: 'bg-primary/10' },
-    { label: 'In Progress', value: stats.inProgress.length, icon: Clock, color: 'text-info', bg: 'bg-info/10' },
-    { label: 'Completed', value: stats.completed.length, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
-    { label: 'Overdue', value: stats.overdue.length, icon: AlertTriangle, color: 'text-destructive', bg: 'bg-destructive/10' },
+    { label: 'Active Tasks', value: stats.active.length, icon: ListTodo, color: 'text-primary', bg: 'bg-primary/10', navigateTo: 'active' },
+    { label: 'In Progress', value: stats.inProgress.length, icon: Clock, color: 'text-info', bg: 'bg-info/10', navigateTo: 'in_progress_view' },
+    { label: 'Completed', value: stats.completed.length, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10', navigateTo: 'completed' },
+    { label: 'Due Today', value: stats.dueToday.length, icon: AlertTriangle, color: 'text-destructive', bg: 'bg-destructive/10', navigateTo: 'today' },
   ];
 
   return (
@@ -54,7 +54,11 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {statCards.map(card => (
-          <div key={card.label} className="bg-card border border-border rounded-xl p-4 md:p-5">
+          <button
+            key={card.label}
+            onClick={() => onNavigate(card.navigateTo)}
+            className="bg-card border border-border rounded-xl p-4 md:p-5 text-left hover:border-primary/40 hover:shadow-md protocol-transition cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-3">
               <div className={`p-2 rounded-lg ${card.bg}`}>
                 <card.icon className={`h-4 w-4 ${card.color}`} />
@@ -62,7 +66,7 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
             </div>
             <p className="text-2xl md:text-3xl font-semibold text-foreground">{card.value}</p>
             <p className="text-xs text-muted-foreground mt-1">{card.label}</p>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -102,7 +106,7 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
               <AlertTriangle className="h-4 w-4 text-destructive" />
               Overdue
             </h3>
-            <span className="text-xs text-destructive font-medium">{stats.overdue.length} tasks</span>
+            <button onClick={() => onNavigate('overdue')} className="text-xs text-primary hover:underline">View all</button>
           </div>
           {stats.overdue.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">All caught up!</p>

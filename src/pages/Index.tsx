@@ -23,6 +23,9 @@ import { formatLocalDateTime } from '@/lib/dateUtils';
 
 const viewLabels: Record<string, string> = {
   all: 'All Tasks',
+  active: 'Active Tasks',
+  in_progress_view: 'In Progress',
+  overdue: 'Overdue',
   today: 'Today',
   upcoming: 'Upcoming (7 days)',
   completed: 'Completed',
@@ -307,7 +310,7 @@ const Index = () => {
                     )}
                   </h1>
 
-                  {store.viewFilter !== 'completed' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && (
+                  {store.viewFilter !== 'completed' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && store.viewFilter !== 'overdue' && (
                     <button
                       onClick={handleCreateTask}
                       className="mb-4 flex items-center gap-2 w-full px-4 py-3 rounded-xl border border-dashed border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60 hover:border-primary/30 protocol-transition active:scale-[0.99]"
