@@ -508,11 +508,19 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
       layout
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.altKey && e.key.toLowerCase() === 'd') {
+        const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
+        const isDeleteShortcut = isMac
+          ? e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd'
+          : e.altKey && e.key.toLowerCase() === 'd';
+        const isEditShortcut = isMac
+          ? e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'e'
+          : e.altKey && e.key.toLowerCase() === 'e';
+
+        if (isDeleteShortcut) {
           e.preventDefault();
           onDelete(task.id);
         }
-        if (e.altKey && e.key.toLowerCase() === 'e') {
+        if (isEditShortcut) {
           e.preventDefault();
           openEdit();
         }
