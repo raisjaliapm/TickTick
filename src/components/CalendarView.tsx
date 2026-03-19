@@ -4,11 +4,11 @@ import {
   isSameMonth, isToday, addMonths, subMonths, addWeeks, subWeeks,
   getHours, isSameDay,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Grid3X3, Rows3, Trash2, Plus, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, X, ListChecks, Link as LinkIcon, FileText, CalendarX2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Grid3X3, Rows3, Trash2, Plus, Repeat, Circle, Clock, Pause, CheckCircle2, CalendarX2 } from 'lucide-react';
 import type { Task, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
-import type { Recurrence } from '@/components/TaskInput';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
