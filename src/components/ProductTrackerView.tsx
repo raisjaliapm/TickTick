@@ -527,11 +527,17 @@ export function ProductTrackerView() {
                                 return (
                                 <Card
                                   key={item.id}
+                                  tabIndex={0}
                                   draggable
                                   onDragStart={e => handleDragStart(e, item.id)}
                                   onDragEnd={() => { setDragItemId(null); setDragOverCol(null); }}
+                                  onKeyDown={(e) => {
+                                    const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
+                                    const isDup = isMac ? e.metaKey && e.key.toLowerCase() === 'd' : e.altKey && e.key.toLowerCase() === 'd';
+                                    if (isDup) { e.preventDefault(); tracker.duplicateItem(item); }
+                                  }}
                                   className={cn(
-                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing",
+                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing focus:outline-none focus:ring-1 focus:ring-primary/50",
                                     dragItemId === item.id && "opacity-50",
                                     itemOverdue && "border-destructive/50 bg-destructive/5"
                                   )}
