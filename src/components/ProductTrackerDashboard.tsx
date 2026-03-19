@@ -245,10 +245,10 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
               <PieChart>
                 <Pie
                   data={[
-                    { name: 'To Do', value: stats.todo.length, color: '#EF4444' },
-                    { name: 'In Progress', value: stats.inProgress.length, color: '#EAB308' },
-                    { name: 'On Hold', value: stats.onHold.length, color: '#FF9933' },
-                    { name: 'Done', value: stats.done.length, color: '#22C55E' },
+                    { name: 'To Do', value: stats.todo.length, fill: '#EF4444' },
+                    { name: 'In Progress', value: stats.inProgress.length, fill: '#EAB308' },
+                    { name: 'On Hold', value: stats.onHold.length, fill: '#FF9933' },
+                    { name: 'Done', value: stats.done.length, fill: '#22C55E' },
                   ].filter(d => d.value > 0)}
                   cx="50%"
                   cy="50%"
@@ -258,16 +258,7 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   labelLine={false}
-                >
-                  {[
-                    { name: 'To Do', value: stats.todo.length, color: '#EF4444' },
-                    { name: 'In Progress', value: stats.inProgress.length, color: '#EAB308' },
-                    { name: 'On Hold', value: stats.onHold.length, color: '#FF9933' },
-                    { name: 'Done', value: stats.done.length, color: '#22C55E' },
-                  ].filter(d => d.value > 0).map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
