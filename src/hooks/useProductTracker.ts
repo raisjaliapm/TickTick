@@ -29,6 +29,7 @@ export type TrackerItem = {
   priority: string;
   due_date: string | null;
   assignee: string | null;
+  notes: string;
   sort_order: number;
   created_at: string;
   updated_at: string;
