@@ -124,6 +124,11 @@ export function useProductTracker() {
     if (activeBoardId) await fetchItems(activeBoardId);
   }, [activeBoardId, fetchItems]);
 
+  const updateItemDueDate = useCallback(async (itemId: string, dueDate: string | null) => {
+    await supabase.from('product_tracker_items').update({ due_date: dueDate } as any).eq('id', itemId);
+    if (activeBoardId) await fetchItems(activeBoardId);
+  }, [activeBoardId, fetchItems]);
+
   const deleteItem = useCallback(async (itemId: string) => {
     await supabase.from('product_tracker_items').delete().eq('id', itemId);
     if (activeBoardId) await fetchItems(activeBoardId);
