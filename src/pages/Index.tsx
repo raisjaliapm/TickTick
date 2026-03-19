@@ -12,6 +12,7 @@ import { CalendarView } from '@/components/CalendarView';
 import { ReportsView } from '@/components/ReportsView';
 import { WeeklyReportsView } from '@/components/WeeklyReportsView';
 import { KanbanView } from '@/components/KanbanView';
+import { GanttView } from '@/components/GanttView';
 import { GoogleCalendarAutoSync } from '@/components/GoogleCalendarAutoSync';
 import { AIChatPanel } from '@/components/AIChatPanel';
 import { DashboardView } from '@/components/DashboardView';
