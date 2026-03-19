@@ -386,21 +386,14 @@ function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete, onSt
   );
 }
 
-export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAdd, onAddCategory, mode: initialMode = 'month' }: CalendarViewProps) {
+export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onCreateTask, mode: initialMode = 'month' }: CalendarViewProps) {
   const [mode, setMode] = useState<'month' | 'week'>(initialMode);
   const [currentDate, setCurrentDate] = useState(new Date());
   const isMobile = useIsMobile();
 
-  // Add-task dialog state
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [addDialogDate, setAddDialogDate] = useState<Date>(new Date());
-  const [addDialogHour, setAddDialogHour] = useState<number | undefined>(undefined);
-
   const openAddDialog = useCallback((date: Date, hour?: number) => {
-    setAddDialogDate(date);
-    setAddDialogHour(hour);
-    setAddDialogOpen(true);
-  }, []);
+    if (onCreateTask) onCreateTask(date, hour);
+  }, [onCreateTask]);
 
   // ---------- MONTH helpers ----------
   const monthDays = useMemo(() => {
