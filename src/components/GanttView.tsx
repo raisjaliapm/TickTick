@@ -240,8 +240,8 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
 
             {groupedTasks.length === 0 && (
               <div className="px-4 py-8 text-center">
-                <p className="text-sm text-muted-foreground">No tasks with due dates</p>
-                <p className="text-xs text-muted-foreground mt-1">Add due dates to see tasks on the timeline</p>
+                <p className="text-sm text-muted-foreground">No tasks with dates</p>
+                <p className="text-xs text-muted-foreground mt-1">Add start/end or due dates to see tasks on the timeline</p>
               </div>
             )}
           </div>
