@@ -531,7 +531,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                           {format(day, 'MMM d')}
                         </span>
                       </div>
-                      {onAdd && <Plus className="h-4 w-4 text-muted-foreground/40" />}
+                      {onCreateTask && <Plus className="h-4 w-4 text-muted-foreground/40" />}
                     </div>
                     <div className="p-2 space-y-0.5 min-h-[40px]">
                       {dayTasks.length === 0 && (
