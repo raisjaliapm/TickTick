@@ -54,6 +54,7 @@ const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Week
 
 export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAddCategory, onUpdateStatus }: TaskItemProps) {
   const [isEditing, setIsEditing] = React.useState(false);
+  const [showSubtasks, setShowSubtasks] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(task.title);
   const [editDescription, setEditDescription] = React.useState(task.description || '');
   const [editPriority, setEditPriority] = React.useState(task.priority);
@@ -491,6 +492,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
   }
 
   return (
+    <div>
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
@@ -590,10 +592,13 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
             );
           })()}
           {subtasks.length > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
+            <button
+              onClick={() => setShowSubtasks(!showSubtasks)}
+              className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0 hover:bg-secondary/80 protocol-transition"
+            >
               <ListChecks className="h-2.5 w-2.5" />
               {subtasks.filter(s => s.is_completed).length}/{subtasks.length}
-            </span>
+            </button>
           )}
           {taskUrls.length > 0 && (
             <span className="flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary text-muted-foreground shrink-0">
@@ -638,5 +643,25 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
         </span>
       )}
     </motion.div>
+
+    {/* Expandable subtasks with checkboxes */}
+    {showSubtasks && subtasks.length > 0 && (
+      <div className="ml-8 sm:ml-10 py-1 space-y-1">
+        {subtasks.map(st => (
+          <div key={st.id} className="flex items-center gap-2 group/subtask">
+            <button
+              onClick={() => toggleSubtask(st.id, st.is_completed)}
+              className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border protocol-transition ${st.is_completed ? 'bg-primary border-primary' : 'border-muted-foreground/40 hover:border-primary'}`}
+            >
+              {st.is_completed && <Check className="h-2.5 w-2.5 text-primary-foreground stroke-[3]" />}
+            </button>
+            <span className={`text-xs ${st.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+              {st.title}
+            </span>
+          </div>
+        ))}
+      </div>
+    )}
+    </div>
   );
 }
