@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Command, PanelLeftClose, PanelLeftOpen, Sparkles, ListTodo, Menu } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { format } from 'date-fns';
 import { useTaskStore } from '@/hooks/useTaskStore';
 import { SidebarNav } from '@/components/SidebarNav';
