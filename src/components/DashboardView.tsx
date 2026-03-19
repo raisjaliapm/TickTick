@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { CheckCircle2, Clock, AlertTriangle, TrendingUp, FolderKanban, ListTodo, Pause, Circle } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { CheckCircle2, Clock, AlertTriangle, TrendingUp, FolderKanban, ListTodo, Pause, Circle, Filter } from 'lucide-react';
 import { format, isToday, isPast, isWithinInterval, addDays, startOfDay } from 'date-fns';
 import type { Task, Category } from '@/hooks/useTaskStore';
 import type { Project } from '@/hooks/useProjectStore';
@@ -12,9 +12,18 @@ interface DashboardViewProps {
 }
 
 export function DashboardView({ tasks, categories, projects, onNavigate }: DashboardViewProps) {
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+
+  const filteredTasks = useMemo(() => {
+    if (!selectedProjectId) return tasks;
+    return tasks.filter(t => (t as any).project_id === selectedProjectId);
+  }, [tasks, selectedProjectId]);
+
+  const selectedProject = projects.find(p => p.id === selectedProjectId);
+
   const stats = useMemo(() => {
-    const active = tasks.filter(t => t.status !== 'completed');
-    const completed = tasks.filter(t => t.status === 'completed');
+    const active = filteredTasks.filter(t => t.status !== 'completed');
+    const completed = filteredTasks.filter(t => t.status === 'completed');
     const overdue = active.filter(t => t.due_date && isPast(new Date(t.due_date)) && !isToday(new Date(t.due_date)));
     const dueToday = active.filter(t => t.due_date && isToday(new Date(t.due_date)));
     const upcoming = active.filter(t => t.due_date && isWithinInterval(new Date(t.due_date), {
@@ -25,12 +34,11 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
     const notStarted = active.filter(t => t.status === 'not_started');
     const onHold = active.filter(t => t.status === 'on_hold');
 
-    // Completion rate this week
     const weekStart = startOfDay(addDays(new Date(), -7));
     const completedThisWeek = completed.filter(t => t.completed_at && new Date(t.completed_at) >= weekStart);
 
     return { active, completed, overdue, dueToday, upcoming, inProgress, notStarted, onHold, completedThisWeek };
-  }, [tasks]);
+  }, [filteredTasks]);
 
   const statCards = [
     { label: 'Active Tasks', value: stats.active.length, icon: ListTodo, color: 'text-primary', bg: 'bg-primary/10', navigateTo: 'active' },
@@ -41,15 +49,49 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
 
   return (
     <div className="space-y-8">
-      {/* Welcome header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-semibold text-foreground">
-          Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          {format(new Date(), 'EEEE, MMMM d, yyyy')} · {stats.dueToday.length} tasks due today
-        </p>
+      {/* Welcome header + Project Filter */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-semibold text-foreground">
+            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {format(new Date(), 'EEEE, MMMM d, yyyy')} · {stats.dueToday.length} tasks due today
+          </p>
+        </div>
+
+        {/* Project Filter */}
+        {projects.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+            <select
+              value={selectedProjectId || ''}
+              onChange={e => setSelectedProjectId(e.target.value || null)}
+              className="text-sm bg-card border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition min-w-[160px]"
+            >
+              <option value="">All Projects</option>
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
+
+      {/* Active project indicator */}
+      {selectedProject && (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border">
+          <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: selectedProject.color }} />
+          <span className="text-sm font-medium text-foreground">{selectedProject.name}</span>
+          <span className="text-[10px] font-mono text-muted-foreground">{filteredTasks.length} tasks</span>
+          <button
+            onClick={() => setSelectedProjectId(null)}
+            className="ml-auto text-xs text-primary hover:underline"
+          >
+            Clear filter
+          </button>
+        </div>
+      )}
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -142,8 +184,13 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
                 const projectTasks = tasks.filter(t => t.project_id === project.id);
                 const completedCount = projectTasks.filter(t => t.status === 'completed').length;
                 const progress = projectTasks.length > 0 ? Math.round((completedCount / projectTasks.length) * 100) : 0;
+                const isSelected = selectedProjectId === project.id;
                 return (
-                  <div key={project.id} className="p-2.5 rounded-lg hover:bg-accent/50 protocol-transition">
+                  <button
+                    key={project.id}
+                    onClick={() => setSelectedProjectId(isSelected ? null : project.id)}
+                    className={`w-full p-2.5 rounded-lg protocol-transition text-left ${isSelected ? 'bg-primary/10 border border-primary/30' : 'hover:bg-accent/50'}`}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: project.color }} />
                       <span className="text-sm text-foreground flex-1 truncate">{project.name}</span>
@@ -152,7 +199,7 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
                     <div className="mt-2 h-1.5 bg-secondary rounded-full overflow-hidden ml-6">
                       <div className="h-full rounded-full protocol-transition" style={{ width: `${progress}%`, backgroundColor: project.color }} />
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -175,7 +222,7 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
               { label: 'On Hold', count: stats.onHold.length, icon: Pause, color: 'hsl(var(--status-on-hold))' },
               { label: 'Completed', count: stats.completed.length, icon: CheckCircle2, color: 'hsl(var(--status-completed))' },
             ].map(item => {
-              const total = tasks.length || 1;
+              const total = filteredTasks.length || 1;
               const pct = Math.round((item.count / total) * 100);
               return (
                 <div key={item.label} className="space-y-1.5">
