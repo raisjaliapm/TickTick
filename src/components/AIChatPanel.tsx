@@ -267,7 +267,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
             </button>
           </div>
           <p className="text-[10px] font-mono text-muted-foreground/40 text-center mt-2">
-            ProjectHub AI can create, update & manage your tasks • Press Enter to send
+            PTT AI can create, update &amp; manage your tasks • Press Enter to send
           </p>
         </div>
       </div>
