@@ -459,7 +459,10 @@ export function ProductTrackerView() {
                                 <span className="text-[10px] text-muted-foreground/60">Empty</span>
                               </div>
                             ) : (
-                              colItems.map(item => (
+                              colItems.map(item => {
+                                const atts = itemAttachments[item.id] || [];
+                                const isExpanded = expandedItemId === item.id;
+                                return (
                                 <Card key={item.id} className="shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card">
                                   <CardContent className="p-3 space-y-2">
                                     <p className="text-sm text-foreground font-medium leading-snug">{item.title}</p>
@@ -478,11 +481,51 @@ export function ProductTrackerView() {
                                           {format(new Date(item.due_date), 'MMM d')}
                                         </span>
                                       )}
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); handleExpandItem(item.id); }}
+                                        className={`p-0.5 rounded protocol-transition ${isExpanded ? 'text-primary' : 'text-muted-foreground/50 hover:text-muted-foreground'}`}
+                                      >
+                                        <Paperclip className="h-3 w-3" />
+                                      </button>
                                       <div className={`h-2 w-2 rounded-full ml-auto ${priorityColors[item.priority] || priorityColors.medium}`} />
                                     </div>
+
+                                    {/* Expanded attachment section */}
+                                    {isExpanded && (
+                                      <div className="border-t border-border pt-2 space-y-1.5">
+                                        {atts.map(att => (
+                                          <div key={att.id} className="flex items-center gap-1.5 group/att">
+                                            <FileIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+                                            <button onClick={() => downloadItemAttachment(att)} className="text-[10px] text-primary hover:underline truncate flex-1 text-left">{att.file_name}</button>
+                                            <span className="text-[9px] text-muted-foreground">{formatFileSize(att.file_size)}</span>
+                                            <button onClick={() => deleteItemAttachment(att, item.id)} className="opacity-0 group-hover/att:opacity-100 p-0.5 text-muted-foreground hover:text-destructive">
+                                              <Trash2 className="h-2.5 w-2.5" />
+                                            </button>
+                                          </div>
+                                        ))}
+                                        <div>
+                                          <input
+                                            type="file"
+                                            multiple
+                                            onChange={e => { handleItemFileUpload(e.target.files, item.id); }}
+                                            className="hidden"
+                                            id={`file-upload-${item.id}`}
+                                          />
+                                          <button
+                                            onClick={() => document.getElementById(`file-upload-${item.id}`)?.click()}
+                                            disabled={uploading}
+                                            className="flex items-center gap-1 w-full px-2 py-1 text-[10px] rounded border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/30 protocol-transition disabled:opacity-50"
+                                          >
+                                            <Upload className="h-3 w-3" />
+                                            {uploading ? 'Uploading...' : 'Upload files (max 100 MB)'}
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
                                   </CardContent>
                                 </Card>
-                              ))
+                                );
+                              })
                             )}
                           </CardContent>
                         </Card>
