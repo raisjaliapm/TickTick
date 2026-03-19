@@ -28,6 +28,7 @@ interface TaskItemProps {
   onAddCategory?: (name: string) => Promise<void>;
   onUpdateStatus?: (id: string, status: TaskStatus) => void;
   onEditTask?: (task: Task) => void;
+  onDuplicate?: (task: Task) => void;
 }
 
 const statusOptions: { value: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
