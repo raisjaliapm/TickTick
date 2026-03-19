@@ -512,9 +512,12 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
       tabIndex={0}
       onKeyDown={(e) => {
         const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
-        const isDeleteShortcut = isMac
+        const isDuplicateShortcut = isMac
           ? e.metaKey && e.key.toLowerCase() === 'd'
           : e.altKey && e.key.toLowerCase() === 'd';
+        const isDeleteShortcut = isMac
+          ? e.metaKey && e.key.toLowerCase() === 'x'
+          : e.altKey && e.key.toLowerCase() === 'x';
         const isEditShortcut = isMac
           ? e.metaKey && e.key.toLowerCase() === 'e'
           : e.altKey && e.key.toLowerCase() === 'e';
@@ -522,6 +525,10 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
           ? e.metaKey && e.key.toLowerCase() === 'c'
           : e.altKey && e.key.toLowerCase() === 'c';
 
+        if (isDuplicateShortcut) {
+          e.preventDefault();
+          onDuplicate?.(task);
+        }
         if (isDeleteShortcut) {
           e.preventDefault();
           onDelete(task.id);
