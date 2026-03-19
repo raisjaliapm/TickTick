@@ -57,7 +57,8 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
 
   // Group tasks by project
   const groupedTasks = useMemo(() => {
-    const tasksWithDates = tasks.filter(t => t.due_date);
+    // Include tasks that have any date (due_date, start_date, or end_date)
+    const tasksWithDates = tasks.filter(t => t.due_date || (t as any).start_date || (t as any).end_date);
 
     const projectMap = new Map<string, { project: Project | null; tasks: Task[] }>();
 
@@ -83,9 +84,9 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
         key,
         project: group.project,
         tasks: group.tasks.sort((a, b) => {
-          const aDate = a.due_date ? new Date(a.due_date).getTime() : 0;
-          const bDate = b.due_date ? new Date(b.due_date).getTime() : 0;
-          return aDate - bDate;
+          const aStart = (a as any).start_date || a.due_date || a.created_at;
+          const bStart = (b as any).start_date || b.due_date || b.created_at;
+          return new Date(aStart).getTime() - new Date(bStart).getTime();
         }),
       }));
   }, [tasks, projects]);
