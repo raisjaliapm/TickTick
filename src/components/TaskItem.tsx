@@ -176,7 +176,18 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
 
   const toggleSubtask = async (id: string, currentState: boolean) => {
     await supabase.from('subtasks').update({ is_completed: !currentState } as any).eq('id', id);
-    fetchSubtasks();
+    const updated = subtasks.map(s => s.id === id ? { ...s, is_completed: !currentState } : s);
+    setSubtasks(updated);
+
+    // Auto-complete main task if all subtasks are now completed
+    const allCompleted = updated.every(s => s.is_completed);
+    if (allCompleted && updated.length > 0 && task.status !== 'completed') {
+      if (onUpdateStatus) {
+        onUpdateStatus(task.id, 'completed');
+      } else {
+        onToggle(task.id);
+      }
+    }
   };
 
   const deleteSubtask = async (id: string) => {
