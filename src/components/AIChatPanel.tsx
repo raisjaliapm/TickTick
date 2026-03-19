@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, ListTodo, Zap, Calendar, BarChart3, ArrowDown, Mic, MicOff } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, ListTodo, Zap, Calendar, BarChart3, ArrowDown, Mic, MicOff, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
 type Message = { role: 'user' | 'assistant'; content: string };
+type ChatContext = 'tasks' | 'product-tracker';
 
-const quickActions = [
+const taskQuickActions = [
   { icon: Zap, label: 'Plan my day', message: 'Plan my day - what should I focus on today?' },
   { icon: ListTodo, label: 'Show all tasks', message: 'Show me all my active tasks organized by priority' },
   { icon: Sparkles, label: 'Smart suggestions', message: 'Suggest 3-5 new tasks I should consider based on my current tasks and patterns' },
@@ -14,7 +15,19 @@ const quickActions = [
   { icon: BarChart3, label: 'Productivity check', message: 'Give me a quick productivity summary - how am I doing?' },
 ];
 
-export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void }) {
+const trackerQuickActions = [
+  { icon: Zap, label: 'Board overview', message: 'Give me an overview of the current board - what items are in each phase?' },
+  { icon: Package, label: 'Add items', message: 'Help me add some new items to this board' },
+  { icon: Sparkles, label: 'Suggest next steps', message: 'Based on current items, suggest what I should work on next' },
+  { icon: Calendar, label: "What's overdue?", message: "What tracker items are overdue? Help me prioritize them." },
+  { icon: BarChart3, label: 'Progress report', message: 'Give me a progress report on this board - how are things going?' },
+];
+
+export function AIChatPanel({ onTasksChanged, context = 'tasks', activeBoardId }: { 
+  onTasksChanged?: () => void; 
+  context?: ChatContext;
+  activeBoardId?: string | null;
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +36,18 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
+  const prevContextRef = useRef<ChatContext>(context);
+
+  const quickActions = context === 'product-tracker' ? trackerQuickActions : taskQuickActions;
+  const contextLabel = context === 'product-tracker' ? 'Product Tracker' : 'Task Manager';
+
+  // Reset messages when context changes
+  useEffect(() => {
+    if (prevContextRef.current !== context) {
+      setMessages([]);
+      prevContextRef.current = context;
+    }
+  }, [context]);
 
   // Setup Speech Recognition
   useEffect(() => {
@@ -91,7 +116,11 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
 
     try {
       const { data, error } = await supabase.functions.invoke('chat-tasks', {
-        body: { messages: newMessages },
+        body: { 
+          messages: newMessages,
+          context,
+          activeBoardId: context === 'product-tracker' ? activeBoardId : undefined,
+        },
       });
 
       if (error) throw error;
@@ -112,7 +141,7 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
     } finally {
       setLoading(false);
     }
-  }, [input, messages, loading, onTasksChanged]);
+  }, [input, messages, loading, onTasksChanged, context, activeBoardId]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -141,13 +170,19 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-              <Sparkles className="h-7 w-7 text-primary" />
+              {context === 'product-tracker' ? (
+                <Package className="h-7 w-7 text-primary" />
+              ) : (
+                <Sparkles className="h-7 w-7 text-primary" />
+              )}
             </div>
             <h2 className="text-xl font-semibold text-foreground mb-2">
-              PTT AI
+              PTT AI — {contextLabel}
             </h2>
             <p className="text-muted-foreground text-sm max-w-md mb-8">
-              Your intelligent PTT assistant. Create tasks, plan sprints, break down projects, and boost your productivity — all through conversation.
+              {context === 'product-tracker' 
+                ? 'Manage your product tracker — create items, organize phases, track progress, and get insights through conversation.'
+                : 'Your intelligent PTT assistant. Create tasks, plan sprints, break down projects, and boost your productivity — all through conversation.'}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
@@ -242,7 +277,9 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask me anything... create tasks, plan your day, break down projects"
+              placeholder={context === 'product-tracker' 
+                ? "Ask about your board... create items, check progress, plan phases"
+                : "Ask me anything... create tasks, plan your day, break down projects"}
               rows={1}
               className="flex-1 bg-surface-well border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring protocol-transition resize-none"
               disabled={loading}
@@ -268,7 +305,9 @@ export function AIChatPanel({ onTasksChanged }: { onTasksChanged?: () => void })
             </button>
           </div>
           <p className="text-[10px] font-mono text-muted-foreground/40 text-center mt-2">
-            PTT AI can create, update &amp; manage your tasks • Press Enter to send
+            {context === 'product-tracker' 
+              ? 'PTT AI can create, update & manage your tracker items • Press Enter to send'
+              : 'PTT AI can create, update & manage your tasks • Press Enter to send'}
           </p>
         </div>
       </div>
