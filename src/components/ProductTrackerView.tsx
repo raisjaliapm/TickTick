@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { Plus, Trash2, ChevronLeft, Package, FolderPlus } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 const statusColumns: { key: TrackerItem['status']; label: string }[] = [
@@ -18,14 +21,38 @@ const priorityColors: Record<string, string> = {
   low: 'bg-priority-low',
 };
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+interface ItemAttachment {
+  id: string;
+  file_name: string;
+  file_size: number;
+  file_type: string | null;
+  storage_path: string;
+  created_at: string;
+}
+
 export function ProductTrackerView() {
   const tracker = useProductTracker();
+  const { user } = useAuth();
   const [showCreateBoard, setShowCreateBoard] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
   const [newPhaseName, setNewPhaseName] = useState('');
   const [showNewPhase, setShowNewPhase] = useState(false);
   const [addingItemPhaseId, setAddingItemPhaseId] = useState<string | null>(null);
   const [newItemTitle, setNewItemTitle] = useState('');
+  const [newItemPendingFiles, setNewItemPendingFiles] = useState<File[]>([]);
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+  const [itemAttachments, setItemAttachments] = useState<Record<string, ItemAttachment[]>>({});
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const createFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddBoard = () => {
     if (newBoardName.trim()) {
