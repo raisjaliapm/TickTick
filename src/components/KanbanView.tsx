@@ -28,7 +28,7 @@ const priorityDot: Record<string, string> = {
   low: 'bg-priority-low',
 };
 
-export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProps) {
+export function KanbanView({ tasks, categories, onUpdateStatus, onDelete }: KanbanViewProps) {
   const isMobile = useIsMobile();
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
