@@ -86,7 +86,7 @@ const Index = () => {
     setTaskModalOpen(true);
   };
 
-  const handleTaskModalSave = (data: TaskModalData) => {
+  const handleTaskModalSave = async (data: TaskModalData) => {
     if (editingTask) {
       // Edit mode
       store.updateTask(editingTask.id, {
@@ -122,7 +122,7 @@ const Index = () => {
       }
     } else {
       // Create mode
-      store.addTask(
+      const taskId = await store.addTask(
         data.title,
         data.priority,
         data.dueDate,
@@ -139,6 +139,28 @@ const Index = () => {
           endDate: data.endDate,
         }
       );
+
+      // Upload pending files if any
+      if (taskId && data.pendingFiles && data.pendingFiles.length > 0) {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          for (const file of data.pendingFiles) {
+            const storagePath = `${userData.user.id}/${taskId}/${Date.now()}-${file.name}`;
+            const { error } = await supabase.storage.from('task-attachments').upload(storagePath, file);
+            if (!error) {
+              await supabase.from('task_attachments').insert({
+                task_id: taskId,
+                user_id: userData.user.id,
+                file_name: file.name,
+                file_size: file.size,
+                file_type: file.type || null,
+                storage_path: storagePath,
+              } as any);
+            }
+          }
+        }
+      }
     }
   };
 
