@@ -119,6 +119,8 @@ const Index = () => {
           urls: data.urls.length ? data.urls : undefined,
           subtasks: data.subtasks.length ? data.subtasks : undefined,
           projectId: data.projectId,
+          startDate: data.startDate,
+          endDate: data.endDate,
         }
       );
     }
