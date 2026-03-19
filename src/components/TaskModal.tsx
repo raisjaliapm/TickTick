@@ -102,6 +102,8 @@ export function TaskModal({
   const [status, setStatus] = useState<TaskStatus>('not_started');
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [dueTime, setDueTime] = useState('');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
   const [notes, setNotes] = useState('');
@@ -113,6 +115,8 @@ export function TaskModal({
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [startCalendarOpen, setStartCalendarOpen] = useState(false);
+  const [endCalendarOpen, setEndCalendarOpen] = useState(false);
 
   // Existing subtasks (edit mode)
   const [existingSubtasks, setExistingSubtasks] = useState<Subtask[]>([]);
