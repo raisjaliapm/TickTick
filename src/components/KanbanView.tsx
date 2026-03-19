@@ -28,8 +28,10 @@ const priorityDot: Record<string, string> = {
 };
 
 export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProps) {
+  const isMobile = useIsMobile();
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [expandedColumn, setExpandedColumn] = useState<TaskStatus | null>(null);
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     e.dataTransfer.setData('text/plain', taskId);
