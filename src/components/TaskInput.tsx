@@ -201,7 +201,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
 
   return (
     <div className="mb-6">
-      <div className="relative flex gap-2">
+      <div className="relative flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <button
             type="button"
@@ -223,69 +223,71 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
             onFocus={() => setExpanded(true)} placeholder="Add a task..."
             className="w-full bg-surface-well border border-border rounded-xl py-3 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition placeholder:text-muted-foreground/60" />
         </div>
-        <div className="relative">
-          <button
-            onClick={() => setShowLangMenu(prev => !prev)}
-            type="button"
-            className="p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            title={`Language: ${speechLanguages.find(l => l.code === speechLang)?.label}`}
-          >
-            <Globe className="h-4 w-4" />
-          </button>
-          {showLangMenu && (
-            <div className="absolute top-full right-0 mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[140px] max-h-[200px] overflow-y-auto">
-              {speechLanguages.map(lang => (
-                <button
-                  key={lang.code}
-                  onClick={() => { setSpeechLang(lang.code); setShowLangMenu(false); }}
-                  className={`w-full text-left px-3 py-1.5 text-xs font-mono hover:bg-accent hover:text-accent-foreground protocol-transition ${speechLang === lang.code ? 'bg-accent text-accent-foreground' : 'text-popover-foreground'}`}
-                >
-                  {lang.label}
-                </button>
-              ))}
+        <div className="flex gap-2">
+          <div className="relative">
+            <button
+              onClick={() => setShowLangMenu(prev => !prev)}
+              type="button"
+              className="p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              title={`Language: ${speechLanguages.find(l => l.code === speechLang)?.label}`}
+            >
+              <Globe className="h-4 w-4" />
+            </button>
+            {showLangMenu && (
+              <div className="absolute top-full right-0 mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[140px] max-h-[200px] overflow-y-auto">
+                {speechLanguages.map(lang => (
+                  <button
+                    key={lang.code}
+                    onClick={() => { setSpeechLang(lang.code); setShowLangMenu(false); }}
+                    className={`w-full text-left px-3 py-1.5 text-xs font-mono hover:bg-accent hover:text-accent-foreground protocol-transition ${speechLang === lang.code ? 'bg-accent text-accent-foreground' : 'text-popover-foreground'}`}
+                  >
+                    {lang.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {!isListening ? (
+            <button
+              onClick={toggleListening}
+              type="button"
+              className="p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              title="Voice input"
+            >
+              <Mic className="h-4 w-4" />
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/30">
+              <div className="flex items-end gap-[2px] h-4">
+                {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                  <span
+                    key={i}
+                    className="w-[3px] rounded-full bg-destructive"
+                    style={{
+                      animation: `waveform 0.6s ease-in-out ${i * 0.08}s infinite alternate`,
+                    }}
+                  />
+                ))}
+              </div>
+              <span className="text-[10px] font-mono text-destructive ml-1 animate-pulse">REC</span>
+              <button
+                onClick={stopListening}
+                type="button"
+                className="ml-1 p-1.5 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/80 protocol-transition"
+                title="Stop recording"
+              >
+                <Square className="h-3 w-3 fill-current" />
+              </button>
             </div>
           )}
-        </div>
-        {!isListening ? (
           <button
-            onClick={toggleListening}
-            type="button"
-            className="p-3 rounded-xl protocol-transition bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            title="Voice input"
+            onClick={handleSubmit}
+            disabled={!value.trim()}
+            className="px-4 py-3 rounded-xl text-sm font-mono bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed protocol-transition"
           >
-            <Mic className="h-4 w-4" />
+            Add
           </button>
-        ) : (
-          <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/30">
-            <div className="flex items-end gap-[2px] h-4">
-              {[1, 2, 3, 4, 5, 6, 7].map(i => (
-                <span
-                  key={i}
-                  className="w-[3px] rounded-full bg-destructive"
-                  style={{
-                    animation: `waveform 0.6s ease-in-out ${i * 0.08}s infinite alternate`,
-                  }}
-                />
-              ))}
-            </div>
-            <span className="text-[10px] font-mono text-destructive ml-1 animate-pulse">REC</span>
-            <button
-              onClick={stopListening}
-              type="button"
-              className="ml-1 p-1.5 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/80 protocol-transition"
-              title="Stop recording"
-            >
-              <Square className="h-3 w-3 fill-current" />
-            </button>
-          </div>
-        )}
-        <button
-          onClick={handleSubmit}
-          disabled={!value.trim()}
-          className="px-4 py-3 rounded-xl text-sm font-mono bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed protocol-transition"
-        >
-          Add
-        </button>
+        </div>
       </div>
       {expanded && (
         <div className="flex flex-wrap items-center gap-2 mt-2 px-1">
