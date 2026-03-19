@@ -161,6 +161,13 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
 
         <div className="flex items-center gap-1.5">
           <button
+            onClick={handleExportExcel}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-accent protocol-transition"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export Excel
+          </button>
+          <button
             disabled={currentZoomIndex <= 0}
             onClick={() => setZoom(zoomLevels[currentZoomIndex - 1])}
             className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent protocol-transition disabled:opacity-30"
