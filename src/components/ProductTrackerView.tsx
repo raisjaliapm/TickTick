@@ -522,10 +522,30 @@ export function ProductTrackerView() {
                               colItems.map(item => {
                                 const atts = itemAttachments[item.id] || [];
                                 const isExpanded = expandedItemId === item.id;
+                                const itemOverdue = isOverdue(item);
+                                const days = overdueDays(item);
                                 return (
-                                <Card key={item.id} className="shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card">
+                                <Card
+                                  key={item.id}
+                                  draggable
+                                  onDragStart={e => handleDragStart(e, item.id)}
+                                  onDragEnd={() => { setDragItemId(null); setDragOverCol(null); }}
+                                  className={cn(
+                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing",
+                                    dragItemId === item.id && "opacity-50",
+                                    itemOverdue && "border-destructive/50 bg-destructive/5"
+                                  )}
+                                >
                                   <CardContent className="p-3 space-y-2">
-                                    <p className="text-sm text-foreground font-medium leading-snug">{item.title}</p>
+                                    <div className="flex items-start gap-2">
+                                      <p className="text-sm text-foreground font-medium leading-snug flex-1">{item.title}</p>
+                                      {itemOverdue && (
+                                        <span className="flex items-center gap-0.5 shrink-0 text-[9px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
+                                          <AlertTriangle className="h-2.5 w-2.5" />
+                                          {days}d overdue
+                                        </span>
+                                      )}
+                                    </div>
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <select
                                         value={item.status}
