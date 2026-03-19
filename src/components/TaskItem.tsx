@@ -584,6 +584,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
 
       <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
 
+      {/* Task title & badges */}
       <div className="flex flex-1 flex-col gap-1 min-w-0">
         <span className={`text-[13px] sm:text-sm leading-snug protocol-transition ${isCompleted ? 'text-task-completed line-through' : task.status === 'not_started' ? 'text-destructive' : 'text-foreground'}`}>
           {task.title}
@@ -682,16 +683,71 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
         </div>
       </div>
 
-      <div className="flex items-center gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 protocol-transition">
+      {/* Date columns - visible on desktop */}
+      <div className="hidden sm:flex items-center gap-3 shrink-0">
+        {/* Start Date */}
+        <div className="flex flex-col items-center min-w-[70px]">
+          <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground/60">Start</span>
+          <span className="text-[11px] font-mono text-muted-foreground">
+            {format(new Date(task.created_at), 'MMM d')}
+          </span>
+        </div>
+
+        {/* End Date */}
+        <div className="flex flex-col items-center min-w-[70px]">
+          <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground/60">Due</span>
+          {task.due_date ? (
+            <span className={`text-[11px] font-mono ${isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+              {(() => {
+                const d = new Date(task.due_date);
+                const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
+                return hasTime ? format(d, 'MMM d, h:mma') : format(d, 'MMM d');
+              })()}
+            </span>
+          ) : (
+            <span className="text-[11px] font-mono text-muted-foreground/40">—</span>
+          )}
+        </div>
+
+        {/* Overdue indicator */}
+        <div className="flex flex-col items-center min-w-[60px]">
+          {isOverdue ? (
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-destructive/10 border border-destructive/20">
+              <AlertTriangle className="h-3 w-3 text-destructive" />
+              <span className="text-[10px] font-mono font-semibold text-destructive">
+                {overdueDays}d
+              </span>
+            </div>
+          ) : isCompleted ? (
+            <span className="text-[10px] font-mono text-[hsl(var(--status-completed))]">Done</span>
+          ) : task.due_date && isToday(new Date(task.due_date)) ? (
+            <span className="text-[10px] font-mono text-amber-500 font-medium">Today</span>
+          ) : (
+            <span className="text-[10px] font-mono text-muted-foreground/40">—</span>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile date row */}
+      <div className="flex sm:hidden flex-col items-end gap-0.5 shrink-0">
         {task.due_date && (
-          <span className={`text-[10px] sm:text-[11px] font-mono mr-0.5 sm:mr-1 hidden sm:inline ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
-            {isOverdue ? 'overdue' : (() => {
-              const d = new Date(task.due_date!);
-              const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
-              return hasTime ? format(d, 'MMM d, h:mm a') : format(d, 'MMM d');
-            })()}
+          <span className={`text-[10px] font-mono ${isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground/60'}`}>
+            {isOverdue
+              ? `${overdueDays}d overdue`
+              : isToday(new Date(task.due_date))
+                ? 'Today'
+                : (() => {
+                    const d = new Date(task.due_date!);
+                    const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
+                    return hasTime ? format(d, 'M/d h:mma') : format(d, 'M/d');
+                  })()
+            }
           </span>
         )}
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 protocol-transition">
         <button onClick={openEdit} className="p-1.5 sm:p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition active:scale-90" title="Edit task">
           <Pencil className="h-3.5 w-3.5" />
         </button>
@@ -699,17 +755,6 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
-
-      {/* Mobile date display */}
-      {task.due_date && (
-        <span className={`text-[10px] font-mono shrink-0 sm:hidden ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground/60'}`}>
-          {isOverdue ? 'overdue' : (() => {
-            const d = new Date(task.due_date!);
-            const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
-            return hasTime ? format(d, 'M/d h:mma') : format(d, 'M/d');
-          })()}
-        </span>
-      )}
     </motion.div>
 
     {/* Expandable subtasks with checkboxes */}
