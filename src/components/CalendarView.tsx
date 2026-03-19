@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { DeleteAllWrapper } from './DeleteAllWrapper';
 
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
