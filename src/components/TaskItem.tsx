@@ -93,6 +93,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
 
   const isCompleted = task.status === 'completed';
   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && !isCompleted;
+  const overdueDays = isOverdue ? differenceInDays(startOfDay(new Date()), startOfDay(new Date(task.due_date!))) : 0;
   const category = categories.find(c => c.id === task.category_id);
   const taskRecurrence = (task as any).recurrence as string | null;
 
