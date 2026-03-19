@@ -40,7 +40,7 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-8">
+    <div className="space-y-8">
       {/* Welcome header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-semibold text-foreground">
