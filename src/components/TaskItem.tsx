@@ -554,7 +554,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
       <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
 
       <div className="flex flex-1 flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
-        <span className={`text-sm truncate protocol-transition ${isCompleted ? 'text-task-completed line-through' : 'text-foreground'}`}>
+        <span className={`text-sm truncate protocol-transition ${isCompleted ? 'text-task-completed line-through' : task.status === 'not_started' ? 'text-destructive' : 'text-foreground'}`}>
           {task.title}
         </span>
         <div className="flex flex-wrap items-center gap-1">
