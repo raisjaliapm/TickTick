@@ -1,12 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek,
   isSameMonth, isToday, addMonths, subMonths, addWeeks, subWeeks,
   getHours, isSameDay,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Grid3X3, Rows3, Trash2 } from 'lucide-react';
-import type { Task, Category } from '@/hooks/useTaskStore';
+import { ChevronLeft, ChevronRight, Grid3X3, Rows3, Trash2, Plus, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, X, ListChecks, Link as LinkIcon, FileText } from 'lucide-react';
+import type { Task, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
+import type { Recurrence } from '@/components/TaskInput';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -17,6 +19,8 @@ interface CalendarViewProps {
   onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
+  onAdd?: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus, extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[] }) => void;
+  onAddCategory?: (name: string) => Promise<void>;
   mode?: 'month' | 'week';
 }
 
@@ -27,9 +31,262 @@ const priorityDot: Record<string, string> = {
   low: 'bg-priority-low',
 };
 
-const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6:00 – 21:00
+const priorityColors: Record<Priority, string> = { low: 'text-priority-low', medium: 'text-priority-medium', high: 'text-priority-high', urgent: 'text-priority-urgent' };
 
-// Editable task chip used in both month and week views
+const HOURS = Array.from({ length: 16 }, (_, i) => i + 6);
+
+const statusConfig: { value: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
+  { value: 'not_started', label: 'Not Started', icon: Circle, colorClass: 'text-[hsl(var(--status-not-started))]' },
+  { value: 'in_progress', label: 'In Progress', icon: Clock, colorClass: 'text-[hsl(var(--status-in-progress))]' },
+  { value: 'on_hold', label: 'On Hold', icon: Pause, colorClass: 'text-[hsl(var(--status-on-hold))]' },
+  { value: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
+];
+
+const recurrenceOptions: { value: Recurrence; label: string }[] = [
+  { value: null, label: 'Once' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+];
+
+// ---------- Inline Add Task Dialog ----------
+function CalendarAddTaskDialog({
+  open, onOpenChange, date, hour, categories, onAdd, onAddCategory,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  date: Date;
+  hour?: number;
+  categories: Category[];
+  onAdd: CalendarViewProps['onAdd'];
+  onAddCategory?: CalendarViewProps['onAddCategory'];
+}) {
+  const [title, setTitle] = useState('');
+  const [priority, setPriority] = useState<Priority>('medium');
+  const [status, setStatus] = useState<TaskStatus>('not_started');
+  const [dueTime, setDueTime] = useState<string>(() => hour != null ? `${String(hour).padStart(2, '0')}:00` : '');
+  const [recurrence, setRecurrence] = useState<Recurrence>(null);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [description, setDescription] = useState('');
+  const [notes, setNotes] = useState('');
+  const [subtasks, setSubtasks] = useState<string[]>([]);
+  const [newSubtask, setNewSubtask] = useState('');
+  const [urls, setUrls] = useState<string[]>([]);
+  const [newUrl, setNewUrl] = useState('');
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const reset = () => {
+    setTitle(''); setPriority('medium'); setStatus('not_started'); setDueTime(hour != null ? `${String(hour).padStart(2, '0')}:00` : '');
+    setRecurrence(null); setCategoryId(null); setDescription(''); setNotes('');
+    setSubtasks([]); setNewSubtask(''); setUrls([]); setNewUrl('');
+    setShowNewCategory(false); setNewCategoryName('');
+  };
+
+  const handleSubmit = () => {
+    if (!title.trim() || !onAdd) return;
+    const dueDateStr = dueTime ? `${format(date, 'yyyy-MM-dd')}T${dueTime}` : format(date, 'yyyy-MM-dd');
+    const extras = {
+      description: description.trim() || undefined,
+      notes: notes.trim() || undefined,
+      urls: urls.length ? urls : undefined,
+      subtasks: subtasks.length ? subtasks : undefined,
+    };
+    onAdd(title.trim(), priority, dueDateStr, categoryId, recurrence, status, extras);
+    reset();
+    onOpenChange(false);
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim() || !onAddCategory) return;
+    await onAddCategory(newCategoryName.trim());
+    setNewCategoryName('');
+    setShowNewCategory(false);
+  };
+
+  const currentStatus = statusConfig.find(s => s.value === status) || statusConfig[0];
+  const StatusIcon = currentStatus.icon;
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) reset(); }}>
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-display">
+            New task — {format(date, 'EEE, MMM d, yyyy')}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          {/* Title */}
+          <input
+            autoFocus
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && title.trim()) { e.preventDefault(); handleSubmit(); } }}
+            placeholder="Task title..."
+            className="w-full bg-surface-well border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring protocol-transition"
+          />
+
+          {/* Priority & Status row */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mr-0.5">Priority</span>
+              {(['low', 'medium', 'high', 'urgent'] as Priority[]).map(p => (
+                <button key={p} onClick={() => setPriority(p)}
+                  className={`px-2 py-0.5 rounded text-[11px] font-mono capitalize protocol-transition ${priority === p ? `${priorityColors[p]} bg-secondary border border-current/30` : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mr-0.5">Status</span>
+            {statusConfig.map(s => {
+              const Icon = s.icon;
+              return (
+                <button key={s.value} onClick={() => setStatus(s.value)}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono protocol-transition ${status === s.value ? `${s.colorClass} bg-secondary border border-current/30` : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
+                  <Icon className="h-3 w-3" />{s.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Time, Recurrence */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              <input type="time" value={dueTime} onChange={e => setDueTime(e.target.value)}
+                className="text-[11px] font-mono bg-secondary text-secondary-foreground rounded-md pl-7 pr-2 py-1 protocol-transition focus:outline-none border-none" />
+            </div>
+            <div className="flex items-center gap-1">
+              <Repeat className="h-3 w-3 text-muted-foreground" />
+              {recurrenceOptions.map(r => (
+                <button key={r.label} onClick={() => setRecurrence(r.value)}
+                  className={`px-2 py-0.5 rounded text-[11px] font-mono protocol-transition ${recurrence === r.value ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Category */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mr-0.5">Category</span>
+            <button onClick={() => setCategoryId(null)}
+              className={`px-2 py-0.5 rounded text-[11px] font-mono protocol-transition ${categoryId === null ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
+              None
+            </button>
+            {categories.map(c => (
+              <button key={c.id} onClick={() => setCategoryId(c.id)}
+                className={`px-2 py-0.5 rounded text-[11px] font-mono protocol-transition ${categoryId === c.id ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>
+                {c.name}
+              </button>
+            ))}
+            {onAddCategory && (
+              <button onClick={() => setShowNewCategory(true)}
+                className="px-2 py-0.5 rounded text-[11px] font-mono bg-secondary text-muted-foreground hover:bg-secondary/80 protocol-transition">
+                + New
+              </button>
+            )}
+          </div>
+
+          {showNewCategory && (
+            <div className="flex items-center gap-2">
+              <Hash className="h-3 w-3 text-muted-foreground" />
+              <input autoFocus value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleAddCategory(); if (e.key === 'Escape') { setShowNewCategory(false); setNewCategoryName(''); } }}
+                placeholder="Category name..."
+                className="text-[11px] font-mono bg-secondary text-secondary-foreground rounded-md px-2 py-1 focus:outline-none border-none flex-1" />
+              <button onClick={handleAddCategory} className="text-[11px] font-mono px-2 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 protocol-transition">Add</button>
+              <button onClick={() => { setShowNewCategory(false); setNewCategoryName(''); }} className="text-[11px] font-mono px-2 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 protocol-transition">Cancel</button>
+            </div>
+          )}
+
+          {/* Description */}
+          <textarea value={description} onChange={e => setDescription(e.target.value)}
+            placeholder="Add a description..." rows={2}
+            className="w-full bg-secondary/50 rounded-md px-3 py-2 text-xs text-foreground outline-none placeholder:text-muted-foreground resize-none border border-border" />
+
+          {/* Subtasks */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <ListChecks className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Subtasks</span>
+            </div>
+            {subtasks.map((st, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-xs text-foreground flex-1">{st}</span>
+                <button onClick={() => setSubtasks(subtasks.filter((_, idx) => idx !== i))} className="p-0.5 rounded text-muted-foreground hover:text-destructive protocol-transition">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => { if (newSubtask.trim()) { setSubtasks([...subtasks, newSubtask.trim()]); setNewSubtask(''); } }}
+                className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition" title="Add subtask">
+                <Plus className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+              </button>
+              <input value={newSubtask} onChange={e => setNewSubtask(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (newSubtask.trim()) { setSubtasks([...subtasks, newSubtask.trim()]); setNewSubtask(''); } } }}
+                placeholder="Add a subtask..." className="flex-1 text-xs bg-transparent text-foreground outline-none placeholder:text-muted-foreground" />
+            </div>
+          </div>
+
+          {/* URLs */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <LinkIcon className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Links</span>
+            </div>
+            {urls.map((url, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-xs text-primary truncate flex-1">{url}</span>
+                <button onClick={() => setUrls(urls.filter((_, idx) => idx !== i))} className="p-0.5 rounded text-muted-foreground hover:text-destructive protocol-transition">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => { if (newUrl.trim()) { setUrls([...urls, newUrl.trim()]); setNewUrl(''); } }}
+                className="shrink-0 p-0.5 rounded hover:bg-secondary protocol-transition" title="Add URL">
+                <Plus className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+              </button>
+              <input value={newUrl} onChange={e => setNewUrl(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (newUrl.trim()) { setUrls([...urls, newUrl.trim()]); setNewUrl(''); } } }}
+                placeholder="Add a URL..." className="flex-1 text-xs bg-transparent text-foreground outline-none placeholder:text-muted-foreground" />
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Notes</span>
+            </div>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)}
+              placeholder="Add notes..." rows={3}
+              className="w-full bg-secondary/50 rounded-md px-3 py-2 text-xs text-foreground outline-none placeholder:text-muted-foreground resize-y border border-border" />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 pt-1">
+            <Button onClick={handleSubmit} disabled={!title.trim()} size="sm" className="text-xs">
+              <Plus className="h-3 w-3 mr-1" /> Add Task
+            </Button>
+            <Button onClick={() => { reset(); onOpenChange(false); }} variant="outline" size="sm" className="text-xs">
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---------- Editable task chip ----------
 function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete }: {
   task: Task; categories: Category[]; onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void; onDelete: (id: string) => void;
@@ -51,6 +308,7 @@ function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete }: {
     <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) { setTitle(task.title); setPriority(task.priority); } }}>
       <PopoverTrigger asChild>
         <button
+          onClick={e => e.stopPropagation()}
           className={`w-full text-left text-[10px] px-1.5 py-0.5 rounded truncate protocol-transition hover:bg-task-hover flex items-center gap-1 ${task.status === 'completed' ? 'text-task-completed line-through' : 'text-foreground'}`}>
           <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
           <span className="truncate">{task.title}</span>
@@ -92,10 +350,21 @@ function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete }: {
   );
 }
 
-export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, mode: initialMode = 'month' }: CalendarViewProps) {
+export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, onAdd, onAddCategory, mode: initialMode = 'month' }: CalendarViewProps) {
   const [mode, setMode] = useState<'month' | 'week'>(initialMode);
   const [currentDate, setCurrentDate] = useState(new Date());
   const isMobile = useIsMobile();
+
+  // Add-task dialog state
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addDialogDate, setAddDialogDate] = useState<Date>(new Date());
+  const [addDialogHour, setAddDialogHour] = useState<number | undefined>(undefined);
+
+  const openAddDialog = useCallback((date: Date, hour?: number) => {
+    setAddDialogDate(date);
+    setAddDialogHour(hour);
+    setAddDialogOpen(true);
+  }, []);
 
   // ---------- MONTH helpers ----------
   const monthDays = useMemo(() => {
@@ -182,9 +451,18 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
               const today = isToday(day);
               const maxVisible = isMobile ? 1 : 3;
               return (
-                <div key={key} className={`min-h-[56px] sm:min-h-[80px] p-1 sm:p-1.5 bg-background ${!inMonth ? 'opacity-30' : ''}`}>
-                  <div className={`text-[10px] sm:text-[11px] font-mono mb-0.5 sm:mb-1 ${today ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
-                    {format(day, 'd')}
+                <div
+                  key={key}
+                  onClick={() => onAdd && openAddDialog(day)}
+                  className={`min-h-[56px] sm:min-h-[80px] p-1 sm:p-1.5 bg-background ${!inMonth ? 'opacity-30' : ''} ${onAdd ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className={`text-[10px] sm:text-[11px] font-mono mb-0.5 sm:mb-1 ${today ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                      {format(day, 'd')}
+                    </div>
+                    {onAdd && (
+                      <Plus className="h-3 w-3 text-muted-foreground/30 hover:text-primary protocol-transition" />
+                    )}
                   </div>
                   <div className="space-y-0.5">
                     {dayTasks.slice(0, maxVisible).map(task => (
@@ -213,11 +491,17 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                 const today = isToday(day);
                 return (
                   <div key={key} className={`rounded-lg border border-border overflow-hidden ${today ? 'ring-1 ring-primary/30' : ''}`}>
-                    <div className={`px-3 py-2 ${today ? 'bg-primary/5' : 'bg-secondary/50'}`}>
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{format(day, 'EEE')}</span>
-                      <span className={`text-sm font-display font-medium ml-2 ${today ? 'text-primary' : 'text-foreground'}`}>
-                        {format(day, 'MMM d')}
-                      </span>
+                    <div
+                      onClick={() => onAdd && openAddDialog(day)}
+                      className={`px-3 py-2 flex items-center justify-between ${today ? 'bg-primary/5' : 'bg-secondary/50'} ${onAdd ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
+                    >
+                      <div>
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{format(day, 'EEE')}</span>
+                        <span className={`text-sm font-display font-medium ml-2 ${today ? 'text-primary' : 'text-foreground'}`}>
+                          {format(day, 'MMM d')}
+                        </span>
+                      </div>
+                      {onAdd && <Plus className="h-4 w-4 text-muted-foreground/40" />}
                     </div>
                     <div className="p-2 space-y-0.5 min-h-[40px]">
                       {dayTasks.length === 0 && (
@@ -287,8 +571,11 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                       });
                       const today = isToday(day);
                       return (
-                        <div key={`${key}-${hour}`}
-                          className={`min-h-[48px] border-r border-border last:border-r-0 p-0.5 ${today ? 'bg-primary/[0.02]' : ''}`}>
+                        <div
+                          key={`${key}-${hour}`}
+                          onClick={() => onAdd && openAddDialog(day, hour)}
+                          className={`min-h-[48px] border-r border-border last:border-r-0 p-0.5 ${today ? 'bg-primary/[0.02]' : ''} ${onAdd ? 'cursor-pointer hover:bg-accent/20 protocol-transition' : ''}`}
+                        >
                           {hourTasks.map(task => (
                             <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
                           ))}
@@ -322,6 +609,19 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
             </div>
           )}
         </>
+      )}
+
+      {/* Add Task Dialog */}
+      {onAdd && (
+        <CalendarAddTaskDialog
+          open={addDialogOpen}
+          onOpenChange={setAddDialogOpen}
+          date={addDialogDate}
+          hour={addDialogHour}
+          categories={categories}
+          onAdd={onAdd}
+          onAddCategory={onAddCategory}
+        />
       )}
     </div>
   );
