@@ -161,6 +161,7 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
   }, [groupedTasks]);
 
   return (
+    <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
