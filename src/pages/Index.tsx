@@ -49,6 +49,18 @@ const Index = () => {
   const [taskModalDefaultDate, setTaskModalDefaultDate] = useState<Date | null>(null);
   const [taskModalDefaultHour, setTaskModalDefaultHour] = useState<number | null>(null);
 
+  // Global ⌘T shortcut to create task
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 't') {
+        e.preventDefault();
+        handleCreateTask();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   const handleCreateTask = () => {
     setEditingTask(null);
     setTaskModalDefaultDate(null);
