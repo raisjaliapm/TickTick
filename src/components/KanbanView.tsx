@@ -118,7 +118,7 @@ export function KanbanView({ tasks, categories, onUpdateStatus, onDelete }: Kanb
                       draggable={!isMobile}
                       onDragStart={!isMobile ? (e => handleDragStart(e, task.id)) : undefined}
                       onDragEnd={!isMobile ? handleDragEnd : undefined}
-                      className={`group rounded-lg border border-border bg-card p-2.5 ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} hover:border-muted-foreground/30 protocol-transition ${isDragging ? 'opacity-50 shadow-lg' : ''}`}
+                      className={`group rounded-lg border p-2.5 ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} protocol-transition ${isDragging ? 'opacity-50 shadow-lg' : ''} ${task.status === 'not_started' ? 'border-destructive/40 bg-destructive/5 hover:border-destructive/60' : 'border-border bg-card hover:border-muted-foreground/30'}`}
                     >
                       <div className="flex items-start gap-2">
                         {!isMobile && <GripVertical className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-muted-foreground/60 shrink-0 mt-0.5 protocol-transition" />}

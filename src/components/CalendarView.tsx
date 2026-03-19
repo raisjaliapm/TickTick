@@ -316,7 +316,7 @@ function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete, onSt
       <PopoverTrigger asChild>
         <button
           onClick={e => e.stopPropagation()}
-          className={`w-full text-left text-[10px] px-1.5 py-0.5 rounded truncate protocol-transition hover:bg-task-hover flex items-center gap-1 ${task.status === 'completed' ? 'text-task-completed line-through' : 'text-foreground'}`}>
+          className={`w-full text-left text-[10px] px-1.5 py-0.5 rounded truncate protocol-transition hover:bg-task-hover flex items-center gap-1 ${task.status === 'completed' ? 'text-task-completed line-through' : task.status === 'not_started' ? 'text-destructive bg-destructive/10' : 'text-foreground'}`}>
           <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${priorityDot[task.priority] || priorityDot.medium}`} />
           <span className="truncate">{task.title}</span>
         </button>
