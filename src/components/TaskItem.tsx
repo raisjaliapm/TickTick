@@ -690,11 +690,19 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
         <div className="flex flex-col items-center min-w-[70px]">
           <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground/60">Start</span>
           <span className="text-[11px] font-mono text-muted-foreground">
-            {format(new Date(task.created_at), 'MMM d')}
+            {(task as any).start_date ? format(new Date((task as any).start_date), 'MMM d') : '—'}
           </span>
         </div>
 
         {/* End Date */}
+        <div className="flex flex-col items-center min-w-[70px]">
+          <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground/60">End</span>
+          <span className="text-[11px] font-mono text-muted-foreground">
+            {(task as any).end_date ? format(new Date((task as any).end_date), 'MMM d') : '—'}
+          </span>
+        </div>
+
+        {/* Due Date */}
         <div className="flex flex-col items-center min-w-[70px]">
           <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground/60">Due</span>
           {task.due_date ? (

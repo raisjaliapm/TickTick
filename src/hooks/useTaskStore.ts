@@ -92,7 +92,7 @@ export function useTaskStore() {
     categoryId: string | null = null,
     recurrence: string | null = null,
     status: TaskStatus = 'not_started',
-    extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[]; projectId?: string | null }
+    extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[]; projectId?: string | null; startDate?: string | null; endDate?: string | null }
   ) => {
     if (!user) return;
     let formattedDueDate: string | null = null;
@@ -116,6 +116,8 @@ export function useTaskStore() {
       notes: extras?.notes || '',
       urls: extras?.urls?.length ? extras.urls : [],
       project_id: extras?.projectId || null,
+      start_date: extras?.startDate ? formatLocalDateTime(new Date(extras.startDate + 'T00:00:00')) : null,
+      end_date: extras?.endDate ? formatLocalDateTime(new Date(extras.endDate + 'T00:00:00')) : null,
     } as any).select('id').single();
 
     // Insert subtasks if provided

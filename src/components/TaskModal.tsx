@@ -39,6 +39,8 @@ export interface TaskModalData {
   priority: Priority;
   status: TaskStatus;
   dueDate: string | null;
+  startDate: string | null;
+  endDate: string | null;
   categoryId: string | null;
   recurrence: Recurrence;
   notes: string;
@@ -100,6 +102,8 @@ export function TaskModal({
   const [status, setStatus] = useState<TaskStatus>('not_started');
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [dueTime, setDueTime] = useState('');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
   const [notes, setNotes] = useState('');
@@ -111,6 +115,8 @@ export function TaskModal({
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [startCalendarOpen, setStartCalendarOpen] = useState(false);
+  const [endCalendarOpen, setEndCalendarOpen] = useState(false);
 
   // Existing subtasks (edit mode)
   const [existingSubtasks, setExistingSubtasks] = useState<Subtask[]>([]);
@@ -142,6 +148,8 @@ export function TaskModal({
         setDueDate(undefined);
         setDueTime('');
       }
+      setStartDate((task as any).start_date ? new Date((task as any).start_date) : undefined);
+      setEndDate((task as any).end_date ? new Date((task as any).end_date) : undefined);
       setCategoryId(task.category_id);
       setRecurrence((task as any).recurrence || null);
       setNotes((task as any).notes || '');
@@ -170,6 +178,8 @@ export function TaskModal({
       setNewSubtaskItems([]);
       setProjectId(activeProjectId || null);
       setExistingSubtasks([]);
+      setStartDate(undefined);
+      setEndDate(undefined);
     }
     setNewUrl('');
     setNewSubtask('');
@@ -262,6 +272,8 @@ export function TaskModal({
       priority,
       status,
       dueDate: finalDueDate,
+      startDate: startDate ? format(startDate, 'yyyy-MM-dd') : null,
+      endDate: endDate ? format(endDate, 'yyyy-MM-dd') : null,
       categoryId,
       recurrence,
       notes: notes.trim(),
@@ -418,9 +430,69 @@ export function TaskModal({
             </div>
           </div>
 
+          {/* Start Date & End Date */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Start Date</label>
+              <Popover open={startCalendarOpen} onOpenChange={setStartCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1.5 w-full px-3 py-1.5 rounded-lg text-xs font-mono bg-secondary text-muted-foreground hover:bg-secondary/80 border border-border protocol-transition">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {startDate ? format(startDate, 'MMM d, yyyy') : 'Set start date'}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={d => { setStartDate(d); setStartCalendarOpen(false); }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                  {startDate && (
+                    <div className="px-3 pb-3">
+                      <button onClick={() => { setStartDate(undefined); setStartCalendarOpen(false); }} className="text-[11px] font-mono text-destructive hover:underline">
+                        Clear date
+                      </button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">End Date</label>
+              <Popover open={endCalendarOpen} onOpenChange={setEndCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1.5 w-full px-3 py-1.5 rounded-lg text-xs font-mono bg-secondary text-muted-foreground hover:bg-secondary/80 border border-border protocol-transition">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {endDate ? format(endDate, 'MMM d, yyyy') : 'Set end date'}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={d => { setEndDate(d); setEndCalendarOpen(false); }}
+                    disabled={startDate ? (date) => date < startDate : undefined}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                  {endDate && (
+                    <div className="px-3 pb-3">
+                      <button onClick={() => { setEndDate(undefined); setEndCalendarOpen(false); }} className="text-[11px] font-mono text-destructive hover:underline">
+                        Clear date
+                      </button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
           {/* Due Date, Time, Recurrence */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Schedule</label>
+            <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">Due Date & Recurrence</label>
             <div className="flex flex-wrap items-center gap-2">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
