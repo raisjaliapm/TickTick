@@ -71,36 +71,41 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
   };
 
   return (
-    <div className="grid grid-cols-4 gap-3 min-h-[60vh]">
+    <div className={isMobile ? 'space-y-3' : 'grid grid-cols-4 gap-3 min-h-[60vh]'}>
       {columns.map(col => {
         const Icon = col.icon;
         const columnTasks = tasks.filter(t => t.status === col.status);
         const isOver = dragOverColumn === col.status;
+        const isExpanded = !isMobile || expandedColumn === col.status;
 
         return (
           <div
             key={col.status}
-            onDragOver={e => handleDragOver(e, col.status)}
-            onDragLeave={handleDragLeave}
-            onDrop={e => handleDrop(e, col.status)}
+            onDragOver={!isMobile ? (e => handleDragOver(e, col.status)) : undefined}
+            onDragLeave={!isMobile ? handleDragLeave : undefined}
+            onDrop={!isMobile ? (e => handleDrop(e, col.status)) : undefined}
             className={`flex flex-col rounded-xl border ${col.borderColor} bg-card/50 protocol-transition ${isOver ? 'bg-secondary/60 border-primary/40 scale-[1.01]' : ''}`}
           >
             {/* Column header */}
-            <div className="flex items-center gap-2 px-3 py-3 border-b border-border/50">
+            <button
+              onClick={() => isMobile && setExpandedColumn(isExpanded ? null : col.status)}
+              className="flex items-center gap-2 px-3 py-3 border-b border-border/50 w-full text-left"
+            >
               <Icon className="h-4 w-4" style={{ color: `hsl(var(${col.colorVar}))` }} />
               <span className="text-xs font-mono font-medium text-foreground">{col.label}</span>
               <span className="ml-auto text-[10px] font-mono text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full">
                 {columnTasks.length}
               </span>
-            </div>
+            </button>
 
             {/* Task cards */}
-            <div className="flex-1 p-2 space-y-1.5 overflow-y-auto scrollbar-thin min-h-[100px]">
-              {isOver && columnTasks.length === 0 && (
-                <div className="border-2 border-dashed border-primary/30 rounded-lg h-16 flex items-center justify-center">
-                  <span className="text-[10px] font-mono text-muted-foreground">Drop here</span>
-                </div>
-              )}
+            {isExpanded && (
+              <div className="flex-1 p-2 space-y-1.5 overflow-y-auto scrollbar-thin min-h-[60px]">
+                {isOver && columnTasks.length === 0 && (
+                  <div className="border-2 border-dashed border-primary/30 rounded-lg h-16 flex items-center justify-center">
+                    <span className="text-[10px] font-mono text-muted-foreground">Drop here</span>
+                  </div>
+                )}
                 {columnTasks.map(task => {
                   const category = categories.find(c => c.id === task.category_id);
                   const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && task.status !== 'completed';
@@ -109,13 +114,13 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
                   return (
                     <div
                       key={task.id}
-                      draggable
-                      onDragStart={e => handleDragStart(e, task.id)}
-                      onDragEnd={handleDragEnd}
-                      className={`group rounded-lg border border-border bg-card p-2.5 cursor-grab active:cursor-grabbing hover:border-muted-foreground/30 protocol-transition ${isDragging ? 'opacity-50 shadow-lg' : ''}`}
+                      draggable={!isMobile}
+                      onDragStart={!isMobile ? (e => handleDragStart(e, task.id)) : undefined}
+                      onDragEnd={!isMobile ? handleDragEnd : undefined}
+                      className={`group rounded-lg border border-border bg-card p-2.5 ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} hover:border-muted-foreground/30 protocol-transition ${isDragging ? 'opacity-50 shadow-lg' : ''}`}
                     >
                       <div className="flex items-start gap-2">
-                        <GripVertical className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-muted-foreground/60 shrink-0 mt-0.5 protocol-transition" />
+                        {!isMobile && <GripVertical className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-muted-foreground/60 shrink-0 mt-0.5 protocol-transition" />}
                         <div className="flex-1 min-w-0">
                           <p className={`text-xs leading-relaxed ${task.status === 'completed' ? 'text-task-completed line-through' : 'text-foreground'}`}>
                             {task.title}
@@ -134,12 +139,32 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
                             )}
                           </div>
                         </div>
+
+                        {/* Mobile: status change buttons */}
+                        {isMobile && (
+                          <select
+                            value={task.status}
+                            onChange={(e) => onUpdateStatus(task.id, e.target.value as TaskStatus)}
+                            className="text-[10px] font-mono bg-secondary text-muted-foreground border border-border rounded px-1 py-0.5"
+                          >
+                            {columns.map(c => (
+                              <option key={c.status} value={c.status}>{c.label}</option>
+                            ))}
+                          </select>
+                        )}
                       </div>
                     </div>
                   );
                 })}
-            </div>
+                {columnTasks.length === 0 && !isOver && (
+                  <p className="text-[10px] font-mono text-muted-foreground text-center py-4">No tasks</p>
+                )}
+              </div>
+            )}
           </div>
+        );
+      })}
+    </div>
         );
       })}
     </div>
