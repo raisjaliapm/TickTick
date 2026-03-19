@@ -41,6 +41,16 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDe
 
   return (
     <DeleteAllWrapper taskCount={tasks.length} onDeleteAll={handleDeleteAll}>
+      {/* Column headers - desktop */}
+      <div className="hidden sm:flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 mb-1 text-[9px] font-mono uppercase tracking-wider text-muted-foreground/50">
+        <div className="w-7 shrink-0" /> {/* status */}
+        <div className="w-1.5 shrink-0" /> {/* priority dot */}
+        <div className="flex-1">Task</div>
+        <div className="min-w-[70px] text-center">Start</div>
+        <div className="min-w-[70px] text-center">Due</div>
+        <div className="min-w-[60px] text-center">Status</div>
+        <div className="w-[68px]" /> {/* actions */}
+      </div>
       <div className="space-y-0.5">
         <AnimatePresence mode="popLayout">
           {tasks.map(task => (
