@@ -195,7 +195,7 @@ const Index = () => {
             <AIChatPanel onTasksChanged={() => store.fetchTasks?.()} />
           ) : (
             <div className="h-full overflow-y-auto overscroll-contain">
-              <div className={`mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 pb-8 sm:pb-6 ${store.viewFilter === 'calendar' || store.viewFilter === 'reports' || store.viewFilter === 'weekly-reports' || store.viewFilter === 'kanban' ? 'max-w-5xl' : 'max-w-2xl'}`}>
+              <div className={`mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 pb-8 sm:pb-6 ${store.viewFilter === 'calendar' || store.viewFilter === 'reports' || store.viewFilter === 'weekly-reports' || store.viewFilter === 'kanban' || store.viewFilter === 'gantt' ? 'max-w-5xl' : 'max-w-2xl'}`}>
                 <h1 className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6">
                   {viewLabels[store.viewFilter]}
                   {projectStore.activeProject && (
