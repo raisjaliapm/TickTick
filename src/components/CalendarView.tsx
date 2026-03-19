@@ -4,7 +4,7 @@ import {
   isSameMonth, isToday, addMonths, subMonths, addWeeks, subWeeks,
   getHours, isSameDay,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Grid3X3, Rows3, Trash2, Plus, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, X, ListChecks, Link as LinkIcon, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Grid3X3, Rows3, Trash2, Plus, Flag, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, X, ListChecks, Link as LinkIcon, FileText, CalendarX2 } from 'lucide-react';
 import type { Task, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
 import type { Recurrence } from '@/components/TaskInput';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,12 +13,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+
 interface CalendarViewProps {
   tasks: Task[];
   categories: Category[];
   onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
+  onStopRecurrence?: (id: string, endDate: Date) => void;
   onAdd?: (title: string, priority: Priority, dueDate: string | null, categoryId: string | null, recurrence?: Recurrence, status?: TaskStatus, extras?: { description?: string; notes?: string; urls?: string[]; subtasks?: string[] }) => void;
   onAddCategory?: (name: string) => Promise<void>;
   mode?: 'month' | 'week';
@@ -287,13 +291,15 @@ function CalendarAddTaskDialog({
 }
 
 // ---------- Editable task chip ----------
-function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete }: {
+function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete, onStopRecurrence }: {
   task: Task; categories: Category[]; onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void; onDelete: (id: string) => void;
+  onStopRecurrence?: (id: string, endDate: Date) => void;
 }) {
   const [title, setTitle] = useState(task.title);
   const [priority, setPriority] = useState(task.priority);
   const [open, setOpen] = useState(false);
+  const [endRecurrenceOpen, setEndRecurrenceOpen] = useState(false);
   const category = categories.find(c => c.id === task.category_id);
 
   const handleSave = () => {
@@ -334,6 +340,36 @@ function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete }: {
         {category && (
           <div className="text-[10px] font-mono text-muted-foreground">Category: {category.name}</div>
         )}
+        {(task as any).recurrence && onStopRecurrence && (
+          <div className="pt-1 border-t border-border">
+            <Popover open={endRecurrenceOpen} onOpenChange={setEndRecurrenceOpen}>
+              <PopoverTrigger asChild>
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground hover:text-destructive w-full justify-start">
+                  <CalendarX2 className="h-3 w-3 mr-1" /> End recurrence
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
+                <div className="p-2 border-b border-border">
+                  <span className="text-[11px] font-mono text-muted-foreground">End recurrence after:</span>
+                </div>
+                <Calendar
+                  mode="single"
+                  selected={undefined}
+                  onSelect={(date) => {
+                    if (date) {
+                      onStopRecurrence(task.id, date);
+                      setEndRecurrenceOpen(false);
+                      setOpen(false);
+                    }
+                  }}
+                  disabled={(date) => date < new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
         <div className="flex items-center justify-between pt-1">
           <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground hover:text-destructive" onClick={() => { onDelete(task.id); setOpen(false); }}>
             <Trash2 className="h-3 w-3 mr-1" /> Delete
@@ -350,7 +386,7 @@ function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete }: {
   );
 }
 
-export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, onAdd, onAddCategory, mode: initialMode = 'month' }: CalendarViewProps) {
+export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAdd, onAddCategory, mode: initialMode = 'month' }: CalendarViewProps) {
   const [mode, setMode] = useState<'month' | 'week'>(initialMode);
   const [currentDate, setCurrentDate] = useState(new Date());
   const isMobile = useIsMobile();
@@ -466,7 +502,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                   </div>
                   <div className="space-y-0.5">
                     {dayTasks.slice(0, maxVisible).map(task => (
-                      <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
+                      <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
                     ))}
                     {dayTasks.length > maxVisible && (
                       <span className="text-[9px] font-mono text-muted-foreground px-1">+{dayTasks.length - maxVisible}</span>
@@ -508,7 +544,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                         <p className="text-[10px] font-mono text-muted-foreground/40 text-center py-2">No tasks</p>
                       )}
                       {dayTasks.map(task => (
-                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
+                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
                       ))}
                     </div>
                   </div>
@@ -529,7 +565,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                     <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5 px-1">Unscheduled</p>
                     <div className="space-y-0.5">
                       {unscheduled.slice(0, 10).map(task => (
-                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
+                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
                       ))}
                     </div>
                   </div>
@@ -577,7 +613,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                           className={`min-h-[48px] border-r border-border last:border-r-0 p-0.5 ${today ? 'bg-primary/[0.02]' : ''} ${onAdd ? 'cursor-pointer hover:bg-accent/20 protocol-transition' : ''}`}
                         >
                           {hourTasks.map(task => (
-                            <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
+                            <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
                           ))}
                         </div>
                       );
@@ -600,7 +636,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                     <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5 px-1">Unscheduled</p>
                     <div className="flex flex-wrap gap-1">
                       {unscheduled.slice(0, 10).map(task => (
-                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
+                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
                       ))}
                     </div>
                   </div>
