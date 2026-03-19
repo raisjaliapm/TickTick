@@ -129,6 +129,7 @@ const Index = () => {
             <span className="text-[10px] font-mono text-muted-foreground block md:hidden">
               {store.stats.total}
             </span>
+            <NotificationBell />
             <button
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
               className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground bg-secondary px-2.5 py-1.5 rounded-lg border border-border hover:bg-task-hover protocol-transition"
