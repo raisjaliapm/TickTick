@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Plus, Link, FileText, ListChecks } from 'lucide-react';
+import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Plus, Link, FileText, ListChecks, Ban } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -24,6 +24,7 @@ interface TaskItemProps {
   onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
+  onStopRecurrence?: (id: string) => void;
   onAddCategory?: (name: string) => Promise<void>;
   onUpdateStatus?: (id: string, status: TaskStatus) => void;
 }
@@ -51,7 +52,7 @@ const recurrenceOptions: { value: Recurrence; label: string }[] = [
 ];
 const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 
-export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAddCategory, onUpdateStatus }: TaskItemProps) {
+export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAddCategory, onUpdateStatus }: TaskItemProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(task.title);
   const [editDescription, setEditDescription] = React.useState(task.description || '');
@@ -597,6 +598,11 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
         <button onClick={openEdit} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition" title="Edit task">
           <Pencil className="h-3.5 w-3.5" />
         </button>
+        {taskRecurrence && onStopRecurrence && (
+          <button onClick={() => onStopRecurrence(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="End recurrence">
+            <Ban className="h-3.5 w-3.5" />
+          </button>
+        )}
         <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="Delete task">
           <Trash2 className="h-3.5 w-3.5" />
         </button>

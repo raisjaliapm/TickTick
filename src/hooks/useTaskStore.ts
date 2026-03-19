@@ -19,6 +19,32 @@ function getNextDueDate(currentDue: string | null, recurrence: string): string {
   return formatLocalDateTime(base);
 }
 
+function getRecurrenceCount(recurrence: string): number {
+  if (recurrence === 'daily') return 30;
+  if (recurrence === 'weekly') return 12;
+  if (recurrence === 'monthly') return 6;
+  return 0;
+}
+
+function generateFutureInstances(
+  baseDue: string,
+  recurrence: string,
+  count: number
+): string[] {
+  const dates: string[] = [];
+  let current = new Date(baseDue);
+  for (let i = 0; i < count; i++) {
+    if (recurrence === 'daily') current = new Date(current.getTime() + 86400000);
+    else if (recurrence === 'weekly') current = new Date(current.getTime() + 7 * 86400000);
+    else if (recurrence === 'monthly') {
+      current = new Date(current);
+      current.setMonth(current.getMonth() + 1);
+    }
+    dates.push(formatLocalDateTime(current));
+  }
+  return dates;
+}
+
 export function useTaskStore() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -107,6 +133,27 @@ export function useTaskStore() {
       await supabase.from('subtasks').insert(subtaskRows as any);
     }
 
+    // Auto-generate future recurring instances
+    if (recurrence && formattedDueDate) {
+      const count = getRecurrenceCount(recurrence);
+      const futureDates = generateFutureInstances(formattedDueDate, recurrence, count);
+      const futureRows = futureDates.map(date => ({
+        user_id: user.id,
+        title,
+        priority,
+        due_date: date,
+        category_id: categoryId,
+        recurrence,
+        status: 'not_started',
+        description: extras?.description || null,
+        notes: extras?.notes || '',
+        urls: extras?.urls?.length ? extras.urls : [],
+      }));
+      if (futureRows.length > 0) {
+        await supabase.from('tasks').insert(futureRows as any);
+      }
+    }
+
     await fetchTasks();
   }, [user, fetchTasks]);
 
@@ -120,23 +167,8 @@ export function useTaskStore() {
       completed_at: newStatus === 'completed' ? new Date().toISOString() : null,
     }).eq('id', id);
 
-    // If completing a recurring task, create the next occurrence
-    if (newStatus === 'completed' && task.recurrence && user) {
-      const nextDue = getNextDueDate(task.due_date, task.recurrence);
-      await supabase.from('tasks').insert({
-        user_id: user.id,
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        category_id: task.category_id,
-        due_date: nextDue,
-        recurrence: task.recurrence,
-        status: 'not_started',
-      } as any);
-    }
-
     await fetchTasks();
-  }, [tasks, user, fetchTasks]);
+  }, [tasks, fetchTasks]);
 
   const updateTaskStatus = useCallback(async (id: string, status: TaskStatus) => {
     await supabase.from('tasks').update({
@@ -144,20 +176,27 @@ export function useTaskStore() {
       completed_at: status === 'completed' ? new Date().toISOString() : null,
     }).eq('id', id);
 
-    // If completing a recurring task, create the next occurrence
+    await fetchTasks();
+  }, [fetchTasks]);
+
+  const stopRecurrence = useCallback(async (id: string) => {
     const task = tasks.find(t => t.id === id);
-    if (status === 'completed' && task?.recurrence && user) {
-      const nextDue = getNextDueDate(task.due_date, task.recurrence);
-      await supabase.from('tasks').insert({
-        user_id: user.id,
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        category_id: task.category_id,
-        due_date: nextDue,
-        recurrence: task.recurrence,
-        status: 'not_started',
-      } as any);
+    if (!task || !task.recurrence) return;
+
+    // Remove recurrence from this task
+    await supabase.from('tasks').update({ recurrence: null } as any).eq('id', id);
+
+    // Delete all future non-completed instances of this recurring task
+    if (user) {
+      const now = formatLocalDateTime(new Date());
+      await supabase.from('tasks')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('title', task.title)
+        .eq('recurrence', task.recurrence)
+        .neq('status', 'completed')
+        .gt('due_date', now)
+        .neq('id', id);
     }
 
     await fetchTasks();
@@ -219,7 +258,7 @@ export function useTaskStore() {
     priorityFilter, setPriorityFilter,
     statusFilter, setStatusFilter,
     searchQuery, setSearchQuery,
-    addTask, toggleTask, updateTaskStatus, updateTask, deleteTask,
+    addTask, toggleTask, updateTaskStatus, updateTask, deleteTask, stopRecurrence,
     addCategory, fetchTasks,
     stats,
     loading,
