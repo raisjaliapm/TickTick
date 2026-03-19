@@ -1,4 +1,4 @@
-import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause, Columns3, Sun, Moon } from 'lucide-react';
+import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause, Columns3, Sun, Moon, X } from 'lucide-react';
 import { GoogleCalendarButton } from '@/components/GoogleCalendarButton';
 import type { ViewFilter, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +15,7 @@ interface SidebarNavProps {
   setStatusFilter: (s: TaskStatus | null) => void;
   categories: Category[];
   stats: { total: number; today: number; completed: number; overdue: number; notStarted: number; inProgress: number; onHold: number };
+  onDeleteCategory?: (id: string) => void;
   onLogoClick?: () => void;
   className?: string;
 }
@@ -44,7 +45,7 @@ const statusItems: { key: TaskStatus; label: string; icon: React.ElementType; co
   { key: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
 ];
 
-export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, categories, stats, onLogoClick, className }: SidebarNavProps) {
+export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, categories, stats, onDeleteCategory, onLogoClick, className }: SidebarNavProps) {
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -100,10 +101,21 @@ export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCateg
       <nav className="space-y-0.5">
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-2 mb-2">Categories</p>
         {categories.map(cat => (
-          <button key={cat.id} onClick={() => { setCategoryFilter(categoryFilter === cat.id ? null : cat.id); setPriorityFilter(null); if (viewFilter === 'completed' || viewFilter === 'calendar') setViewFilter('all'); }}
-            className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm protocol-transition ${categoryFilter === cat.id ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}`}>
-            <Hash className="h-3.5 w-3.5" /><span>{cat.name}</span>
-          </button>
+          <div key={cat.id} className="group/cat flex items-center">
+            <button onClick={() => { setCategoryFilter(categoryFilter === cat.id ? null : cat.id); setPriorityFilter(null); if (viewFilter === 'completed' || viewFilter === 'calendar') setViewFilter('all'); }}
+              className={`flex-1 flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm protocol-transition ${categoryFilter === cat.id ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}`}>
+              <Hash className="h-3.5 w-3.5" /><span>{cat.name}</span>
+            </button>
+            {onDeleteCategory && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onDeleteCategory(cat.id); if (categoryFilter === cat.id) setCategoryFilter(null); }}
+                className="opacity-0 group-hover/cat:opacity-100 p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition mr-1"
+                title={`Delete ${cat.name}`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
         ))}
       </nav>
 

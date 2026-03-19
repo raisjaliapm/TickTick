@@ -58,6 +58,7 @@ const Index = () => {
     setStatusFilter: (s: any) => { store.setStatusFilter(s); setMainView('tasks'); if (isMobile) setMobileSidebarOpen(false); },
     categories: store.categories,
     stats: store.stats,
+    onDeleteCategory: store.deleteCategory,
     onLogoClick: () => { setMainView('ai'); if (isMobile) setMobileSidebarOpen(false); },
   };
 
