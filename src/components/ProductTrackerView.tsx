@@ -61,16 +61,59 @@ export function ProductTrackerView() {
   const [newBoardName, setNewBoardName] = useState('');
   const [newPhaseName, setNewPhaseName] = useState('');
   const [showNewPhase, setShowNewPhase] = useState(false);
-  const [addingItemPhaseId, setAddingItemPhaseId] = useState<string | null>(null);
-  const [newItemTitle, setNewItemTitle] = useState('');
-  const [newItemPendingFiles, setNewItemPendingFiles] = useState<File[]>([]);
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [itemAttachments, setItemAttachments] = useState<Record<string, ItemAttachment[]>>({});
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const createFileInputRef = useRef<HTMLInputElement>(null);
   const [dragItemId, setDragItemId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [modalPhaseId, setModalPhaseId] = useState<string | null>(null);
+  const [modalItem, setModalItem] = useState<TrackerItem | null>(null);
+
+  const openCreateModal = (phaseId: string) => {
+    setModalPhaseId(phaseId);
+    setModalMode('create');
+    setModalItem(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (item: TrackerItem) => {
+    setModalMode('edit');
+    setModalItem(item);
+    setModalPhaseId(item.phase_id);
+    setModalOpen(true);
+  };
+
+  const handleModalSave = async (data: { title: string; priority: string; status: TrackerItem['status']; due_date: string | null; assignee: string | null; notes: string }) => {
+    if (modalMode === 'create' && modalPhaseId) {
+      const newId = await tracker.addItem(modalPhaseId, data.title, {
+        priority: data.priority,
+        status: data.status,
+        due_date: data.due_date,
+        assignee: data.assignee,
+        notes: data.notes,
+      });
+      return newId;
+    } else if (modalMode === 'edit' && modalItem) {
+      await tracker.updateItem(modalItem.id, {
+        title: data.title,
+        priority: data.priority,
+        status: data.status,
+        due_date: data.due_date,
+        assignee: data.assignee,
+        notes: data.notes,
+      });
+      return modalItem.id;
+    }
+  };
+
+  const handleModalFilesUploaded = () => {
+    if (modalItem) fetchItemAttachments(modalItem.id);
+  };
 
   const handleDragStart = useCallback((e: React.DragEvent, itemId: string) => {
     setDragItemId(itemId);
