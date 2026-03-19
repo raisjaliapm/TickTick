@@ -204,6 +204,7 @@ export function TaskModal({
       setProjectId(activeProjectId || null);
       setExistingSubtasks([]);
       setAttachments([]);
+      setPendingFiles([]);
       setStartDate(undefined);
       setEndDate(undefined);
     }
