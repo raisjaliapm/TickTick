@@ -209,6 +209,12 @@ export function useTaskStore() {
     await fetchCategories();
   }, [user, fetchCategories]);
 
+  const deleteCategory = useCallback(async (id: string) => {
+    await supabase.from('tasks').update({ category_id: null } as any).eq('category_id', id);
+    await supabase.from('categories').delete().eq('id', id);
+    await Promise.all([fetchCategories(), fetchTasks()]);
+  }, [fetchCategories, fetchTasks]);
+
   const filteredTasks = tasks.filter(task => {
     if (statusFilter) {
       if (task.status !== statusFilter) return false;
