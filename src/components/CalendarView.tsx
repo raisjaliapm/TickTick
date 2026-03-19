@@ -502,7 +502,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                   </div>
                   <div className="space-y-0.5">
                     {dayTasks.slice(0, maxVisible).map(task => (
-                      <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
+                      <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
                     ))}
                     {dayTasks.length > maxVisible && (
                       <span className="text-[9px] font-mono text-muted-foreground px-1">+{dayTasks.length - maxVisible}</span>
