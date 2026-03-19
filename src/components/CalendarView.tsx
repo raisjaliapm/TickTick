@@ -636,7 +636,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                     <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5 px-1">Unscheduled</p>
                     <div className="flex flex-wrap gap-1">
                       {unscheduled.slice(0, 10).map(task => (
-                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} />
+                        <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
                       ))}
                     </div>
                   </div>
