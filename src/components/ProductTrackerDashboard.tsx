@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ListTodo, Clock, CheckCircle2, AlertTriangle, Pause, Circle,
-  TrendingUp, FolderKanban, Package, BarChart3, Filter, Download
+  TrendingUp, FolderKanban, Package, BarChart3, Filter, Download, Users
 } from 'lucide-react';
 import { format, isPast, isToday, isWithinInterval, addDays, startOfDay } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -349,6 +349,125 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
           </div>
         )}
       </div>
+
+      {/* Assignee Performance Section */}
+      {(() => {
+        const assigneeMap = new Map<string, { total: number; done: number; inProgress: number; overdue: number; highPriority: number }>();
+        filteredItems.forEach(item => {
+          const name = item.assignee || 'Unassigned';
+          const entry = assigneeMap.get(name) || { total: 0, done: 0, inProgress: 0, overdue: 0, highPriority: 0 };
+          entry.total++;
+          if (item.status === 'done') entry.done++;
+          if (item.status === 'in_progress') entry.inProgress++;
+          if (item.status !== 'done' && item.due_date && isPast(new Date(item.due_date)) && !isToday(new Date(item.due_date))) entry.overdue++;
+          if (item.priority === 'high' || item.priority === 'urgent') entry.highPriority++;
+          assigneeMap.set(name, entry);
+        });
+        const assigneeData = Array.from(assigneeMap.entries())
+          .map(([name, data]) => ({ name, ...data, completionRate: data.total > 0 ? Math.round((data.done / data.total) * 100) : 0 }))
+          .sort((a, b) => b.total - a.total);
+        const assignedCount = assigneeData.filter(a => a.name !== 'Unassigned').length;
+
+        if (assigneeData.length === 0 || (assigneeData.length === 1 && assigneeData[0].name === 'Unassigned' && assigneeData[0].total === 0)) return null;
+
+        const ASSIGNEE_COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--info))', '#8B5CF6', '#EC4899', '#14B8A6'];
+
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Assignee Workload Bar Chart */}
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                Assignee Workload
+              </h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={assigneeData.slice(0, 8)} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={0} angle={-20} textAnchor="end" height={50} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }} />
+                  <Legend wrapperStyle={{ fontSize: '11px' }} />
+                  <Bar dataKey="done" name="Done" stackId="a" fill="hsl(var(--success))" radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="inProgress" name="In Progress" stackId="a" fill="hsl(var(--warning))" radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="overdue" name="Overdue" stackId="a" fill="hsl(var(--destructive))" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Assignee Completion Rate Chart */}
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-success" />
+                Completion Rate by Assignee
+              </h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={assigneeData.filter(a => a.total > 0).slice(0, 8)} layout="vertical" margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} width={80} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--foreground))' }} formatter={(value: number) => [`${value}%`, 'Completion']} />
+                  <Bar dataKey="completionRate" radius={[0, 6, 6, 0]}>
+                    {assigneeData.filter(a => a.total > 0).slice(0, 8).map((_, i) => (
+                      <Cell key={i} fill={ASSIGNEE_COLORS[i % ASSIGNEE_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Assignee Detail Table */}
+            <div className="bg-card border border-border rounded-xl p-5 md:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  Assignee Performance
+                </h3>
+                <span className="text-xs text-muted-foreground">{assignedCount} assignees</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-3 text-xs font-medium text-muted-foreground">Assignee</th>
+                      <th className="text-center py-2 px-3 text-xs font-medium text-muted-foreground">Total</th>
+                      <th className="text-center py-2 px-3 text-xs font-medium text-muted-foreground">Done</th>
+                      <th className="text-center py-2 px-3 text-xs font-medium text-muted-foreground">In Progress</th>
+                      <th className="text-center py-2 px-3 text-xs font-medium text-muted-foreground">Overdue</th>
+                      <th className="text-center py-2 px-3 text-xs font-medium text-muted-foreground">High/Urgent</th>
+                      <th className="text-left py-2 px-3 text-xs font-medium text-muted-foreground min-w-[120px]">Completion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {assigneeData.map((a, i) => (
+                      <tr key={a.name} className="border-b border-border/50 hover:bg-accent/30 protocol-transition">
+                        <td className="py-2.5 px-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-primary-foreground" style={{ backgroundColor: ASSIGNEE_COLORS[i % ASSIGNEE_COLORS.length] }}>
+                              {a.name === 'Unassigned' ? '?' : a.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="text-foreground font-medium truncate max-w-[120px]">{a.name}</span>
+                          </div>
+                        </td>
+                        <td className="text-center py-2.5 px-3 font-mono text-foreground">{a.total}</td>
+                        <td className="text-center py-2.5 px-3 font-mono text-success">{a.done}</td>
+                        <td className="text-center py-2.5 px-3 font-mono text-warning">{a.inProgress}</td>
+                        <td className="text-center py-2.5 px-3 font-mono text-destructive">{a.overdue}</td>
+                        <td className="text-center py-2.5 px-3 font-mono text-foreground">{a.highPriority}</td>
+                        <td className="py-2.5 px-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 flex-1 bg-secondary rounded-full overflow-hidden">
+                              <div className="h-full rounded-full protocol-transition" style={{ width: `${a.completionRate}%`, backgroundColor: ASSIGNEE_COLORS[i % ASSIGNEE_COLORS.length] }} />
+                            </div>
+                            <span className="text-[10px] font-mono text-muted-foreground w-8 text-right">{a.completionRate}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* Due Today */}
