@@ -172,7 +172,7 @@ export function SidebarNav({
           <div className="mt-1 space-y-0.5">
             {viewItems.map(item => {
               const active = viewFilter === item.key && !categoryFilter && !priorityFilter;
-              const count = item.key === 'all' ? stats.total : item.key === 'today' ? stats.today : item.key === 'completed' ? stats.completed : undefined;
+              const count = item.key === 'all' ? stats.total : item.key === 'active' ? stats.total : item.key === 'in_progress_view' ? stats.inProgress : item.key === 'overdue' ? stats.overdue : item.key === 'today' ? stats.today : item.key === 'completed' ? stats.completed : undefined;
               return (
                 <button key={item.key} onClick={() => { setViewFilter(item.key); setCategoryFilter(null); setPriorityFilter(null); }}
                   className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm protocol-transition ${active ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}`}>

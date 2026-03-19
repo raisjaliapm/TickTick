@@ -224,7 +224,13 @@ export function useTaskStore() {
       if (task.status !== statusFilter) return false;
     } else {
       if (viewFilter === 'completed' && task.status !== 'completed') return false;
-      if (viewFilter !== 'completed' && viewFilter !== 'calendar' && task.status === 'completed') return false;
+      if (viewFilter === 'active' && task.status === 'completed') return false;
+      if (viewFilter === 'in_progress_view' && task.status !== 'in_progress') return false;
+      if (viewFilter === 'overdue') {
+        if (task.status === 'completed') return false;
+        if (!task.due_date || !isPast(new Date(task.due_date)) || isToday(new Date(task.due_date))) return false;
+      }
+      if (viewFilter !== 'completed' && viewFilter !== 'calendar' && viewFilter !== 'in_progress_view' && viewFilter !== 'overdue' && task.status === 'completed') return false;
     }
     if (viewFilter === 'today' && task.due_date) {
       if (!isToday(new Date(task.due_date)) && !isPast(new Date(task.due_date))) return false;

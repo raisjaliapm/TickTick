@@ -23,6 +23,9 @@ import { formatLocalDateTime } from '@/lib/dateUtils';
 
 const viewLabels: Record<string, string> = {
   all: 'All Tasks',
+  active: 'Active Tasks',
+  in_progress_view: 'In Progress',
+  overdue: 'Overdue',
   today: 'Today',
   upcoming: 'Upcoming (7 days)',
   completed: 'Completed',

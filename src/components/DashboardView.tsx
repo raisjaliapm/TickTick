@@ -33,10 +33,10 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
   }, [tasks]);
 
   const statCards = [
-    { label: 'Active Tasks', value: stats.active.length, icon: ListTodo, color: 'text-primary', bg: 'bg-primary/10' },
-    { label: 'In Progress', value: stats.inProgress.length, icon: Clock, color: 'text-info', bg: 'bg-info/10' },
-    { label: 'Completed', value: stats.completed.length, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
-    { label: 'Overdue', value: stats.overdue.length, icon: AlertTriangle, color: 'text-destructive', bg: 'bg-destructive/10' },
+    { label: 'Active Tasks', value: stats.active.length, icon: ListTodo, color: 'text-primary', bg: 'bg-primary/10', navigateTo: 'active' },
+    { label: 'In Progress', value: stats.inProgress.length, icon: Clock, color: 'text-info', bg: 'bg-info/10', navigateTo: 'in_progress_view' },
+    { label: 'Completed', value: stats.completed.length, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10', navigateTo: 'completed' },
+    { label: 'Due Today', value: stats.dueToday.length, icon: AlertTriangle, color: 'text-destructive', bg: 'bg-destructive/10', navigateTo: 'today' },
   ];
 
   return (
