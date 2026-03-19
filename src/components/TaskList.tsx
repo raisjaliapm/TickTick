@@ -35,7 +35,7 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDe
   };
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
-  const editShortcut = isMac ? '⌃⇧+E' : 'Alt+E';
+  const editShortcut = isMac ? '⌘+E' : 'Alt+E';
   const deleteShortcut = isMac ? '⌘+D' : 'Alt+D';
 
   return (

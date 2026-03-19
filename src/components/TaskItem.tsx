@@ -513,7 +513,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
           ? e.metaKey && e.key.toLowerCase() === 'd'
           : e.altKey && e.key.toLowerCase() === 'd';
         const isEditShortcut = isMac
-          ? e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'e'
+          ? e.metaKey && e.key.toLowerCase() === 'e'
           : e.altKey && e.key.toLowerCase() === 'e';
 
         if (isDeleteShortcut) {
