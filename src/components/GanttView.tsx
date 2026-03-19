@@ -133,8 +133,34 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
   const zoomLevels: ZoomLevel[] = ['month', 'week', 'day'];
   const currentZoomIndex = zoomLevels.indexOf(zoom);
 
+  const handleExportExcel = useCallback(() => {
+    const rows = groupedTasks.flatMap(group =>
+      group.tasks.map(task => ({
+        Project: group.project?.name || 'No Project',
+        Task: task.title,
+        Status: task.status?.replace('_', ' ') || '',
+        Priority: task.priority || '',
+        'Start Date': (task as any).start_date ? format(new Date((task as any).start_date), 'yyyy-MM-dd') : '',
+        'End Date': (task as any).end_date ? format(new Date((task as any).end_date), 'yyyy-MM-dd') : '',
+        'Due Date': task.due_date ? format(new Date(task.due_date), 'yyyy-MM-dd') : '',
+        'Duration (days)': (() => {
+          const s = (task as any).start_date || task.due_date;
+          const e = (task as any).end_date || task.due_date;
+          if (s && e) return differenceInDays(new Date(e), new Date(s)) || 1;
+          return 1;
+        })(),
+      }))
+    );
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    // Auto-size columns
+    ws['!cols'] = Object.keys(rows[0] || {}).map(key => ({ wch: Math.max(key.length, 14) }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Gantt Chart');
+    XLSX.writeFile(wb, `gantt-chart-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+  }, [groupedTasks]);
+
   return (
-    <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
