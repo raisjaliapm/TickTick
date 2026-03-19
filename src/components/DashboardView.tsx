@@ -106,7 +106,7 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
               <AlertTriangle className="h-4 w-4 text-destructive" />
               Overdue
             </h3>
-            <span className="text-xs text-destructive font-medium">{stats.overdue.length} tasks</span>
+            <button onClick={() => onNavigate('overdue')} className="text-xs text-primary hover:underline">View all</button>
           </div>
           {stats.overdue.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">All caught up!</p>
