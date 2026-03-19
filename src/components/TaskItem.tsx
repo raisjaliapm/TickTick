@@ -508,11 +508,11 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
       layout
       tabIndex={0}
       onKeyDown={(e) => {
-        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+        if (e.altKey && e.key.toLowerCase() === 'd') {
           e.preventDefault();
           onDelete(task.id);
         }
-        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'e') {
+        if (e.altKey && e.key.toLowerCase() === 'e') {
           e.preventDefault();
           openEdit();
         }
