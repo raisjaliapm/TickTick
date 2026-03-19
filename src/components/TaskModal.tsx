@@ -226,6 +226,60 @@ export function TaskModal({
     setExistingSubtasks(prev => prev.filter(s => s.id !== id));
   };
 
+  // Attachment functions
+  const fetchAttachments = async (taskId: string) => {
+    const { data } = await supabase.from('task_attachments').select('*').eq('task_id', taskId).order('created_at', { ascending: false }) as any;
+    if (data) setAttachments(data);
+  };
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || !task || mode !== 'edit') return;
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+
+    const oversized = Array.from(files).filter(f => f.size > MAX_FILE_SIZE);
+    if (oversized.length > 0) {
+      toast({ title: 'File too large', description: `Max file size is 100 MB. ${oversized.map(f => f.name).join(', ')} skipped.`, variant: 'destructive' });
+    }
+
+    const validFiles = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE);
+    if (validFiles.length === 0) return;
+
+    setUploading(true);
+    try {
+      for (const file of validFiles) {
+        const storagePath = `${userData.user.id}/${task.id}/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('task-attachments').upload(storagePath, file);
+        if (uploadError) {
+          toast({ title: 'Upload failed', description: `${file.name}: ${uploadError.message}`, variant: 'destructive' });
+          continue;
+        }
+        await supabase.from('task_attachments').insert({
+          task_id: task.id, user_id: userData.user.id, file_name: file.name,
+          file_size: file.size, file_type: file.type || null, storage_path: storagePath,
+        } as any);
+      }
+      await fetchAttachments(task.id);
+      toast({ title: 'Files uploaded', description: `${validFiles.length} file(s) uploaded successfully` });
+    } catch {
+      toast({ title: 'Upload error', description: 'Something went wrong', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const deleteAttachment = async (att: Attachment) => {
+    await supabase.storage.from('task-attachments').remove([att.storage_path]);
+    await supabase.from('task_attachments').delete().eq('id', att.id);
+    setAttachments(prev => prev.filter(a => a.id !== att.id));
+  };
+
+  const downloadAttachment = async (att: Attachment) => {
+    const { data } = await supabase.storage.from('task-attachments').createSignedUrl(att.storage_path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+  };
+
   const stopListening = useCallback(() => {
     const rec = recognitionRef.current;
     recognitionRef.current = null;
