@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ProductTrackerDashboard } from '@/components/ProductTrackerDashboard';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -75,6 +76,7 @@ export function ProductTrackerView() {
   const [modalItem, setModalItem] = useState<TrackerItem | null>(null);
   const [editingPhaseId, setEditingPhaseId] = useState<string | null>(null);
   const [editingPhaseName, setEditingPhaseName] = useState('');
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; description: string; onConfirm: () => void }>({ open: false, title: '', description: '', onConfirm: () => {} });
 
   const openCreateModal = (phaseId: string) => {
     setModalPhaseId(phaseId);
@@ -458,9 +460,12 @@ export function ProductTrackerView() {
                       </button>
                       <button
                         onClick={() => {
-                          if (window.confirm(`Delete phase "${phase.name}" and all its items?`)) {
-                            tracker.deletePhase(phase.id);
-                          }
+                          setConfirmDialog({
+                            open: true,
+                            title: 'Delete Phase',
+                            description: `Delete phase "${phase.name}" and all its items? This action cannot be undone.`,
+                            onConfirm: () => tracker.deletePhase(phase.id),
+                          });
                         }}
                         className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition"
                         title="Delete phase"
@@ -644,7 +649,12 @@ export function ProductTrackerView() {
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          if (window.confirm(`Delete "${item.title}"?`)) tracker.deleteItem(item.id);
+                                          setConfirmDialog({
+                                            open: true,
+                                            title: 'Delete Item',
+                                            description: `Delete "${item.title}"? This action cannot be undone.`,
+                                            onConfirm: () => tracker.deleteItem(item.id),
+                                          });
                                         }}
                                         className="p-0.5 rounded text-muted-foreground/50 hover:text-destructive protocol-transition"
                                         title="Delete"
@@ -713,6 +723,25 @@ export function ProductTrackerView() {
         onSave={handleModalSave}
         onFilesUploaded={handleModalFilesUploaded}
       />
+
+      {/* Confirm Delete Dialog */}
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmDialog.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { confirmDialog.onConfirm(); setConfirmDialog(prev => ({ ...prev, open: false })); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
