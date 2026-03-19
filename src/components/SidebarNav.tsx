@@ -48,7 +48,7 @@ export function SidebarNav({ viewFilter, setViewFilter, categoryFilter, setCateg
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <aside className="w-56 shrink-0 border-r border-border bg-sidebar p-4 flex flex-col gap-6 h-screen sticky top-0 overflow-y-auto scrollbar-thin">
+    <aside className="w-56 md:w-56 shrink-0 border-r border-border bg-sidebar p-4 flex flex-col gap-6 h-screen sticky top-0 overflow-y-auto scrollbar-thin">
       <button onClick={onLogoClick} className="flex items-center gap-2 px-2 pt-2 hover:opacity-80 protocol-transition">
         <Clock className="h-4 w-4 text-primary" />
         <span className="text-base font-display font-medium tracking-tight text-foreground">TickTick</span>

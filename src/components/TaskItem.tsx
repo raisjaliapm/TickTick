@@ -584,7 +584,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
         </div>
       </div>
 
-      <div className="opacity-0 group-hover:opacity-100 protocol-transition flex items-center gap-1.5 shrink-0">
+      <div className="flex sm:opacity-0 sm:group-hover:opacity-100 protocol-transition items-center gap-1.5 shrink-0">
         {task.due_date && (
           <span className={`text-[11px] font-mono mr-1 ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
             {isOverdue ? 'overdue' : (() => {
