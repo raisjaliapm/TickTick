@@ -649,7 +649,12 @@ export function ProductTrackerView() {
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          if (window.confirm(`Delete "${item.title}"?`)) tracker.deleteItem(item.id);
+                                          setConfirmDialog({
+                                            open: true,
+                                            title: 'Delete Item',
+                                            description: `Delete "${item.title}"? This action cannot be undone.`,
+                                            onConfirm: () => tracker.deleteItem(item.id),
+                                          });
                                         }}
                                         className="p-0.5 rounded text-muted-foreground/50 hover:text-destructive protocol-transition"
                                         title="Delete"
