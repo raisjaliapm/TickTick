@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   ListTodo, Clock, CheckCircle2, AlertTriangle, Pause, Circle,
-  TrendingUp, FolderKanban, Package, BarChart3
+  TrendingUp, FolderKanban, Package, BarChart3, Filter
 } from 'lucide-react';
 import { format, isPast, isToday, isWithinInterval, addDays, startOfDay } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +18,7 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
   const [allItems, setAllItems] = useState<TrackerItem[]>([]);
   const [allPhases, setAllPhases] = useState<TrackerPhase[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBoardId, setSelectedBoardId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || boards.length === 0) { setLoading(false); return; }
@@ -42,20 +43,35 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
     fetchAll();
   }, [user, boards]);
 
+  const selectedBoard = boards.find(b => b.id === selectedBoardId);
+
+  // Filter phases and items by selected board
+  const filteredPhases = useMemo(() => {
+    if (!selectedBoardId) return allPhases;
+    return allPhases.filter(p => p.board_id === selectedBoardId);
+  }, [allPhases, selectedBoardId]);
+
+  const filteredPhaseIds = useMemo(() => new Set(filteredPhases.map(p => p.id)), [filteredPhases]);
+
+  const filteredItems = useMemo(() => {
+    if (!selectedBoardId) return allItems;
+    return allItems.filter(i => filteredPhaseIds.has(i.phase_id));
+  }, [allItems, selectedBoardId, filteredPhaseIds]);
+
   const stats = useMemo(() => {
-    const todo = allItems.filter(i => i.status === 'todo');
-    const inProgress = allItems.filter(i => i.status === 'in_progress');
-    const done = allItems.filter(i => i.status === 'done');
-    const onHold = allItems.filter(i => i.status === 'on_hold');
-    const overdue = allItems.filter(i => i.status !== 'done' && i.due_date && isPast(new Date(i.due_date)) && !isToday(new Date(i.due_date)));
-    const dueToday = allItems.filter(i => i.status !== 'done' && i.due_date && isToday(new Date(i.due_date)));
-    const upcoming = allItems.filter(i => i.status !== 'done' && i.due_date && isWithinInterval(new Date(i.due_date), {
+    const todo = filteredItems.filter(i => i.status === 'todo');
+    const inProgress = filteredItems.filter(i => i.status === 'in_progress');
+    const done = filteredItems.filter(i => i.status === 'done');
+    const onHold = filteredItems.filter(i => i.status === 'on_hold');
+    const overdue = filteredItems.filter(i => i.status !== 'done' && i.due_date && isPast(new Date(i.due_date)) && !isToday(new Date(i.due_date)));
+    const dueToday = filteredItems.filter(i => i.status !== 'done' && i.due_date && isToday(new Date(i.due_date)));
+    const upcoming = filteredItems.filter(i => i.status !== 'done' && i.due_date && isWithinInterval(new Date(i.due_date), {
       start: addDays(startOfDay(new Date()), 1),
       end: addDays(startOfDay(new Date()), 7),
     }));
 
-    return { todo, inProgress, done, onHold, overdue, dueToday, upcoming, total: allItems.length };
-  }, [allItems]);
+    return { todo, inProgress, done, onHold, overdue, dueToday, upcoming, total: filteredItems.length };
+  }, [filteredItems]);
 
   const statCards = [
     { label: 'Total Items', value: stats.total, icon: ListTodo, color: 'text-primary', bg: 'bg-primary/10' },
@@ -78,6 +94,41 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
 
   return (
     <div className="space-y-6">
+      {/* Board Filter */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h3 className="text-lg font-semibold text-foreground">Dashboard Overview</h3>
+        {boards.length > 1 && (
+          <div className="flex items-center gap-2">
+            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+            <select
+              value={selectedBoardId || ''}
+              onChange={e => setSelectedBoardId(e.target.value || null)}
+              className="text-sm bg-card border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition min-w-[160px]"
+            >
+              <option value="">All Boards</option>
+              {boards.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* Active board indicator */}
+      {selectedBoard && (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border">
+          <div className="h-3 w-3 rounded-sm bg-primary" />
+          <span className="text-sm font-medium text-foreground">{selectedBoard.name}</span>
+          <span className="text-[10px] font-mono text-muted-foreground">{filteredItems.length} items · {filteredPhases.length} phases</span>
+          <button
+            onClick={() => setSelectedBoardId(null)}
+            className="ml-auto text-xs text-primary hover:underline"
+          >
+            Clear filter
+          </button>
+        </div>
+      )}
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {statCards.map(card => (
@@ -167,11 +218,12 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
               const boardItems = allItems.filter(i => boardPhaseIds.includes(i.phase_id));
               const doneCount = boardItems.filter(i => i.status === 'done').length;
               const progress = boardItems.length > 0 ? Math.round((doneCount / boardItems.length) * 100) : 0;
+              const isSelected = selectedBoardId === board.id;
               return (
                 <button
                   key={board.id}
-                  onClick={() => onSelectBoard(board.id)}
-                  className="w-full p-2.5 rounded-lg hover:bg-accent/50 protocol-transition text-left"
+                  onClick={() => setSelectedBoardId(isSelected ? null : board.id)}
+                  className={`w-full p-2.5 rounded-lg protocol-transition text-left ${isSelected ? 'bg-primary/10 border border-primary/30' : 'hover:bg-accent/50'}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-3 w-3 rounded-sm bg-primary" />
@@ -230,14 +282,14 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
               <Package className="h-4 w-4 text-primary" />
               Phases Overview
             </h3>
-            <span className="text-xs text-muted-foreground">{allPhases.length} phases</span>
+            <span className="text-xs text-muted-foreground">{filteredPhases.length} phases</span>
           </div>
-          {allPhases.length === 0 ? (
+          {filteredPhases.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">No phases yet. Open a board to add phases!</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {allPhases.map(phase => {
-                const phaseItems = allItems.filter(i => i.phase_id === phase.id);
+              {filteredPhases.map(phase => {
+                const phaseItems = filteredItems.filter(i => i.phase_id === phase.id);
                 const doneCount = phaseItems.filter(i => i.status === 'done').length;
                 const board = boards.find(b => b.id === phase.board_id);
                 return (
