@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Circle, Clock, Pause, CheckCircle2, GripVertical } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
 import type { Task, Category, TaskStatus } from '@/hooks/useTaskStore';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface KanbanViewProps {
   tasks: Task[];
