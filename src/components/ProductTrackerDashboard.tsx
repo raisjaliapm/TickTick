@@ -230,6 +230,135 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
         ))}
       </div>
 
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {/* Status Pie Chart */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            Status Distribution
+          </h3>
+          {stats.total === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No items yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'To Do', value: stats.todo.length },
+                    { name: 'In Progress', value: stats.inProgress.length },
+                    { name: 'On Hold', value: stats.onHold.length },
+                    { name: 'Done', value: stats.done.length },
+                  ].filter(d => d.value > 0)}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={3}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  labelLine={false}
+                >
+                  {[
+                    'hsl(var(--muted-foreground))',
+                    'hsl(var(--info))',
+                    'hsl(var(--warning))',
+                    'hsl(var(--success))',
+                  ].map((color, i) => (
+                    <Cell key={i} fill={color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    color: 'hsl(var(--foreground))',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Priority Bar Chart */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-destructive" />
+            Priority Breakdown
+          </h3>
+          {stats.total === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No items yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={[
+                { name: 'Low', count: filteredItems.filter(i => i.priority === 'low').length, fill: 'hsl(var(--success))' },
+                { name: 'Medium', count: filteredItems.filter(i => i.priority === 'medium').length, fill: 'hsl(var(--warning))' },
+                { name: 'High', count: filteredItems.filter(i => i.priority === 'high').length, fill: 'hsl(var(--destructive))' },
+                { name: 'Urgent', count: filteredItems.filter(i => i.priority === 'urgent').length, fill: 'hsl(var(--destructive))' },
+              ]} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    color: 'hsl(var(--foreground))',
+                  }}
+                />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                  {[
+                    'hsl(var(--success))',
+                    'hsl(var(--warning))',
+                    'hsl(var(--destructive))',
+                    'hsl(var(--destructive) / 0.7)',
+                  ].map((color, i) => (
+                    <Cell key={i} fill={color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Board Completion Bar Chart */}
+        {boards.length > 1 && (
+          <div className="bg-card border border-border rounded-xl p-5 md:col-span-2">
+            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+              <FolderKanban className="h-4 w-4 text-primary" />
+              Board Completion
+            </h3>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={boards.map(b => {
+                const bPhases = allPhases.filter(p => p.board_id === b.id);
+                const bPhaseIds = new Set(bPhases.map(p => p.id));
+                const bItems = allItems.filter(i => bPhaseIds.has(i.phase_id));
+                const bDone = bItems.filter(i => i.status === 'done').length;
+                return { name: b.name, Total: bItems.length, Done: bDone };
+              })} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    color: 'hsl(var(--foreground))',
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <Bar dataKey="Total" fill="hsl(var(--muted-foreground))" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="Done" fill="hsl(var(--success))" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* Due Today */}
         <div className="bg-card border border-border rounded-xl p-5">
