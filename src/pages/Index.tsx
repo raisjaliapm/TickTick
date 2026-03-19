@@ -16,6 +16,7 @@ import { GanttView } from '@/components/GanttView';
 import { GoogleCalendarAutoSync } from '@/components/GoogleCalendarAutoSync';
 import { AIChatPanel } from '@/components/AIChatPanel';
 import { DashboardView } from '@/components/DashboardView';
+import { ProductTrackerView } from '@/components/ProductTrackerView';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import type { Task, TaskStatus } from '@/hooks/useTaskStore';
@@ -36,7 +37,7 @@ const viewLabels: Record<string, string> = {
   'weekly-reports': 'Weekly Reports',
 };
 
-type MainView = 'dashboard' | 'ai' | 'tasks';
+type MainView = 'dashboard' | 'ai' | 'tasks' | 'product-tracker';
 
 const Index = () => {
   const store = useTaskStore();
@@ -176,6 +177,7 @@ const Index = () => {
     stats: store.stats,
     onDeleteCategory: store.deleteCategory,
     onLogoClick: () => { setMainView('dashboard'); if (isMobile) setMobileSidebarOpen(false); },
+    onProductTrackerClick: () => { setMainView('product-tracker'); if (isMobile) setMobileSidebarOpen(false); },
     projects: projectStore.projects,
     activeProjectId: projectStore.activeProjectId,
     onSelectProject: (id: string | null) => { projectStore.setActiveProjectId(id); setMainView('tasks'); store.setViewFilter('all'); if (isMobile) setMobileSidebarOpen(false); },
@@ -292,6 +294,14 @@ const Index = () => {
                     projects={projectStore.projects}
                     onNavigate={(view) => { store.setViewFilter(view as any); setMainView('tasks'); }}
                   />
+                </div>
+              </div>
+            </div>
+          ) : mainView === 'product-tracker' ? (
+            <div className="h-full overflow-y-auto overscroll-contain">
+              <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+                <div className="rounded-xl border border-border bg-card shadow-sm p-4 md:p-6">
+                  <ProductTrackerView />
                 </div>
               </div>
             </div>

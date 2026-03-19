@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause, Columns3, Sun, Moon, X, LayoutDashboard, FolderKanban, Plus, ChevronDown, ChevronRight, GanttChart, AlertTriangle } from 'lucide-react';
+import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause, Columns3, Sun, Moon, X, LayoutDashboard, FolderKanban, Plus, ChevronDown, ChevronRight, GanttChart, AlertTriangle, Package } from 'lucide-react';
 import { GoogleCalendarButton } from '@/components/GoogleCalendarButton';
 import type { ViewFilter, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
 import type { Project } from '@/hooks/useProjectStore';
@@ -26,6 +26,7 @@ interface SidebarNavProps {
   onAddProject?: (name: string) => void;
   onDeleteProject?: (id: string) => void;
   onDashboardClick?: () => void;
+  onProductTrackerClick?: () => void;
 }
 
 const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] = [
@@ -60,7 +61,7 @@ const statusItems: { key: TaskStatus; label: string; icon: React.ElementType; co
 export function SidebarNav({ 
   viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, 
   categories, stats, onDeleteCategory, onLogoClick, className,
-  projects = [], activeProjectId, onSelectProject, onAddProject, onDeleteProject, onDashboardClick
+  projects = [], activeProjectId, onSelectProject, onAddProject, onDeleteProject, onDashboardClick, onProductTrackerClick
 }: SidebarNavProps) {
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -101,6 +102,15 @@ export function SidebarNav({
         >
           <LayoutDashboard className="h-4 w-4" />
           <span>Dashboard</span>
+        </button>
+
+        {/* Product Management Tracker */}
+        <button
+          onClick={onProductTrackerClick}
+          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm protocol-transition text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+        >
+          <Package className="h-4 w-4" />
+          <span>Product Tracker</span>
         </button>
 
         {/* Projects section */}
