@@ -600,9 +600,31 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
           <Pencil className="h-3.5 w-3.5" />
         </button>
         {taskRecurrence && onStopRecurrence && (
-          <button onClick={() => onStopRecurrence(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="End recurrence">
-            <Ban className="h-3.5 w-3.5" />
-          </button>
+          <Popover open={endRecurrenceOpen} onOpenChange={setEndRecurrenceOpen}>
+            <PopoverTrigger asChild>
+              <button className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="End recurrence on date">
+                <CalendarOff className="h-3.5 w-3.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="end">
+              <div className="p-2 border-b border-border">
+                <span className="text-[11px] font-mono text-muted-foreground">End recurrence after:</span>
+              </div>
+              <Calendar
+                mode="single"
+                selected={undefined}
+                onSelect={(date) => {
+                  if (date) {
+                    onStopRecurrence(task.id, date);
+                    setEndRecurrenceOpen(false);
+                  }
+                }}
+                disabled={(date) => date < new Date()}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
         )}
         <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="Delete task">
           <Trash2 className="h-3.5 w-3.5" />
