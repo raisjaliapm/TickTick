@@ -506,11 +506,18 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
     <div>
     <motion.div
       layout
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+          e.preventDefault();
+          onDelete(task.id);
+        }
+      }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.2, ease: [...protocolCurve] }}
-      className={`group flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg border protocol-transition select-none active:scale-[0.99] ${task.status === 'not_started' ? 'border-destructive/40 bg-destructive/5 hover:border-destructive/60 hover:bg-destructive/10' : 'border-transparent hover:border-border hover:bg-task-hover'}`}
+      className={`group flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg border protocol-transition select-none active:scale-[0.99] focus:outline-none focus:ring-1 focus:ring-primary/50 ${task.status === 'not_started' ? 'border-destructive/40 bg-destructive/5 hover:border-destructive/60 hover:bg-destructive/10' : 'border-transparent hover:border-border hover:bg-task-hover'}`}
     >
       {/* Status popover */}
       <Popover>
