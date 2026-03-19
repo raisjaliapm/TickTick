@@ -180,6 +180,7 @@ export function TaskModal({
       setNewSubtaskItems([]);
       // Fetch existing subtasks
       fetchExistingSubtasks(task.id);
+      fetchAttachments(task.id);
     } else {
       // Create mode
       setTitle('');
