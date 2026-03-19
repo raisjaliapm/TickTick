@@ -35,6 +35,7 @@ const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] =
   { key: 'completed', label: 'Completed', icon: CheckCircle2 },
   { key: 'calendar', label: 'Calendar', icon: CalendarRange },
   { key: 'kanban', label: 'Board', icon: Columns3 },
+  { key: 'gantt', label: 'Timeline', icon: GanttChart },
   { key: 'reports', label: 'Reports', icon: BarChart3 },
   { key: 'weekly-reports', label: 'Weekly Reports', icon: FileText },
 ];

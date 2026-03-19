@@ -266,7 +266,7 @@ export function GanttView({ tasks, categories, projects }: GanttViewProps) {
                     const showLabel = zoom === 'day' || (zoom === 'week' && isWeekStart) || (zoom === 'month' && day.getDate() === 1);
                     const isToday = isSameDay(day, new Date());
 
-                    if (!showLabel && zoom !== 'day') return null;
+                    if (!showLabel) return null;
 
                     return (
                       <div
