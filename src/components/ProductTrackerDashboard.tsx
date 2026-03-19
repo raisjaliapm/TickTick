@@ -93,26 +93,110 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
 
   const completionRate = stats.total > 0 ? Math.round((stats.done.length / stats.total) * 100) : 0;
 
+  const exportToExcel = useCallback(() => {
+    // Sheet 1: All Items
+    const itemRows = filteredItems.map(item => {
+      const phase = filteredPhases.find(p => p.id === item.phase_id);
+      const board = boards.find(b => phase && b.id === phase.board_id);
+      const isItemOverdue = item.status !== 'done' && item.due_date && isPast(new Date(item.due_date)) && !isToday(new Date(item.due_date));
+      return {
+        'Title': item.title,
+        'Board': board?.name || '',
+        'Phase': phase?.name || '',
+        'Status': item.status.replace('_', ' ').toUpperCase(),
+        'Priority': item.priority.charAt(0).toUpperCase() + item.priority.slice(1),
+        'Assignee': (item as any).assignee || '',
+        'Due Date': item.due_date ? format(new Date(item.due_date), 'yyyy-MM-dd') : '',
+        'Overdue': isItemOverdue ? 'Yes' : 'No',
+        'Created': format(new Date(item.created_at), 'yyyy-MM-dd'),
+        'Updated': format(new Date(item.updated_at), 'yyyy-MM-dd'),
+      };
+    });
+
+    // Sheet 2: Summary Stats
+    const summaryRows = [
+      { 'Metric': 'Total Items', 'Value': stats.total },
+      { 'Metric': 'To Do', 'Value': stats.todo.length },
+      { 'Metric': 'In Progress', 'Value': stats.inProgress.length },
+      { 'Metric': 'Completed', 'Value': stats.done.length },
+      { 'Metric': 'On Hold', 'Value': stats.onHold.length },
+      { 'Metric': 'Overdue', 'Value': stats.overdue.length },
+      { 'Metric': 'Due Today', 'Value': stats.dueToday.length },
+      { 'Metric': 'Upcoming (7 days)', 'Value': stats.upcoming.length },
+      { 'Metric': 'Completion Rate', 'Value': `${completionRate}%` },
+    ];
+
+    // Sheet 3: Board Breakdown
+    const boardRows = boards.map(b => {
+      const bPhases = filteredPhases.filter(p => p.board_id === b.id);
+      const bPhaseIds = new Set(bPhases.map(p => p.id));
+      const bItems = filteredItems.filter(i => bPhaseIds.has(i.phase_id));
+      const bDone = bItems.filter(i => i.status === 'done').length;
+      return {
+        'Board': b.name,
+        'Phases': bPhases.length,
+        'Total Items': bItems.length,
+        'Completed': bDone,
+        'Completion %': bItems.length > 0 ? Math.round((bDone / bItems.length) * 100) + '%' : '0%',
+      };
+    });
+
+    // Sheet 4: Phase Breakdown
+    const phaseRows = filteredPhases.map(p => {
+      const board = boards.find(b => b.id === p.board_id);
+      const pItems = filteredItems.filter(i => i.phase_id === p.id);
+      const pDone = pItems.filter(i => i.status === 'done').length;
+      return {
+        'Phase': p.name,
+        'Board': board?.name || '',
+        'Total Items': pItems.length,
+        'Completed': pDone,
+        'Completion %': pItems.length > 0 ? Math.round((pDone / pItems.length) * 100) + '%' : '0%',
+      };
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(itemRows), 'All Items');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'Summary');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(boardRows), 'Boards');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(phaseRows), 'Phases');
+
+    const fileName = selectedBoard
+      ? `product-tracker-${selectedBoard.name.toLowerCase().replace(/\s+/g, '-')}-${format(new Date(), 'yyyy-MM-dd')}.xlsx`
+      : `product-tracker-export-${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  }, [filteredItems, filteredPhases, boards, stats, completionRate, selectedBoard]);
+
   return (
     <div className="space-y-6">
       {/* Board Filter */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h3 className="text-lg font-semibold text-foreground">Dashboard Overview</h3>
-        {boards.length > 1 && (
-          <div className="flex items-center gap-2">
-            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-            <select
-              value={selectedBoardId || ''}
-              onChange={e => setSelectedBoardId(e.target.value || null)}
-              className="text-sm bg-card border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition min-w-[160px]"
-            >
-              <option value="">All Boards</option>
-              {boards.map(b => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {boards.length > 1 && (
+            <>
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <select
+                value={selectedBoardId || ''}
+                onChange={e => setSelectedBoardId(e.target.value || null)}
+                className="text-sm bg-card border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-1 focus:ring-ring protocol-transition min-w-[160px]"
+              >
+                <option value="">All Boards</option>
+                {boards.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </>
+          )}
+          <button
+            onClick={exportToExcel}
+            disabled={filteredItems.length === 0}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50 protocol-transition"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Export Excel</span>
+          </button>
+        </div>
       </div>
 
       {/* Active board indicator */}
