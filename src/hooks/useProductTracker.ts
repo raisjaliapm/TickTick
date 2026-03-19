@@ -28,6 +28,7 @@ export type TrackerItem = {
   status: 'todo' | 'in_progress' | 'done' | 'on_hold';
   priority: string;
   due_date: string | null;
+  assignee: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
