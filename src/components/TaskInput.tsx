@@ -164,7 +164,7 @@ export function TaskInput({ onAdd, categories, onAddCategory }: TaskInputProps) 
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'n') { e.preventDefault(); inputRef.current?.focus(); setExpanded(true); }
+      if ((e.metaKey || e.ctrlKey) && e.key === 't') { e.preventDefault(); inputRef.current?.focus(); setExpanded(true); }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
