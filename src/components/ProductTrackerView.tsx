@@ -460,9 +460,12 @@ export function ProductTrackerView() {
                       </button>
                       <button
                         onClick={() => {
-                          if (window.confirm(`Delete phase "${phase.name}" and all its items?`)) {
-                            tracker.deletePhase(phase.id);
-                          }
+                          setConfirmDialog({
+                            open: true,
+                            title: 'Delete Phase',
+                            description: `Delete phase "${phase.name}" and all its items? This action cannot be undone.`,
+                            onConfirm: () => tracker.deletePhase(phase.id),
+                          });
                         }}
                         className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition"
                         title="Delete phase"
