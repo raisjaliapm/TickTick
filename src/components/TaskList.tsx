@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { TaskItem } from './TaskItem';
 import { DeleteAllWrapper } from './DeleteAllWrapper';
+import { Keyboard } from 'lucide-react';
 import type { Task, Category, TaskStatus } from '@/hooks/useTaskStore';
 
 interface TaskListProps {
@@ -33,6 +34,9 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDe
     }
   };
 
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
+  const mod = isMac ? '⌘' : 'Ctrl';
+
   return (
     <DeleteAllWrapper taskCount={tasks.length} onDeleteAll={handleDeleteAll}>
       <div className="space-y-0.5">
@@ -41,6 +45,17 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDe
             <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} onAddCategory={onAddCategory} onUpdateStatus={onUpdateStatus} />
           ))}
         </AnimatePresence>
+      </div>
+      <div className="mt-4 flex items-center justify-center gap-4 text-[11px] font-mono text-muted-foreground/50">
+        <span className="flex items-center gap-1.5">
+          <Keyboard className="h-3 w-3" />
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">{mod}+⇧+E</kbd>
+          <span>Edit</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">{mod}+⇧+D</kbd>
+          <span>Delete</span>
+        </span>
       </div>
     </DeleteAllWrapper>
   );
