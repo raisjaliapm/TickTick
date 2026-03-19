@@ -42,7 +42,7 @@ const statusConfig: { value: TaskStatus; label: string; icon: React.ElementType;
   { value: 'completed', label: 'Completed', icon: CheckCircle2, colorClass: 'text-[hsl(var(--status-completed))]' },
 ];
 
-const recurrenceOptions: { value: Recurrence; label: string }[] = [
+const recurrenceOptions: { value: string | null; label: string }[] = [
   { value: null, label: 'Once' },
   { value: 'daily', label: 'Daily' },
   { value: 'weekly', label: 'Weekly' },
