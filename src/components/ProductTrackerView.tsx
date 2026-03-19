@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User, Copy } from 'lucide-react';
 import { format, isPast, startOfDay, differenceInDays } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
 import { useAuth } from '@/contexts/AuthContext';
@@ -527,11 +527,17 @@ export function ProductTrackerView() {
                                 return (
                                 <Card
                                   key={item.id}
+                                  tabIndex={0}
                                   draggable
                                   onDragStart={e => handleDragStart(e, item.id)}
                                   onDragEnd={() => { setDragItemId(null); setDragOverCol(null); }}
+                                  onKeyDown={(e) => {
+                                    const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
+                                    const isDup = isMac ? e.metaKey && e.key.toLowerCase() === 'd' : e.altKey && e.key.toLowerCase() === 'd';
+                                    if (isDup) { e.preventDefault(); tracker.duplicateItem(item); }
+                                  }}
                                   className={cn(
-                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing",
+                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing focus:outline-none focus:ring-1 focus:ring-primary/50",
                                     dragItemId === item.id && "opacity-50",
                                     itemOverdue && "border-destructive/50 bg-destructive/5"
                                   )}
@@ -631,6 +637,13 @@ export function ProductTrackerView() {
                                         className={`p-0.5 rounded protocol-transition ${isExpanded ? 'text-primary' : 'text-muted-foreground/50 hover:text-muted-foreground'}`}
                                       >
                                         <Paperclip className="h-3 w-3" />
+                                      </button>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); tracker.duplicateItem(item); }}
+                                        className="p-0.5 rounded text-muted-foreground/50 hover:text-primary protocol-transition"
+                                        title="Duplicate (⌘+D)"
+                                      >
+                                        <Copy className="h-3 w-3" />
                                       </button>
                                       <div className={`h-2 w-2 rounded-full ml-auto ${priorityColors[item.priority] || priorityColors.medium}`} />
                                     </div>
