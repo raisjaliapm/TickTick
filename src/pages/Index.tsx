@@ -213,6 +213,8 @@ const Index = () => {
                   <WeeklyReportsView />
                 ) : store.viewFilter === 'reports' ? (
                   <ReportsView tasks={allTasksFilteredByProject} categories={store.categories} />
+                ) : store.viewFilter === 'gantt' ? (
+                  <GanttView tasks={allTasksFilteredByProject} categories={store.categories} projects={projectStore.projects} />
                 ) : store.viewFilter === 'kanban' ? (
                   <KanbanView tasks={allTasksFilteredByProject} categories={store.categories} onUpdateStatus={store.updateTaskStatus} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} />
                 ) : store.viewFilter === 'calendar' ? (
