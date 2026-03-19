@@ -76,6 +76,7 @@ export function ProductTrackerView() {
   const [modalItem, setModalItem] = useState<TrackerItem | null>(null);
   const [editingPhaseId, setEditingPhaseId] = useState<string | null>(null);
   const [editingPhaseName, setEditingPhaseName] = useState('');
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; description: string; onConfirm: () => void }>({ open: false, title: '', description: '', onConfirm: () => {} });
 
   const openCreateModal = (phaseId: string) => {
     setModalPhaseId(phaseId);
