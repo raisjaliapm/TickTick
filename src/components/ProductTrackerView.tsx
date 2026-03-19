@@ -269,6 +269,14 @@ export function ProductTrackerView() {
             </CardContent>
           </Card>
         )}
+
+        {/* Dashboard Section */}
+        {tracker.boards.length > 0 && (
+          <ProductTrackerDashboard
+            boards={tracker.boards}
+            onSelectBoard={(boardId) => tracker.setActiveBoardId(boardId)}
+          />
+        )}
       </div>
     );
   }
