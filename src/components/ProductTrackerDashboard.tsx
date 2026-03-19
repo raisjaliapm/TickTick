@@ -83,7 +83,6 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
 
   const completionRate = stats.total > 0 ? Math.round((stats.done.length / stats.total) * 100) : 0;
 
-  if (loading) {
   const exportToExcel = useCallback(() => {
     const itemRows = filteredItems.map(item => {
       const phase = filteredPhases.find(p => p.id === item.phase_id);
