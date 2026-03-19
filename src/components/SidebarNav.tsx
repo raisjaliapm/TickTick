@@ -19,11 +19,11 @@ interface SidebarNavProps {
 }
 
 const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] = [
+  { key: 'calendar', label: 'Calendar', icon: CalendarRange },
   { key: 'all', label: 'All Tasks', icon: Inbox },
   { key: 'today', label: 'Today', icon: CalendarDays },
   { key: 'upcoming', label: 'Upcoming', icon: ListTodo },
   { key: 'completed', label: 'Completed', icon: CheckCircle2 },
-  { key: 'calendar', label: 'Calendar', icon: CalendarRange },
   { key: 'kanban', label: 'Board', icon: Columns3 },
   { key: 'reports', label: 'Reports', icon: BarChart3 },
   { key: 'weekly-reports', label: 'Weekly Reports', icon: FileText },
