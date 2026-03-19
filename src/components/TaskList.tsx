@@ -61,11 +61,15 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDe
           ))}
         </AnimatePresence>
       </div>
-      <div className="mt-4 flex items-center justify-center gap-4 text-[11px] font-mono text-muted-foreground/50">
+      <div className="mt-4 flex items-center justify-center gap-4 text-[11px] font-mono text-muted-foreground/50 flex-wrap">
         <span className="flex items-center gap-1.5">
           <Keyboard className="h-3 w-3" />
           <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">{editShortcut}</kbd>
           <span>Edit</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">{duplicateShortcut}</kbd>
+          <span>Duplicate</span>
         </span>
         <span className="flex items-center gap-1.5">
           <kbd className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">{deleteShortcut}</kbd>
