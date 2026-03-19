@@ -129,6 +129,11 @@ export function useProductTracker() {
     return data?.id as string | undefined;
   }, [user, items, activeBoardId, fetchItems]);
 
+  const updateItem = useCallback(async (itemId: string, updates: Partial<Pick<TrackerItem, 'title' | 'status' | 'priority' | 'due_date' | 'assignee' | 'notes'>>) => {
+    await supabase.from('product_tracker_items').update(updates as any).eq('id', itemId);
+    if (activeBoardId) await fetchItems(activeBoardId);
+  }, [activeBoardId, fetchItems]);
+
   const updateItemStatus = useCallback(async (itemId: string, status: TrackerItem['status']) => {
     await supabase.from('product_tracker_items').update({ status } as any).eq('id', itemId);
     if (activeBoardId) await fetchItems(activeBoardId);
