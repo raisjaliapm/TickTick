@@ -596,16 +596,42 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
               </PopoverContent>
             </Popover>
           )}
-          {(() => {
-            const s = statusOptions.find(opt => opt.value === task.status) || statusOptions[0];
-            const Icon = s.icon;
-            return (
-              <span className={`flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary shrink-0 ${s.colorClass}`}>
-                <Icon className="h-2.5 w-2.5" />
-                {s.label}
-              </span>
-            );
-          })()}
+          <Popover>
+            <PopoverTrigger asChild>
+              {(() => {
+                const s = statusOptions.find(opt => opt.value === task.status) || statusOptions[0];
+                const Icon = s.icon;
+                return (
+                  <button
+                    onPointerDown={e => e.stopPropagation()}
+                    onContextMenu={e => e.stopPropagation()}
+                    className={`flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-secondary shrink-0 cursor-pointer hover:bg-secondary/70 active:scale-95 protocol-transition ${s.colorClass}`}
+                    title="Click to change status"
+                  >
+                    <Icon className="h-2.5 w-2.5" />
+                    {s.label}
+                  </button>
+                );
+              })()}
+            </PopoverTrigger>
+            <PopoverContent className="w-44 p-1.5 pointer-events-auto z-50" align="start" sideOffset={6}>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider px-2 py-1">Change Status</p>
+              {statusOptions.map(s => {
+                const Icon = s.icon;
+                return (
+                  <button
+                    key={s.value}
+                    onClick={() => onUpdateStatus ? onUpdateStatus(task.id, s.value) : onToggle(task.id)}
+                    className={`w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs font-mono protocol-transition ${task.status === s.value ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'}`}
+                  >
+                    <Icon className={`h-4 w-4 ${s.colorClass}`} />
+                    {s.label}
+                    {task.status === s.value && <Check className="h-3 w-3 ml-auto text-primary" />}
+                  </button>
+                );
+              })}
+            </PopoverContent>
+          </Popover>
           {subtasks.length > 0 && (
             <button
               onClick={() => setShowSubtasks(!showSubtasks)}
