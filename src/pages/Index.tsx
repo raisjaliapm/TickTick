@@ -322,6 +322,20 @@ const Index = () => {
 
       <CommandPalette tasks={store.allTasks} onToggle={store.toggleTask} />
       <GoogleCalendarAutoSync tasks={store.allTasks} />
+      <TaskModal
+        open={taskModalOpen}
+        onOpenChange={setTaskModalOpen}
+        mode={editingTask ? 'edit' : 'create'}
+        task={editingTask}
+        categories={store.categories}
+        projects={projectStore.projects}
+        activeProjectId={projectStore.activeProjectId}
+        onAddCategory={store.addCategory}
+        onSave={handleTaskModalSave}
+        onUpdateStatus={store.updateTaskStatus}
+        defaultDate={taskModalDefaultDate}
+        defaultHour={taskModalDefaultHour}
+      />
     </div>
   );
 };
