@@ -603,8 +603,8 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                       return (
                         <div
                           key={`${key}-${hour}`}
-                          onClick={() => onAdd && openAddDialog(day, hour)}
-                          className={`min-h-[48px] border-r border-border last:border-r-0 p-0.5 ${today ? 'bg-primary/[0.02]' : ''} ${onAdd ? 'cursor-pointer hover:bg-accent/20 protocol-transition' : ''}`}
+                          onClick={() => onCreateTask && openAddDialog(day, hour)}
+                          className={`min-h-[48px] border-r border-border last:border-r-0 p-0.5 ${today ? 'bg-primary/[0.02]' : ''} ${onCreateTask ? 'cursor-pointer hover:bg-accent/20 protocol-transition' : ''}`}
                         >
                           {hourTasks.map(task => (
                             <CalendarTaskChip key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} />
