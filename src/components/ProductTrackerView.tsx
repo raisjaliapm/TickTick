@@ -531,12 +531,12 @@ export function ProductTrackerView() {
                                     if (isDup) { e.preventDefault(); tracker.duplicateItem(item); }
                                   }}
                                   className={cn(
-                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing focus:outline-none focus:ring-1 focus:ring-primary/50",
+                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing focus:outline-none focus:ring-1 focus:ring-primary/50 overflow-hidden",
                                     dragItemId === item.id && "opacity-50",
                                     itemOverdue && "border-destructive/50 bg-destructive/5"
                                   )}
                                 >
-                                  <CardContent className="p-3 space-y-2">
+                                  <CardContent className="p-3 space-y-2 overflow-hidden">
                                     <div className="flex items-start gap-2">
                                       <p className="text-sm text-foreground font-medium leading-snug flex-1">{item.title}</p>
                                       {itemOverdue && (
