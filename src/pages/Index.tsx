@@ -52,7 +52,7 @@ const Index = () => {
   // Global ⌘T shortcut to create task
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 't') {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 't') {
         e.preventDefault();
         handleCreateTask();
       }
@@ -314,7 +314,7 @@ const Index = () => {
                     >
                       <Plus className="h-4 w-4" />
                       <span className="text-sm">Add a task...</span>
-                      <kbd className="hidden sm:inline ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">⌘T</kbd>
+                      <kbd className="hidden sm:inline ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50 border border-border/50">⌘⇧T</kbd>
                     </button>
                   )}
 
