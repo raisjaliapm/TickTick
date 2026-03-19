@@ -130,6 +130,11 @@ export function useProductTracker() {
     if (activeBoardId) await fetchItems(activeBoardId);
   }, [activeBoardId, fetchItems]);
 
+  const updateItemAssignee = useCallback(async (itemId: string, assignee: string | null) => {
+    await supabase.from('product_tracker_items').update({ assignee } as any).eq('id', itemId);
+    if (activeBoardId) await fetchItems(activeBoardId);
+  }, [activeBoardId, fetchItems]);
+
   const deleteItem = useCallback(async (itemId: string) => {
     await supabase.from('product_tracker_items').delete().eq('id', itemId);
     if (activeBoardId) await fetchItems(activeBoardId);
