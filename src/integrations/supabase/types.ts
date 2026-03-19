@@ -214,6 +214,7 @@ export type Database = {
           created_at: string
           description: string | null
           due_date: string | null
+          end_date: string | null
           google_calendar_event_id: string | null
           id: string
           notes: string | null
@@ -221,6 +222,7 @@ export type Database = {
           project_id: string | null
           recurrence: string | null
           sort_order: number
+          start_date: string | null
           status: string
           title: string
           updated_at: string
@@ -233,6 +235,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          end_date?: string | null
           google_calendar_event_id?: string | null
           id?: string
           notes?: string | null
@@ -240,6 +243,7 @@ export type Database = {
           project_id?: string | null
           recurrence?: string | null
           sort_order?: number
+          start_date?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -252,6 +256,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          end_date?: string | null
           google_calendar_event_id?: string | null
           id?: string
           notes?: string | null
@@ -259,6 +264,7 @@ export type Database = {
           project_id?: string | null
           recurrence?: string | null
           sort_order?: number
+          start_date?: string | null
           status?: string
           title?: string
           updated_at?: string
