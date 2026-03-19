@@ -15,6 +15,7 @@ interface TaskListProps {
   onStopRecurrence?: (id: string, endDate: Date) => void;
   onAddCategory?: (name: string) => Promise<void>;
   onUpdateStatus?: (id: string, status: TaskStatus) => void;
+  onEditTask?: (task: Task) => void;
 }
 
 export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDeleteAll, onStopRecurrence, onAddCategory, onUpdateStatus }: TaskListProps) {
