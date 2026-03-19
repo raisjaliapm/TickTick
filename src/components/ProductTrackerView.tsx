@@ -207,52 +207,6 @@ export function ProductTrackerView() {
     }
   };
 
-  const handleAddItem = async (phaseId: string) => {
-    if (newItemTitle.trim()) {
-      tracker.addItem(phaseId, newItemTitle.trim());
-      
-      // If there are pending files, upload them after a short delay to let the item be created
-      if (newItemPendingFiles.length > 0 && user) {
-        // We need to find the newly created item - fetch items and find by title
-        setTimeout(async () => {
-          const { data: phaseData } = await supabase.from('product_tracker_phases').select('id').eq('board_id', tracker.activeBoardId!).eq('user_id', user.id) as any;
-          if (phaseData) {
-            const phaseIds = phaseData.map((p: any) => p.id);
-            const { data: allItems } = await supabase.from('product_tracker_items').select('*').in('phase_id', phaseIds).eq('user_id', user.id).order('created_at', { ascending: false }) as any;
-            if (allItems && allItems.length > 0) {
-              const newItem = allItems[0]; // Most recent
-              for (const file of newItemPendingFiles) {
-                if (file.size > MAX_FILE_SIZE) continue;
-                const storagePath = `${user.id}/${newItem.id}/${Date.now()}-${file.name}`;
-                const { error } = await supabase.storage.from('task-attachments').upload(storagePath, file);
-                if (!error) {
-                  await supabase.from('product_tracker_item_attachments').insert({
-                    item_id: newItem.id, user_id: user.id, file_name: file.name,
-                    file_size: file.size, file_type: file.type || null, storage_path: storagePath,
-                  } as any);
-                }
-              }
-            }
-          }
-        }, 500);
-      }
-      
-      setNewItemTitle('');
-      setNewItemPendingFiles([]);
-      setAddingItemPhaseId(null);
-    }
-  };
-
-  const handleCreateFilesSelected = (files: FileList | null) => {
-    if (!files) return;
-    const oversized = Array.from(files).filter(f => f.size > MAX_FILE_SIZE);
-    if (oversized.length > 0) {
-      toast({ title: 'File too large', description: `Max 100 MB. ${oversized.map(f => f.name).join(', ')} skipped.`, variant: 'destructive' });
-    }
-    const valid = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE);
-    setNewItemPendingFiles(prev => [...prev, ...valid]);
-    if (createFileInputRef.current) createFileInputRef.current.value = '';
-  };
 
   if (tracker.loading) {
     return (
