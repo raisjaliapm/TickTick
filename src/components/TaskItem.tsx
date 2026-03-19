@@ -512,6 +512,10 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
           e.preventDefault();
           onDelete(task.id);
         }
+        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'e') {
+          e.preventDefault();
+          openEdit();
+        }
       }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
