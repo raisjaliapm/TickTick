@@ -46,21 +46,19 @@ const Index = () => {
     );
   }
 
-  const sidebarContent = (
-    <SidebarNav
-      viewFilter={store.viewFilter}
-      setViewFilter={(v) => { store.setViewFilter(v); setMainView('tasks'); if (isMobile) setMobileSidebarOpen(false); }}
-      categoryFilter={store.categoryFilter}
-      setCategoryFilter={(id) => { store.setCategoryFilter(id); setMainView('tasks'); if (isMobile) setMobileSidebarOpen(false); }}
-      priorityFilter={store.priorityFilter}
-      setPriorityFilter={(p) => { store.setPriorityFilter(p); setMainView('tasks'); if (isMobile) setMobileSidebarOpen(false); }}
-      statusFilter={store.statusFilter}
-      setStatusFilter={(s) => { store.setStatusFilter(s); setMainView('tasks'); if (isMobile) setMobileSidebarOpen(false); }}
-      categories={store.categories}
-      stats={store.stats}
-      onLogoClick={() => { setMainView('ai'); if (isMobile) setMobileSidebarOpen(false); }}
-    />
-  );
+  const sidebarProps = {
+    viewFilter: store.viewFilter,
+    setViewFilter: (v: any) => { store.setViewFilter(v); setMainView('tasks'); if (isMobile) setMobileSidebarOpen(false); },
+    categoryFilter: store.categoryFilter,
+    setCategoryFilter: (id: any) => { store.setCategoryFilter(id); setMainView('tasks'); if (isMobile) setMobileSidebarOpen(false); },
+    priorityFilter: store.priorityFilter,
+    setPriorityFilter: (p: any) => { store.setPriorityFilter(p); setMainView('tasks'); if (isMobile) setMobileSidebarOpen(false); },
+    statusFilter: store.statusFilter,
+    setStatusFilter: (s: any) => { store.setStatusFilter(s); setMainView('tasks'); if (isMobile) setMobileSidebarOpen(false); },
+    categories: store.categories,
+    stats: store.stats,
+    onLogoClick: () => { setMainView('ai'); if (isMobile) setMobileSidebarOpen(false); },
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
