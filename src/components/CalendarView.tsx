@@ -291,13 +291,15 @@ function CalendarAddTaskDialog({
 }
 
 // ---------- Editable task chip ----------
-function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete }: {
+function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete, onStopRecurrence }: {
   task: Task; categories: Category[]; onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void; onDelete: (id: string) => void;
+  onStopRecurrence?: (id: string, endDate: Date) => void;
 }) {
   const [title, setTitle] = useState(task.title);
   const [priority, setPriority] = useState(task.priority);
   const [open, setOpen] = useState(false);
+  const [endRecurrenceOpen, setEndRecurrenceOpen] = useState(false);
   const category = categories.find(c => c.id === task.category_id);
 
   const handleSave = () => {
