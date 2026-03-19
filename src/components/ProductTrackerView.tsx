@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User, Copy } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User, Copy, Pencil } from 'lucide-react';
 import { format, isPast, startOfDay, differenceInDays } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ProductTrackerDashboard } from '@/components/ProductTrackerDashboard';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { TrackerItemModal } from '@/components/TrackerItemModal';
 import { cn } from '@/lib/utils';
 import { formatLocalDate, parseLocalDate } from '@/lib/dateUtils';
 
@@ -60,16 +61,59 @@ export function ProductTrackerView() {
   const [newBoardName, setNewBoardName] = useState('');
   const [newPhaseName, setNewPhaseName] = useState('');
   const [showNewPhase, setShowNewPhase] = useState(false);
-  const [addingItemPhaseId, setAddingItemPhaseId] = useState<string | null>(null);
-  const [newItemTitle, setNewItemTitle] = useState('');
-  const [newItemPendingFiles, setNewItemPendingFiles] = useState<File[]>([]);
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [itemAttachments, setItemAttachments] = useState<Record<string, ItemAttachment[]>>({});
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const createFileInputRef = useRef<HTMLInputElement>(null);
   const [dragItemId, setDragItemId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [modalPhaseId, setModalPhaseId] = useState<string | null>(null);
+  const [modalItem, setModalItem] = useState<TrackerItem | null>(null);
+
+  const openCreateModal = (phaseId: string) => {
+    setModalPhaseId(phaseId);
+    setModalMode('create');
+    setModalItem(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (item: TrackerItem) => {
+    setModalMode('edit');
+    setModalItem(item);
+    setModalPhaseId(item.phase_id);
+    setModalOpen(true);
+  };
+
+  const handleModalSave = async (data: { title: string; priority: string; status: TrackerItem['status']; due_date: string | null; assignee: string | null; notes: string }) => {
+    if (modalMode === 'create' && modalPhaseId) {
+      const newId = await tracker.addItem(modalPhaseId, data.title, {
+        priority: data.priority,
+        status: data.status,
+        due_date: data.due_date,
+        assignee: data.assignee,
+        notes: data.notes,
+      });
+      return newId;
+    } else if (modalMode === 'edit' && modalItem) {
+      await tracker.updateItem(modalItem.id, {
+        title: data.title,
+        priority: data.priority,
+        status: data.status,
+        due_date: data.due_date,
+        assignee: data.assignee,
+        notes: data.notes,
+      });
+      return modalItem.id;
+    }
+  };
+
+  const handleModalFilesUploaded = () => {
+    if (modalItem) fetchItemAttachments(modalItem.id);
+  };
 
   const handleDragStart = useCallback((e: React.DragEvent, itemId: string) => {
     setDragItemId(itemId);
@@ -163,52 +207,6 @@ export function ProductTrackerView() {
     }
   };
 
-  const handleAddItem = async (phaseId: string) => {
-    if (newItemTitle.trim()) {
-      tracker.addItem(phaseId, newItemTitle.trim());
-      
-      // If there are pending files, upload them after a short delay to let the item be created
-      if (newItemPendingFiles.length > 0 && user) {
-        // We need to find the newly created item - fetch items and find by title
-        setTimeout(async () => {
-          const { data: phaseData } = await supabase.from('product_tracker_phases').select('id').eq('board_id', tracker.activeBoardId!).eq('user_id', user.id) as any;
-          if (phaseData) {
-            const phaseIds = phaseData.map((p: any) => p.id);
-            const { data: allItems } = await supabase.from('product_tracker_items').select('*').in('phase_id', phaseIds).eq('user_id', user.id).order('created_at', { ascending: false }) as any;
-            if (allItems && allItems.length > 0) {
-              const newItem = allItems[0]; // Most recent
-              for (const file of newItemPendingFiles) {
-                if (file.size > MAX_FILE_SIZE) continue;
-                const storagePath = `${user.id}/${newItem.id}/${Date.now()}-${file.name}`;
-                const { error } = await supabase.storage.from('task-attachments').upload(storagePath, file);
-                if (!error) {
-                  await supabase.from('product_tracker_item_attachments').insert({
-                    item_id: newItem.id, user_id: user.id, file_name: file.name,
-                    file_size: file.size, file_type: file.type || null, storage_path: storagePath,
-                  } as any);
-                }
-              }
-            }
-          }
-        }, 500);
-      }
-      
-      setNewItemTitle('');
-      setNewItemPendingFiles([]);
-      setAddingItemPhaseId(null);
-    }
-  };
-
-  const handleCreateFilesSelected = (files: FileList | null) => {
-    if (!files) return;
-    const oversized = Array.from(files).filter(f => f.size > MAX_FILE_SIZE);
-    if (oversized.length > 0) {
-      toast({ title: 'File too large', description: `Max 100 MB. ${oversized.map(f => f.name).join(', ')} skipped.`, variant: 'destructive' });
-    }
-    const valid = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE);
-    setNewItemPendingFiles(prev => [...prev, ...valid]);
-    if (createFileInputRef.current) createFileInputRef.current.value = '';
-  };
 
   if (tracker.loading) {
     return (
@@ -407,7 +405,7 @@ export function ProductTrackerView() {
                     </div>
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => { setAddingItemPhaseId(phase.id); setNewItemTitle(''); }}
+                        onClick={() => openCreateModal(phase.id)}
                         className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md protocol-transition"
                       >
                         <Plus className="h-3.5 w-3.5" />
@@ -424,45 +422,6 @@ export function ProductTrackerView() {
                 </CardHeader>
 
                 <CardContent>
-                  {/* Inline add item */}
-                  {addingItemPhaseId === phase.id && (
-                    <Card className="mb-4 border-primary/30">
-                      <CardContent className="p-3 space-y-2">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={newItemTitle}
-                            onChange={e => setNewItemTitle(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleAddItem(phase.id); if (e.key === 'Escape') { setAddingItemPhaseId(null); setNewItemPendingFiles([]); } }}
-                            placeholder="Task title..."
-                            className="flex-1 text-sm bg-secondary border border-border rounded-lg px-3 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                            autoFocus
-                          />
-                          <button onClick={() => handleAddItem(phase.id)} className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-primary/90 protocol-transition">Add</button>
-                        </div>
-                        {/* Pending files */}
-                        {newItemPendingFiles.map((file, idx) => (
-                          <div key={idx} className="flex items-center gap-2 p-1.5 rounded bg-secondary/50 border border-border">
-                            <FileIcon className="h-3 w-3 text-muted-foreground shrink-0" />
-                            <span className="text-[10px] text-foreground truncate flex-1">{file.name}</span>
-                            <span className="text-[10px] text-muted-foreground">{formatFileSize(file.size)}</span>
-                            <button onClick={() => setNewItemPendingFiles(prev => prev.filter((_, i) => i !== idx))} className="p-0.5 text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
-                          </div>
-                        ))}
-                        {/* File upload button */}
-                        <div>
-                          <input ref={createFileInputRef} type="file" multiple onChange={e => handleCreateFilesSelected(e.target.files)} className="hidden" />
-                          <button
-                            onClick={() => createFileInputRef.current?.click()}
-                            className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground rounded border border-dashed border-border hover:border-primary/30 protocol-transition"
-                          >
-                            <Paperclip className="h-3 w-3" /> Attach files
-                          </button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
                   {/* Mini kanban columns */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {statusColumns.map(col => {
@@ -485,7 +444,7 @@ export function ProductTrackerView() {
                                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-background text-muted-foreground">{colItems.length}</span>
                               </div>
                               <button
-                                onClick={() => { setAddingItemPhaseId(phase.id + ':' + col.key); setNewItemTitle(''); }}
+                                onClick={() => openCreateModal(phase.id)}
                                 className="p-0.5 rounded text-muted-foreground/50 hover:text-muted-foreground protocol-transition"
                               >
                                 <Plus className="h-3.5 w-3.5" />
@@ -494,27 +453,7 @@ export function ProductTrackerView() {
                           </CardHeader>
 
                           <CardContent className="p-3 pt-0 space-y-2 min-h-[60px]">
-                            {/* Inline add for specific column */}
-                            {addingItemPhaseId === phase.id + ':' + col.key && (
-                              <input
-                                type="text"
-                                value={newItemTitle}
-                                onChange={e => setNewItemTitle(e.target.value)}
-                                onKeyDown={e => {
-                                  if (e.key === 'Enter' && newItemTitle.trim()) {
-                                    tracker.addItem(phase.id, newItemTitle.trim());
-                                    setNewItemTitle('');
-                                    setAddingItemPhaseId(null);
-                                  }
-                                  if (e.key === 'Escape') setAddingItemPhaseId(null);
-                                }}
-                                placeholder="Task..."
-                                className="w-full text-xs bg-background border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                                autoFocus
-                              />
-                            )}
-
-                            {colItems.length === 0 && addingItemPhaseId !== phase.id + ':' + col.key ? (
+                            {colItems.length === 0 ? (
                               <div className="border border-dashed border-border/60 rounded-lg p-4 text-center">
                                 <span className="text-[10px] text-muted-foreground/60">Empty</span>
                               </div>
@@ -639,6 +578,13 @@ export function ProductTrackerView() {
                                         <Paperclip className="h-3 w-3" />
                                       </button>
                                       <button
+                                        onClick={(e) => { e.stopPropagation(); openEditModal(item); }}
+                                        className="p-0.5 rounded text-muted-foreground/50 hover:text-primary protocol-transition"
+                                        title="Edit"
+                                      >
+                                        <Pencil className="h-3 w-3" />
+                                      </button>
+                                      <button
                                         onClick={(e) => { e.stopPropagation(); tracker.duplicateItem(item); }}
                                         className="p-0.5 rounded text-muted-foreground/50 hover:text-primary protocol-transition"
                                         title="Duplicate (⌘+D)"
@@ -696,6 +642,17 @@ export function ProductTrackerView() {
           })}
         </div>
       )}
+
+      {/* Tracker Item Modal */}
+      <TrackerItemModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        mode={modalMode}
+        phaseId={modalPhaseId || undefined}
+        item={modalItem || undefined}
+        onSave={handleModalSave}
+        onFilesUploaded={handleModalFilesUploaded}
+      />
     </div>
   );
 }

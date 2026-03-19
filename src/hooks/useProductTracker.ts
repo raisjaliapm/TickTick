@@ -29,6 +29,7 @@ export type TrackerItem = {
   priority: string;
   due_date: string | null;
   assignee: string | null;
+  notes: string;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -113,12 +114,25 @@ export function useProductTracker() {
     }
   }, [activeBoardId, fetchPhases, fetchItems]);
 
-  const addItem = useCallback(async (phaseId: string, title: string) => {
-    if (!user) return;
+  const addItem = useCallback(async (phaseId: string, title: string, extra?: { priority?: string; status?: TrackerItem['status']; due_date?: string | null; assignee?: string | null; notes?: string }) => {
+    if (!user) return undefined as string | undefined;
     const phaseItems = items.filter(i => i.phase_id === phaseId);
-    await supabase.from('product_tracker_items').insert({ phase_id: phaseId, user_id: user.id, title, sort_order: phaseItems.length } as any);
+    const { data } = await supabase.from('product_tracker_items').insert({
+      phase_id: phaseId, user_id: user.id, title, sort_order: phaseItems.length,
+      ...(extra?.priority && { priority: extra.priority }),
+      ...(extra?.status && { status: extra.status }),
+      ...(extra?.due_date !== undefined && { due_date: extra.due_date }),
+      ...(extra?.assignee !== undefined && { assignee: extra.assignee }),
+      ...(extra?.notes !== undefined && { notes: extra.notes }),
+    } as any).select('id').single() as any;
     if (activeBoardId) await fetchItems(activeBoardId);
+    return data?.id as string | undefined;
   }, [user, items, activeBoardId, fetchItems]);
+
+  const updateItem = useCallback(async (itemId: string, updates: Partial<Pick<TrackerItem, 'title' | 'status' | 'priority' | 'due_date' | 'assignee' | 'notes'>>) => {
+    await supabase.from('product_tracker_items').update(updates as any).eq('id', itemId);
+    if (activeBoardId) await fetchItems(activeBoardId);
+  }, [activeBoardId, fetchItems]);
 
   const updateItemStatus = useCallback(async (itemId: string, status: TrackerItem['status']) => {
     await supabase.from('product_tracker_items').update({ status } as any).eq('id', itemId);
@@ -160,6 +174,6 @@ export function useProductTracker() {
 
   return {
     boards, phases, items, activeBoard, activeBoardId, setActiveBoardId, loading,
-    addBoard, deleteBoard, addPhase, deletePhase, addItem, updateItemStatus, updateItemDueDate, updateItemAssignee, deleteItem, duplicateItem,
+    addBoard, deleteBoard, addPhase, deletePhase, addItem, updateItem, updateItemStatus, updateItemDueDate, updateItemAssignee, deleteItem, duplicateItem,
   };
 }

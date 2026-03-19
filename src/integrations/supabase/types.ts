@@ -180,6 +180,7 @@ export type Database = {
           created_at: string
           due_date: string | null
           id: string
+          notes: string | null
           phase_id: string
           priority: string
           sort_order: number
@@ -193,6 +194,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: string
+          notes?: string | null
           phase_id: string
           priority?: string
           sort_order?: number
@@ -206,6 +208,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: string
+          notes?: string | null
           phase_id?: string
           priority?: string
           sort_order?: number
