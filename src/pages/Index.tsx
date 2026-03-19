@@ -79,6 +79,25 @@ const Index = () => {
     setTaskModalOpen(true);
   };
 
+  const handleDuplicateTask = async (task: Task) => {
+    await store.addTask(
+      task.title + ' (copy)',
+      task.priority as any,
+      task.due_date,
+      task.category_id,
+      task.recurrence,
+      'not_started',
+      {
+        description: task.description || undefined,
+        notes: task.notes || undefined,
+        urls: (task.urls as string[])?.length ? (task.urls as string[]) : undefined,
+        projectId: task.project_id,
+        startDate: task.start_date ? task.start_date.split('T')[0] : null,
+        endDate: task.end_date ? task.end_date.split('T')[0] : null,
+      }
+    );
+  };
+
   const handleCreateTaskOnDate = (date: Date, hour?: number) => {
     setEditingTask(null);
     setTaskModalDefaultDate(date);
@@ -364,7 +383,7 @@ const Index = () => {
                   ) : store.viewFilter === 'calendar' ? (
                     <CalendarView tasks={allTasksFilteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onCreateTask={handleCreateTaskOnDate} />
                   ) : (
-                    <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} onEditTask={handleEditTask} />
+                    <TaskList tasks={filteredByProject} categories={store.categories} onToggle={store.toggleTask} onUpdate={store.updateTask} onDelete={store.deleteTask} onStopRecurrence={store.stopRecurrence} onAddCategory={store.addCategory} onUpdateStatus={store.updateTaskStatus} onEditTask={handleEditTask} onDuplicate={handleDuplicateTask} />
                   )}
                 </div>
               </div>

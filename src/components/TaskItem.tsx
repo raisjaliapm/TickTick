@@ -28,6 +28,7 @@ interface TaskItemProps {
   onAddCategory?: (name: string) => Promise<void>;
   onUpdateStatus?: (id: string, status: TaskStatus) => void;
   onEditTask?: (task: Task) => void;
+  onDuplicate?: (task: Task) => void;
 }
 
 const statusOptions: { value: TaskStatus; label: string; icon: React.ElementType; colorClass: string }[] = [
@@ -53,7 +54,7 @@ const recurrenceOptions: { value: Recurrence; label: string }[] = [
 ];
 const recurrenceLabels: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 
-export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAddCategory, onUpdateStatus, onEditTask }: TaskItemProps) {
+export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAddCategory, onUpdateStatus, onEditTask, onDuplicate }: TaskItemProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [showSubtasks, setShowSubtasks] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(task.title);
@@ -511,9 +512,12 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
       tabIndex={0}
       onKeyDown={(e) => {
         const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
-        const isDeleteShortcut = isMac
+        const isDuplicateShortcut = isMac
           ? e.metaKey && e.key.toLowerCase() === 'd'
           : e.altKey && e.key.toLowerCase() === 'd';
+        const isDeleteShortcut = isMac
+          ? e.metaKey && e.key.toLowerCase() === 'x'
+          : e.altKey && e.key.toLowerCase() === 'x';
         const isEditShortcut = isMac
           ? e.metaKey && e.key.toLowerCase() === 'e'
           : e.altKey && e.key.toLowerCase() === 'e';
@@ -521,6 +525,10 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
           ? e.metaKey && e.key.toLowerCase() === 'c'
           : e.altKey && e.key.toLowerCase() === 'c';
 
+        if (isDuplicateShortcut) {
+          e.preventDefault();
+          onDuplicate?.(task);
+        }
         if (isDeleteShortcut) {
           e.preventDefault();
           onDelete(task.id);
