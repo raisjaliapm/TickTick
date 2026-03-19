@@ -453,27 +453,7 @@ export function ProductTrackerView() {
                           </CardHeader>
 
                           <CardContent className="p-3 pt-0 space-y-2 min-h-[60px]">
-                            {/* Inline add for specific column */}
-                            {addingItemPhaseId === phase.id + ':' + col.key && (
-                              <input
-                                type="text"
-                                value={newItemTitle}
-                                onChange={e => setNewItemTitle(e.target.value)}
-                                onKeyDown={e => {
-                                  if (e.key === 'Enter' && newItemTitle.trim()) {
-                                    tracker.addItem(phase.id, newItemTitle.trim());
-                                    setNewItemTitle('');
-                                    setAddingItemPhaseId(null);
-                                  }
-                                  if (e.key === 'Escape') setAddingItemPhaseId(null);
-                                }}
-                                placeholder="Task..."
-                                className="w-full text-xs bg-background border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                                autoFocus
-                              />
-                            )}
-
-                            {colItems.length === 0 && addingItemPhaseId !== phase.id + ':' + col.key ? (
+                            {colItems.length === 0 ? (
                               <div className="border border-dashed border-border/60 rounded-lg p-4 text-center">
                                 <span className="text-[10px] text-muted-foreground/60">Empty</span>
                               </div>
