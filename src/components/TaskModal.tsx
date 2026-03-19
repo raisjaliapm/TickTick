@@ -201,6 +201,7 @@ export function TaskModal({
       setNewSubtaskItems([]);
       setProjectId(activeProjectId || null);
       setExistingSubtasks([]);
+      setAttachments([]);
       setStartDate(undefined);
       setEndDate(undefined);
     }
