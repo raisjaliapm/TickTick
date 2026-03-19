@@ -26,6 +26,7 @@ interface SidebarNavProps {
   onAddProject?: (name: string) => void;
   onDeleteProject?: (id: string) => void;
   onDashboardClick?: () => void;
+  onProductTrackerClick?: () => void;
 }
 
 const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] = [
