@@ -258,7 +258,7 @@ export function useTaskStore() {
     priorityFilter, setPriorityFilter,
     statusFilter, setStatusFilter,
     searchQuery, setSearchQuery,
-    addTask, toggleTask, updateTaskStatus, updateTask, deleteTask,
+    addTask, toggleTask, updateTaskStatus, updateTask, deleteTask, stopRecurrence,
     addCategory, fetchTasks,
     stats,
     loading,
