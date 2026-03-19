@@ -16,6 +16,7 @@ interface SidebarNavProps {
   categories: Category[];
   stats: { total: number; today: number; completed: number; overdue: number; notStarted: number; inProgress: number; onHold: number };
   onLogoClick?: () => void;
+  className?: string;
 }
 
 const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] = [
