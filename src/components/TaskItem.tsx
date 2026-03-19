@@ -510,7 +510,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.2, ease: [...protocolCurve] }}
-      className={`group flex items-start sm:items-center gap-2 sm:gap-3 px-3 py-2.5 rounded-lg border protocol-transition select-none ${task.status === 'not_started' ? 'border-destructive/40 bg-destructive/5 hover:border-destructive/60 hover:bg-destructive/10' : 'border-transparent hover:border-border hover:bg-task-hover'}`}
+      className={`group flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg border protocol-transition select-none active:scale-[0.99] ${task.status === 'not_started' ? 'border-destructive/40 bg-destructive/5 hover:border-destructive/60 hover:bg-destructive/10' : 'border-transparent hover:border-border hover:bg-task-hover'}`}
     >
       {/* Status popover */}
       <Popover>
