@@ -1,0 +1,1 @@
+ALTER TABLE public.product_tracker_items ADD COLUMN assignee text DEFAULT null;

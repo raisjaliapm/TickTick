@@ -176,6 +176,7 @@ export type Database = {
       }
       product_tracker_items: {
         Row: {
+          assignee: string | null
           created_at: string
           due_date: string | null
           id: string
@@ -188,6 +189,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          assignee?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
@@ -200,6 +202,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          assignee?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
