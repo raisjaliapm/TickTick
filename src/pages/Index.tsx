@@ -70,7 +70,7 @@ const Index = () => {
         <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
           <SheetContent side="left" className="p-0 w-64">
             <SheetTitle className="sr-only">Navigation</SheetTitle>
-            {sidebarContent}
+            <SidebarNav {...sidebarProps} className="border-0" />
           </SheetContent>
         </Sheet>
       )}
