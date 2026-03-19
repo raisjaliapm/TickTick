@@ -510,7 +510,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
       onKeyDown={(e) => {
         const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
         const isDeleteShortcut = isMac
-          ? e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd'
+          ? e.metaKey && e.key.toLowerCase() === 'd'
           : e.altKey && e.key.toLowerCase() === 'd';
         const isEditShortcut = isMac
           ? e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'e'
