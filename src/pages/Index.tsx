@@ -205,7 +205,7 @@ const Index = () => {
                   )}
                 </h1>
 
-                {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && store.viewFilter !== 'kanban' && (
+                {store.viewFilter !== 'completed' && store.viewFilter !== 'calendar' && store.viewFilter !== 'reports' && store.viewFilter !== 'weekly-reports' && store.viewFilter !== 'kanban' && store.viewFilter !== 'gantt' && (
                   <TaskInput onAdd={store.addTask} categories={store.categories} onAddCategory={store.addCategory} />
                 )}
 
