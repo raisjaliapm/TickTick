@@ -269,12 +269,16 @@ const Index = () => {
         <div className="relative z-10 flex-1 overflow-hidden">
           {mainView === 'dashboard' ? (
             <div className="h-full overflow-y-auto overscroll-contain">
-              <DashboardView
-                tasks={store.allTasks}
-                categories={store.categories}
-                projects={projectStore.projects}
-                onNavigate={(view) => { store.setViewFilter(view as any); setMainView('tasks'); }}
-              />
+              <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
+                <div className="rounded-xl border border-border bg-card shadow-sm p-4 md:p-6">
+                  <DashboardView
+                    tasks={store.allTasks}
+                    categories={store.categories}
+                    projects={projectStore.projects}
+                    onNavigate={(view) => { store.setViewFilter(view as any); setMainView('tasks'); }}
+                  />
+                </div>
+              </div>
             </div>
           ) : mainView === 'ai' ? (
             <AIChatPanel onTasksChanged={() => store.fetchTasks?.()} />
