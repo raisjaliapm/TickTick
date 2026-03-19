@@ -55,7 +55,7 @@ function overdueDays(item: TrackerItem): number {
   return differenceInDays(startOfDay(new Date()), startOfDay(new Date(item.due_date)));
 }
 
-export function ProductTrackerView() {
+export function ProductTrackerView({ onBoardChange }: { onBoardChange?: (boardId: string | null) => void }) {
   const tracker = useProductTracker();
   const { user } = useAuth();
   const [showCreateBoard, setShowCreateBoard] = useState(false);
