@@ -1,6 +1,7 @@
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useCallback } from 'react';
 import { format, differenceInDays, addDays, startOfDay, endOfDay, isWithinInterval, startOfWeek, endOfWeek, addWeeks, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Calendar, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import type { Task, Category } from '@/hooks/useTaskStore';
 import type { Project } from '@/hooks/useProjectStore';
 
