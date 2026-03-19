@@ -520,6 +520,8 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
             const StatusIcon = currentStatus.icon;
             return (
               <button
+                onPointerDown={e => e.stopPropagation()}
+                onContextMenu={e => e.stopPropagation()}
                 className={`relative flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border protocol-transition ${currentStatus.colorClass} ${isCompleted ? 'bg-[hsl(var(--status-completed))] border-[hsl(var(--status-completed))]' : 'border-current/40 hover:border-current'}`}
                 title={`Status: ${currentStatus.label}`}
               >
