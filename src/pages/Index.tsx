@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Command, PanelLeftClose, PanelLeftOpen, Sparkles, ListTodo, Menu, Search } from 'lucide-react';
+import { Command, PanelLeftClose, PanelLeftOpen, Sparkles, ListTodo, Menu, Search, Plus } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { format } from 'date-fns';
 import { useTaskStore } from '@/hooks/useTaskStore';
 import { useProjectStore } from '@/hooks/useProjectStore';
 import { SidebarNav } from '@/components/SidebarNav';
-import { TaskInput } from '@/components/TaskInput';
+import { TaskModal, type TaskModalData } from '@/components/TaskModal';
 import { TaskList } from '@/components/TaskList';
 import { CommandPalette } from '@/components/CommandPalette';
 import { CalendarView } from '@/components/CalendarView';
@@ -18,6 +18,8 @@ import { AIChatPanel } from '@/components/AIChatPanel';
 import { DashboardView } from '@/components/DashboardView';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import type { Task, TaskStatus } from '@/hooks/useTaskStore';
+import { formatLocalDateTime } from '@/lib/dateUtils';
 
 const viewLabels: Record<string, string> = {
   all: 'All Tasks',
