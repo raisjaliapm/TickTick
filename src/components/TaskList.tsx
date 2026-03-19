@@ -57,7 +57,7 @@ export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDe
       <div className="space-y-0.5">
         <AnimatePresence mode="popLayout">
           {tasks.map(task => (
-            <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} onAddCategory={onAddCategory} onUpdateStatus={onUpdateStatus} onEditTask={onEditTask} />
+            <TaskItem key={task.id} task={task} categories={categories} onToggle={onToggle} onUpdate={onUpdate} onDelete={onDelete} onStopRecurrence={onStopRecurrence} onAddCategory={onAddCategory} onUpdateStatus={onUpdateStatus} onEditTask={onEditTask} onDuplicate={onDuplicate} />
           ))}
         </AnimatePresence>
       </div>
