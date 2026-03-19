@@ -167,23 +167,8 @@ export function useTaskStore() {
       completed_at: newStatus === 'completed' ? new Date().toISOString() : null,
     }).eq('id', id);
 
-    // If completing a recurring task, create the next occurrence
-    if (newStatus === 'completed' && task.recurrence && user) {
-      const nextDue = getNextDueDate(task.due_date, task.recurrence);
-      await supabase.from('tasks').insert({
-        user_id: user.id,
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        category_id: task.category_id,
-        due_date: nextDue,
-        recurrence: task.recurrence,
-        status: 'not_started',
-      } as any);
-    }
-
     await fetchTasks();
-  }, [tasks, user, fetchTasks]);
+  }, [tasks, fetchTasks]);
 
   const updateTaskStatus = useCallback(async (id: string, status: TaskStatus) => {
     await supabase.from('tasks').update({
@@ -191,20 +176,27 @@ export function useTaskStore() {
       completed_at: status === 'completed' ? new Date().toISOString() : null,
     }).eq('id', id);
 
-    // If completing a recurring task, create the next occurrence
+    await fetchTasks();
+  }, [fetchTasks]);
+
+  const stopRecurrence = useCallback(async (id: string) => {
     const task = tasks.find(t => t.id === id);
-    if (status === 'completed' && task?.recurrence && user) {
-      const nextDue = getNextDueDate(task.due_date, task.recurrence);
-      await supabase.from('tasks').insert({
-        user_id: user.id,
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        category_id: task.category_id,
-        due_date: nextDue,
-        recurrence: task.recurrence,
-        status: 'not_started',
-      } as any);
+    if (!task || !task.recurrence) return;
+
+    // Remove recurrence from this task
+    await supabase.from('tasks').update({ recurrence: null } as any).eq('id', id);
+
+    // Delete all future non-completed instances of this recurring task
+    if (user) {
+      const now = formatLocalDateTime(new Date());
+      await supabase.from('tasks')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('title', task.title)
+        .eq('recurrence', task.recurrence)
+        .neq('status', 'completed')
+        .gt('due_date', now)
+        .neq('id', id);
     }
 
     await fetchTasks();
