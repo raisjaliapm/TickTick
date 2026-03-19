@@ -603,7 +603,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
           <Popover open={endRecurrenceOpen} onOpenChange={setEndRecurrenceOpen}>
             <PopoverTrigger asChild>
               <button className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="End recurrence on date">
-                <CalendarOff className="h-3.5 w-3.5" />
+                <CalendarX2 className="h-3.5 w-3.5" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="end">
