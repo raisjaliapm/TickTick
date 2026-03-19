@@ -73,6 +73,8 @@ export function ProductTrackerView() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [modalPhaseId, setModalPhaseId] = useState<string | null>(null);
   const [modalItem, setModalItem] = useState<TrackerItem | null>(null);
+  const [editingPhaseId, setEditingPhaseId] = useState<string | null>(null);
+  const [editingPhaseName, setEditingPhaseName] = useState('');
 
   const openCreateModal = (phaseId: string) => {
     setModalPhaseId(phaseId);
