@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Plus, Link, FileText, ListChecks, CalendarX2 } from 'lucide-react';
-import { format, isPast, isToday } from 'date-fns';
+import { Check, Pencil, Trash2, X, Save, CalendarDays, Repeat, Hash, Circle, Clock, Pause, CheckCircle2, Plus, Link, FileText, ListChecks, CalendarX2, AlertTriangle } from 'lucide-react';
+import { format, isPast, isToday, differenceInDays, startOfDay } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
