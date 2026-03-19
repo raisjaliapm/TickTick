@@ -254,10 +254,11 @@ PRIORITY INDICATORS: 🔴 Urgent | 🟠 High | 🟡 Medium | 🔵 Low`;
           }
           if (fn === "create_phase") {
             if (!activeBoardId) return "No active board selected.";
-            const { error } = await supabase.from("product_tracker_phases").insert({
+            const { data: newPhase, error } = await supabase.from("product_tracker_phases").insert({
               board_id: activeBoardId, user_id: user.id, name: args.name, sort_order: phasesData.length,
-            });
-            return error ? `Failed: ${error.message}` : `Phase "${args.name}" created.`;
+            }).select('id').single();
+            if (error) return `Failed: ${error.message}`;
+            return `Phase "${args.name}" created with ID: ${newPhase.id}. Use this ID as phase_id when creating items in this phase.`;
           }
           if (fn === "rename_phase") {
             const { error } = await supabase.from("product_tracker_phases").update({ name: args.name }).eq("id", args.phase_id).eq("user_id", user.id);
