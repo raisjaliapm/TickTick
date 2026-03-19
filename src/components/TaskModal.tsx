@@ -92,6 +92,23 @@ interface Subtask {
   is_completed: boolean;
 }
 
+interface Attachment {
+  id: string;
+  file_name: string;
+  file_size: number;
+  file_type: string | null;
+  storage_path: string;
+  created_at: string;
+}
+
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
 export function TaskModal({
   open, onOpenChange, mode, task, categories, projects, activeProjectId,
   onAddCategory, onSave, onUpdateStatus, defaultDate, defaultHour,
