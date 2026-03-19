@@ -148,6 +148,8 @@ export function TaskModal({
         setDueDate(undefined);
         setDueTime('');
       }
+      setStartDate((task as any).start_date ? new Date((task as any).start_date) : undefined);
+      setEndDate((task as any).end_date ? new Date((task as any).end_date) : undefined);
       setCategoryId(task.category_id);
       setRecurrence((task as any).recurrence || null);
       setNotes((task as any).notes || '');
