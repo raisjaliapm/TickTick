@@ -641,18 +641,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
         </>
       )}
 
-      {/* Add Task Dialog */}
-      {onAdd && (
-        <CalendarAddTaskDialog
-          open={addDialogOpen}
-          onOpenChange={setAddDialogOpen}
-          date={addDialogDate}
-          hour={addDialogHour}
-          categories={categories}
-          onAdd={onAdd}
-          onAddCategory={onAddCategory}
-        />
-      )}
+      {/* Task creation now handled by parent TaskModal */}
     </div>
     </DeleteAllWrapper>
   );
