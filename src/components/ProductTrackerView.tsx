@@ -641,6 +641,16 @@ export function ProductTrackerView() {
                                       >
                                         <Copy className="h-3 w-3" />
                                       </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (window.confirm(`Delete "${item.title}"?`)) tracker.deleteItem(item.id);
+                                        }}
+                                        className="p-0.5 rounded text-muted-foreground/50 hover:text-destructive protocol-transition"
+                                        title="Delete"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </button>
                                       <div className={`h-2 w-2 rounded-full ml-auto ${priorityColors[item.priority] || priorityColors.medium}`} />
                                     </div>
 
