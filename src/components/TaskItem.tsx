@@ -495,7 +495,7 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onAdd
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.2, ease: [...protocolCurve] }}
-      className="group flex items-center gap-3 px-3 py-2.5 rounded-lg border border-transparent hover:border-border hover:bg-task-hover protocol-transition select-none"
+      className="group flex items-start sm:items-center gap-2 sm:gap-3 px-3 py-2.5 rounded-lg border border-transparent hover:border-border hover:bg-task-hover protocol-transition select-none"
     >
       {/* Status popover */}
       <Popover>
