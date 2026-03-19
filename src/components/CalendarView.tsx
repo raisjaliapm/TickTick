@@ -386,7 +386,7 @@ function CalendarTaskChip({ task, categories, onToggle, onUpdate, onDelete, onSt
   );
 }
 
-export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, onAdd, onAddCategory, mode: initialMode = 'month' }: CalendarViewProps) {
+export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAdd, onAddCategory, mode: initialMode = 'month' }: CalendarViewProps) {
   const [mode, setMode] = useState<'month' | 'week'>(initialMode);
   const [currentDate, setCurrentDate] = useState(new Date());
   const isMobile = useIsMobile();
