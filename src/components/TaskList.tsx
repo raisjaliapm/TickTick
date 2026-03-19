@@ -8,11 +8,12 @@ interface TaskListProps {
   onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
+  onStopRecurrence?: (id: string) => void;
   onAddCategory?: (name: string) => Promise<void>;
   onUpdateStatus?: (id: string, status: TaskStatus) => void;
 }
 
-export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onAddCategory, onUpdateStatus }: TaskListProps) {
+export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onStopRecurrence, onAddCategory, onUpdateStatus }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="py-20 text-center border border-dashed border-border rounded-2xl">
