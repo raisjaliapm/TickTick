@@ -45,6 +45,7 @@ const Index = () => {
   const [mainView, setMainView] = useState<MainView>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [trackerBoardId, setTrackerBoardId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   // Task modal state
