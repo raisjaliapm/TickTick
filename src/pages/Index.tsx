@@ -63,7 +63,7 @@ const Index = () => {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      {!isMobile && sidebarOpen && sidebarContent}
+      {!isMobile && sidebarOpen && <SidebarNav {...sidebarProps} />}
 
       {/* Mobile Sidebar Sheet */}
       {isMobile && (
