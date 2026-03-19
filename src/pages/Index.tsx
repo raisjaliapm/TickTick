@@ -26,6 +26,7 @@ const viewLabels: Record<string, string> = {
   completed: 'Completed',
   calendar: 'Calendar',
   kanban: 'Board',
+  gantt: 'Timeline',
   reports: 'Reports',
   'weekly-reports': 'Weekly Reports',
 };
