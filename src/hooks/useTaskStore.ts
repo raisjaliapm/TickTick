@@ -130,8 +130,7 @@ export function useTaskStore() {
 
     // Auto-generate future recurring instances
     if (recurrence && formattedDueDate) {
-      const count = getRecurrenceCount(recurrence);
-      const futureDates = generateFutureInstances(formattedDueDate, recurrence, count);
+      const futureDates = generateFutureInstances(formattedDueDate, recurrence);
       const futureRows = futureDates.map(date => ({
         user_id: user.id,
         title,
