@@ -84,17 +84,7 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
   const completionRate = stats.total > 0 ? Math.round((stats.done.length / stats.total) * 100) : 0;
 
   if (loading) {
-    return (
-      <div className="bg-card border border-border rounded-xl p-8 text-center">
-        <p className="text-sm text-muted-foreground">Loading dashboard...</p>
-      </div>
-    );
-  }
-
-  if (boards.length === 0) return null;
-
   const exportToExcel = useCallback(() => {
-    // Sheet 1: All Items
     const itemRows = filteredItems.map(item => {
       const phase = filteredPhases.find(p => p.id === item.phase_id);
       const board = boards.find(b => phase && b.id === phase.board_id);
@@ -113,7 +103,6 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
       };
     });
 
-    // Sheet 2: Summary Stats
     const summaryRows = [
       { 'Metric': 'Total Items', 'Value': stats.total },
       { 'Metric': 'To Do', 'Value': stats.todo.length },
@@ -126,7 +115,6 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
       { 'Metric': 'Completion Rate', 'Value': `${completionRate}%` },
     ];
 
-    // Sheet 3: Board Breakdown
     const boardRows = boards.map(b => {
       const bPhases = filteredPhases.filter(p => p.board_id === b.id);
       const bPhaseIds = new Set(bPhases.map(p => p.id));
@@ -141,7 +129,6 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
       };
     });
 
-    // Sheet 4: Phase Breakdown
     const phaseRows = filteredPhases.map(p => {
       const board = boards.find(b => b.id === p.board_id);
       const pItems = filteredItems.filter(i => i.phase_id === p.id);
@@ -166,6 +153,16 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
       : `product-tracker-export-${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
     XLSX.writeFile(wb, fileName);
   }, [filteredItems, filteredPhases, boards, stats, completionRate, selectedBoard]);
+
+  if (loading) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-8 text-center">
+        <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (boards.length === 0) return null;
 
   return (
     <div className="space-y-6">
