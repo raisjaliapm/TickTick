@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,115 +6,131 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 142 71% 45%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 142 71% 45%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 62.8% 50%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 142 71% 45%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
-    --sidebar-background: 240 4.8% 95.9%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 142 71% 45%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 16% 47%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4.8% 91%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 240 5.9% 90%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 221 83% 53%;
 
-    /* Protocol custom tokens */
-    --task-hover: 240 5% 96%;
-    --task-completed: 240 5% 60%;
+    /* Custom tokens */
+    --task-hover: 210 40% 97%;
+    --task-completed: 215 16% 60%;
     --priority-urgent: 0 84% 60%;
     --priority-high: 25 95% 53%;
     --priority-medium: 45 93% 47%;
     --priority-low: 217 91% 60%;
-    --surface-well: 240 5% 96%;
-    --grid-line: 240 10% 3.9%;
+    --surface-well: 210 20% 97%;
+    --grid-line: 222 47% 11%;
 
     /* Status tokens */
     --status-not-started: 0 72% 51%;
-    --status-in-progress: 217 91% 60%;
+    --status-in-progress: 221 83% 53%;
     --status-on-hold: 45 93% 47%;
-    --status-completed: 142 71% 45%;
+    --status-completed: 152 69% 41%;
+
+    /* Project management tokens */
+    --success: 152 69% 41%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 221 83% 53%;
+    --info-foreground: 0 0% 100%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
 
-    --card: 240 10% 5.5%;
-    --card-foreground: 0 0% 98%;
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 142 71% 45%;
-    --primary-foreground: 240 10% 3.9%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 6%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 85%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 90%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 54%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 55%;
 
-    --accent: 142 71% 45%;
-    --accent-foreground: 240 10% 3.9%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 50%;
+    --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 5.9% 10%;
-    --input: 240 5.9% 14%;
-    --ring: 142 71% 45%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
 
-    --sidebar-background: 240 10% 5%;
-    --sidebar-foreground: 240 4.8% 65%;
-    --sidebar-primary: 142 71% 45%;
-    --sidebar-primary-foreground: 240 10% 3.9%;
-    --sidebar-accent: 240 3.7% 12%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 240 5.9% 10%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-background: 222 47% 7%;
+    --sidebar-foreground: 215 20% 55%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 222 47% 6%;
+    --sidebar-accent: 217 33% 14%;
+    --sidebar-accent-foreground: 210 40% 90%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 217 91% 60%;
 
-    /* Protocol custom tokens */
-    --task-hover: 240 5% 8%;
-    --task-completed: 240 5% 40%;
+    /* Custom tokens */
+    --task-hover: 217 33% 12%;
+    --task-completed: 215 16% 45%;
     --priority-urgent: 0 84% 60%;
     --priority-high: 25 95% 53%;
     --priority-medium: 45 93% 47%;
     --priority-low: 217 91% 60%;
-    --surface-well: 240 10% 3%;
-    --grid-line: 0 0% 100%;
+    --surface-well: 222 47% 5%;
+    --grid-line: 210 40% 98%;
 
     /* Status tokens */
     --status-not-started: 0 72% 58%;
     --status-in-progress: 217 91% 60%;
     --status-on-hold: 45 93% 47%;
-    --status-completed: 142 71% 45%;
+    --status-completed: 152 69% 50%;
+
+    /* Project management tokens */
+    --success: 152 69% 50%;
+    --success-foreground: 222 47% 6%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 6%;
+    --info: 217 91% 60%;
+    --info-foreground: 222 47% 6%;
   }
 }
 
@@ -125,32 +141,32 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Instrument Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: 'Instrument Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   .font-mono-ui {
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
   }
 
   .protocol-transition {
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-    transition-duration: 200ms;
+    transition-duration: 150ms;
   }
 
   .bg-grid {
     background-image:
-      linear-gradient(hsl(var(--grid-line) / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--grid-line) / 0.03) 1px, transparent 1px);
+      linear-gradient(hsl(var(--grid-line) / 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--grid-line) / 0.02) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
@@ -187,7 +203,7 @@ html {
   }
   
   input, select, textarea {
-    font-size: 16px !important; /* Prevent iOS zoom on focus */
+    font-size: 16px !important;
   }
 }
 
