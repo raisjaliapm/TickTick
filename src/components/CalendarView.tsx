@@ -483,8 +483,8 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
               return (
                 <div
                   key={key}
-                  onClick={() => onAdd && openAddDialog(day)}
-                  className={`min-h-[56px] sm:min-h-[80px] p-1 sm:p-1.5 bg-background ${!inMonth ? 'opacity-30' : ''} ${onAdd ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
+                  onClick={() => onCreateTask && openAddDialog(day)}
+                  className={`min-h-[56px] sm:min-h-[80px] p-1 sm:p-1.5 bg-background ${!inMonth ? 'opacity-30' : ''} ${onCreateTask ? 'cursor-pointer hover:bg-accent/30 protocol-transition' : ''}`}
                 >
                   <div className="flex items-center justify-between">
                     <div className={`text-[10px] sm:text-[11px] font-mono mb-0.5 sm:mb-1 ${today ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
