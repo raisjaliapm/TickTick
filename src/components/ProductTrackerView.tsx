@@ -642,6 +642,17 @@ export function ProductTrackerView() {
           })}
         </div>
       )}
+
+      {/* Tracker Item Modal */}
+      <TrackerItemModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        mode={modalMode}
+        phaseId={modalPhaseId || undefined}
+        item={modalItem || undefined}
+        onSave={handleModalSave}
+        onFilesUploaded={handleModalFilesUploaded}
+      />
     </div>
   );
 }
