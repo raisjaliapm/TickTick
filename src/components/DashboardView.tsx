@@ -54,7 +54,11 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {statCards.map(card => (
-          <div key={card.label} className="bg-card border border-border rounded-xl p-4 md:p-5">
+          <button
+            key={card.label}
+            onClick={() => onNavigate(card.navigateTo)}
+            className="bg-card border border-border rounded-xl p-4 md:p-5 text-left hover:border-primary/40 hover:shadow-md protocol-transition cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-3">
               <div className={`p-2 rounded-lg ${card.bg}`}>
                 <card.icon className={`h-4 w-4 ${card.color}`} />
@@ -62,7 +66,7 @@ export function DashboardView({ tasks, categories, projects, onNavigate }: Dashb
             </div>
             <p className="text-2xl md:text-3xl font-semibold text-foreground">{card.value}</p>
             <p className="text-xs text-muted-foreground mt-1">{card.label}</p>
-          </div>
+          </button>
         ))}
       </div>
 
