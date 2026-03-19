@@ -162,11 +162,5 @@ export function KanbanView({ tasks, categories, onUpdateStatus }: KanbanViewProp
               </div>
             )}
           </div>
-        );
-      })}
-    </div>
-        );
-      })}
-    </div>
   );
 }
