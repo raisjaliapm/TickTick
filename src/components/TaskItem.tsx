@@ -625,9 +625,9 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
         </div>
       </div>
 
-      <div className="flex sm:opacity-0 sm:group-hover:opacity-100 protocol-transition items-center gap-1.5 shrink-0">
+      <div className="flex items-center gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 protocol-transition">
         {task.due_date && (
-          <span className={`text-[11px] font-mono mr-1 ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
+          <span className={`text-[10px] sm:text-[11px] font-mono mr-0.5 sm:mr-1 hidden sm:inline ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
             {isOverdue ? 'overdue' : (() => {
               const d = new Date(task.due_date!);
               const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
@@ -635,10 +635,10 @@ export function TaskItem({ task, categories, onToggle, onUpdate, onDelete, onSto
             })()}
           </span>
         )}
-        <button onClick={openEdit} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition" title="Edit task">
+        <button onClick={openEdit} className="p-1.5 sm:p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary protocol-transition active:scale-90" title="Edit task">
           <Pencil className="h-3.5 w-3.5" />
         </button>
-        <button onClick={() => onDelete(task.id)} className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition" title="Delete task">
+        <button onClick={() => onDelete(task.id)} className="p-1.5 sm:p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 protocol-transition active:scale-90" title="Delete task">
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
