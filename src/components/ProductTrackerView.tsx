@@ -468,7 +468,16 @@ export function ProductTrackerView() {
                     {statusColumns.map(col => {
                       const colItems = phaseItems.filter(i => i.status === col.key);
                       return (
-                        <Card key={col.key} className="shadow-none bg-secondary/30 border-border/50">
+                        <Card
+                          key={col.key}
+                          className={cn(
+                            "shadow-none bg-secondary/30 border-border/50 protocol-transition",
+                            dragOverCol === `${phase.id}:${col.key}` && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                          )}
+                          onDragOver={e => handleDragOver(e, `${phase.id}:${col.key}`)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={e => handleDrop(e, col.key)}
+                        >
                           <CardHeader className="p-3 pb-2">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-1.5">
