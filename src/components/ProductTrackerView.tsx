@@ -531,22 +531,22 @@ export function ProductTrackerView() {
                                     if (isDup) { e.preventDefault(); tracker.duplicateItem(item); }
                                   }}
                                   className={cn(
-                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing focus:outline-none focus:ring-1 focus:ring-primary/50",
+                                    "shadow-sm hover:shadow-md hover:border-primary/30 protocol-transition bg-card cursor-grab active:cursor-grabbing focus:outline-none focus:ring-1 focus:ring-primary/50 overflow-hidden",
                                     dragItemId === item.id && "opacity-50",
                                     itemOverdue && "border-destructive/50 bg-destructive/5"
                                   )}
                                 >
-                                  <CardContent className="p-3 space-y-2">
-                                    <div className="flex items-start gap-2">
-                                      <p className="text-sm text-foreground font-medium leading-snug flex-1">{item.title}</p>
+                                  <CardContent className="p-3 space-y-2 overflow-hidden">
+                                    <div className="flex items-start gap-1.5 min-w-0">
+                                      <p className="text-sm text-foreground font-medium leading-snug flex-1 min-w-0 break-words">{item.title}</p>
                                       {itemOverdue && (
-                                        <span className="flex items-center gap-0.5 shrink-0 text-[9px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
-                                          <AlertTriangle className="h-2.5 w-2.5" />
+                                        <span className="flex items-center gap-0.5 shrink-0 text-[9px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                          <AlertTriangle className="h-2.5 w-2.5 shrink-0" />
                                           {days}d overdue
                                         </span>
                                       )}
                                     </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
+                                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                                       <select
                                         value={item.status}
                                         onChange={e => tracker.updateItemStatus(item.id, e.target.value as TrackerItem['status'])}
