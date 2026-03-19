@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ProductTrackerDashboard } from '@/components/ProductTrackerDashboard';
 
 const statusColumns: { key: TrackerItem['status']; label: string }[] = [
   { key: 'todo', label: 'TO DO' },
@@ -267,6 +268,14 @@ export function ProductTrackerView() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Dashboard Section */}
+        {tracker.boards.length > 0 && (
+          <ProductTrackerDashboard
+            boards={tracker.boards}
+            onSelectBoard={(boardId) => tracker.setActiveBoardId(boardId)}
+          />
         )}
       </div>
     );
