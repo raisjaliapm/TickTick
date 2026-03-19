@@ -177,6 +177,7 @@ const Index = () => {
     stats: store.stats,
     onDeleteCategory: store.deleteCategory,
     onLogoClick: () => { setMainView('dashboard'); if (isMobile) setMobileSidebarOpen(false); },
+    onProductTrackerClick: () => { setMainView('product-tracker'); if (isMobile) setMobileSidebarOpen(false); },
     projects: projectStore.projects,
     activeProjectId: projectStore.activeProjectId,
     onSelectProject: (id: string | null) => { projectStore.setActiveProjectId(id); setMainView('tasks'); store.setViewFilter('all'); if (isMobile) setMobileSidebarOpen(false); },
