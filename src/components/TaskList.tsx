@@ -18,7 +18,7 @@ interface TaskListProps {
   onEditTask?: (task: Task) => void;
 }
 
-export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDeleteAll, onStopRecurrence, onAddCategory, onUpdateStatus }: TaskListProps) {
+export function TaskList({ tasks, categories, onToggle, onUpdate, onDelete, onDeleteAll, onStopRecurrence, onAddCategory, onUpdateStatus, onEditTask }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="py-20 text-center border border-dashed border-border rounded-2xl">
