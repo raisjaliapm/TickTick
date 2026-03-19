@@ -361,6 +361,7 @@ export function TaskModal({
       urls,
       subtasks: newSubtaskItems,
       projectId,
+      pendingFiles: mode === 'create' && pendingFiles.length > 0 ? pendingFiles : undefined,
     });
 
     if (isListening) stopListening();
