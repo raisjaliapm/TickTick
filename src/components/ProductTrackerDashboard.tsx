@@ -260,10 +260,10 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
                   labelLine={false}
                 >
                   {[
-                    'hsl(var(--muted-foreground))',
-                    'hsl(var(--info))',
-                    'hsl(var(--warning))',
-                    'hsl(var(--success))',
+                    '#EF4444',
+                    '#EAB308',
+                    '#FF9933',
+                    '#22C55E',
                   ].map((color, i) => (
                     <Cell key={i} fill={color} />
                   ))}
@@ -462,10 +462,10 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
           </div>
           <div className="space-y-3">
             {[
-              { label: 'To Do', count: stats.todo.length, icon: Circle, color: 'hsl(var(--status-not-started))' },
-              { label: 'In Progress', count: stats.inProgress.length, icon: Clock, color: 'hsl(var(--status-in-progress))' },
-              { label: 'On Hold', count: stats.onHold.length, icon: Pause, color: 'hsl(var(--status-on-hold))' },
-              { label: 'Done', count: stats.done.length, icon: CheckCircle2, color: 'hsl(var(--status-completed))' },
+              { label: 'To Do', count: stats.todo.length, icon: Circle, color: '#EF4444' },
+              { label: 'In Progress', count: stats.inProgress.length, icon: Clock, color: '#EAB308' },
+              { label: 'On Hold', count: stats.onHold.length, icon: Pause, color: '#FF9933' },
+              { label: 'Done', count: stats.done.length, icon: CheckCircle2, color: '#22C55E' },
             ].map(item => {
               const total = stats.total || 1;
               const pct = Math.round((item.count / total) * 100);
