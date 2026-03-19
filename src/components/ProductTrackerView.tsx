@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, Package, FolderPlus, Paperclip, Upload, File as FileIcon, X, CalendarIcon, AlertTriangle, User } from 'lucide-react';
 import { format, isPast, startOfDay, differenceInDays } from 'date-fns';
 import { useProductTracker, type TrackerItem } from '@/hooks/useProductTracker';
 import { useAuth } from '@/contexts/AuthContext';
@@ -592,6 +592,38 @@ export function ProductTrackerView() {
                                               </button>
                                             </div>
                                           )}
+                                        </PopoverContent>
+                                      </Popover>
+                                      <Popover>
+                                        <PopoverTrigger asChild>
+                                          <button
+                                            className={cn(
+                                              "flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border hover:border-primary/30 protocol-transition max-w-[90px] truncate",
+                                              item.assignee ? "text-foreground bg-secondary border-border" : "text-muted-foreground/60 border-dashed border-border"
+                                            )}
+                                          >
+                                            <User className="h-2.5 w-2.5 shrink-0" />
+                                            <span className="truncate">{item.assignee || 'Assign'}</span>
+                                          </button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-48 p-2" align="start">
+                                          <input
+                                            type="text"
+                                            defaultValue={item.assignee || ''}
+                                            placeholder="Assignee name..."
+                                            className="w-full text-xs bg-secondary border border-border rounded-lg px-2 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                                            onKeyDown={e => {
+                                              if (e.key === 'Enter') {
+                                                const val = (e.target as HTMLInputElement).value.trim();
+                                                tracker.updateItemAssignee(item.id, val || null);
+                                              }
+                                            }}
+                                            onBlur={e => {
+                                              const val = e.target.value.trim();
+                                              tracker.updateItemAssignee(item.id, val || null);
+                                            }}
+                                            autoFocus
+                                          />
                                         </PopoverContent>
                                       </Popover>
                                       <button

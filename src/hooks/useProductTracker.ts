@@ -28,6 +28,7 @@ export type TrackerItem = {
   status: 'todo' | 'in_progress' | 'done' | 'on_hold';
   priority: string;
   due_date: string | null;
+  assignee: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -129,6 +130,11 @@ export function useProductTracker() {
     if (activeBoardId) await fetchItems(activeBoardId);
   }, [activeBoardId, fetchItems]);
 
+  const updateItemAssignee = useCallback(async (itemId: string, assignee: string | null) => {
+    await supabase.from('product_tracker_items').update({ assignee } as any).eq('id', itemId);
+    if (activeBoardId) await fetchItems(activeBoardId);
+  }, [activeBoardId, fetchItems]);
+
   const deleteItem = useCallback(async (itemId: string) => {
     await supabase.from('product_tracker_items').delete().eq('id', itemId);
     if (activeBoardId) await fetchItems(activeBoardId);
@@ -138,6 +144,6 @@ export function useProductTracker() {
 
   return {
     boards, phases, items, activeBoard, activeBoardId, setActiveBoardId, loading,
-    addBoard, deleteBoard, addPhase, deletePhase, addItem, updateItemStatus, updateItemDueDate, deleteItem,
+    addBoard, deleteBoard, addPhase, deletePhase, addItem, updateItemStatus, updateItemDueDate, updateItemAssignee, deleteItem,
   };
 }
