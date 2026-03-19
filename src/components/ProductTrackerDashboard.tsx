@@ -260,10 +260,10 @@ export function ProductTrackerDashboard({ boards, onSelectBoard }: ProductTracke
                   labelLine={false}
                 >
                   {[
-                    'hsl(var(--muted-foreground))',
-                    'hsl(var(--info))',
-                    'hsl(var(--warning))',
-                    'hsl(var(--success))',
+                    '#EF4444',
+                    '#EAB308',
+                    '#FF9933',
+                    '#22C55E',
                   ].map((color, i) => (
                     <Cell key={i} fill={color} />
                   ))}
