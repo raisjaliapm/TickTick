@@ -490,7 +490,7 @@ export function CalendarView({ tasks, categories, onToggle, onUpdate, onDelete, 
                     <div className={`text-[10px] sm:text-[11px] font-mono mb-0.5 sm:mb-1 ${today ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
                       {format(day, 'd')}
                     </div>
-                    {onAdd && (
+                    {onCreateTask && (
                       <Plus className="h-3 w-3 text-muted-foreground/30 hover:text-primary protocol-transition" />
                     )}
                   </div>
