@@ -44,9 +44,15 @@ export function useTaskStore() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [viewFilter, setViewFilter] = useState<ViewFilter>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [priorityFilter, setPriorityFilter] = useState<Priority | null>(null);
+  const [viewFilter, setViewFilter] = useState<ViewFilter>(() => {
+    try { const v = localStorage.getItem('ptt-view-filter'); return v ? JSON.parse(v) : 'all'; } catch { return 'all'; }
+  });
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(() => {
+    try { const v = localStorage.getItem('ptt-category-filter'); return v ? JSON.parse(v) : null; } catch { return null; }
+  });
+  const [priorityFilter, setPriorityFilter] = useState<Priority | null>(() => {
+    try { const v = localStorage.getItem('ptt-priority-filter'); return v ? JSON.parse(v) : null; } catch { return null; }
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null);
   const [loading, setLoading] = useState(true);
