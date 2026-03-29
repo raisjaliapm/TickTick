@@ -21,6 +21,8 @@ export function useProjectStore() {
   });
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => { try { localStorage.setItem('ptt-active-project', JSON.stringify(activeProjectId)); } catch {} }, [activeProjectId]);
+
   const fetchProjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase

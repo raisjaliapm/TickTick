@@ -54,8 +54,16 @@ export function useTaskStore() {
     try { const v = localStorage.getItem('ptt-priority-filter'); return v ? JSON.parse(v) : null; } catch { return null; }
   });
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null);
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(() => {
+    try { const v = localStorage.getItem('ptt-status-filter'); return v ? JSON.parse(v) : null; } catch { return null; }
+  });
   const [loading, setLoading] = useState(true);
+
+  // Persist filters to localStorage
+  useEffect(() => { try { localStorage.setItem('ptt-view-filter', JSON.stringify(viewFilter)); } catch {} }, [viewFilter]);
+  useEffect(() => { try { localStorage.setItem('ptt-category-filter', JSON.stringify(categoryFilter)); } catch {} }, [categoryFilter]);
+  useEffect(() => { try { localStorage.setItem('ptt-priority-filter', JSON.stringify(priorityFilter)); } catch {} }, [priorityFilter]);
+  useEffect(() => { try { localStorage.setItem('ptt-status-filter', JSON.stringify(statusFilter)); } catch {} }, [statusFilter]);
 
   const fetchTasks = useCallback(async () => {
     if (!user) return;
