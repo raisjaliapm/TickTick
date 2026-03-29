@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePersistedState } from '@/hooks/usePersistedState';
 import { Command, PanelLeftClose, PanelLeftOpen, Sparkles, ListTodo, Menu, Search, Plus, Package } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { format } from 'date-fns';
@@ -42,10 +43,10 @@ type MainView = 'dashboard' | 'ai' | 'tasks' | 'product-tracker' | 'product-trac
 const Index = () => {
   const store = useTaskStore();
   const projectStore = useProjectStore();
-  const [mainView, setMainView] = useState<MainView>('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mainView, setMainView] = usePersistedState<MainView>('ptt-main-view', 'dashboard');
+  const [sidebarOpen, setSidebarOpen] = usePersistedState('ptt-sidebar-open', true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [trackerBoardId, setTrackerBoardId] = useState<string | null>(null);
+  const [trackerBoardId, setTrackerBoardId] = usePersistedState<string | null>('ptt-tracker-board', null);
   const isMobile = useIsMobile();
 
   // Task modal state

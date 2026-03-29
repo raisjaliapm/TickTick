@@ -16,8 +16,12 @@ export type Project = {
 export function useProjectStore() {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(() => {
+    try { const v = localStorage.getItem('ptt-active-project'); return v ? JSON.parse(v) : null; } catch { return null; }
+  });
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => { try { localStorage.setItem('ptt-active-project', JSON.stringify(activeProjectId)); } catch {} }, [activeProjectId]);
 
   const fetchProjects = useCallback(async () => {
     if (!user) return;
