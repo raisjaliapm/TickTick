@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePersistedState } from '@/hooks/usePersistedState';
 import { Command, PanelLeftClose, PanelLeftOpen, Sparkles, ListTodo, Menu, Search, Plus, Package } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { format } from 'date-fns';
