@@ -136,14 +136,18 @@ export function useAppleRemindersSync(tasks: Task[], fetchTasks: () => Promise<v
       const currentTasks = tasksRef.current;
       const taskById = new Map(currentTasks.map(task => [task.id, task]));
       const mappings = mappingsResult.data ?? [];
-      const linkedTaskIds = new Set(mappings.map(mapping => mapping.task_id).filter((id): id is string => id !== null));
       const linkedReminderIds = new Set(mappings.map(mapping => mapping.reminder_id));
+      let taskRowsChanged = false;
 
       for (const mapping of mappings) {
         const task = mapping.task_id ? taskById.get(mapping.task_id) : undefined;
         const reminder = reminderById.get(mapping.reminder_id);
         if (!reminder) {
-          if (task) await supabase.from('tasks').delete().eq('id', task.id).eq('user_id', userId);
+          if (task) {
+            const { error: deleteTaskError } = await supabase.from('tasks').delete().eq('id', task.id).eq('user_id', userId);
+            if (deleteTaskError) throw deleteTaskError;
+            taskRowsChanged = true;
+          }
           await supabase.from('apple_reminder_task_sync').delete().eq('id', mapping.id).eq('user_id', userId);
           continue;
         }
@@ -180,6 +184,7 @@ export function useAppleRemindersSync(tasks: Task[], fetchTasks: () => Promise<v
           };
           const { error: updateError } = await supabase.from('tasks').update(updates).eq('id', task.id).eq('user_id', userId);
           if (updateError) throw updateError;
+          taskRowsChanged = true;
           await supabase.from('apple_reminder_task_sync').update(storedSnapshot(currentReminderValues)).eq('id', mapping.id).eq('user_id', userId);
         }
       }
@@ -227,6 +232,7 @@ export function useAppleRemindersSync(tasks: Task[], fetchTasks: () => Promise<v
           priority: taskPriority(reminder.priority),
         }).select('id').single();
         if (taskError) throw taskError;
+        taskRowsChanged = true;
         const { error: mappingError } = await supabase.from('apple_reminder_task_sync').upsert({
           user_id: userId,
           task_id: insertedTask.id,
@@ -238,7 +244,7 @@ export function useAppleRemindersSync(tasks: Task[], fetchTasks: () => Promise<v
         knownReminderIds.add(reminder.id);
       }
 
-      await fetchTasks();
+      if (taskRowsChanged) await fetchTasks();
       return true;
     } catch (syncError) {
       console.error('Apple Reminders sync failed:', syncError);
@@ -271,11 +277,14 @@ export function useAppleRemindersSync(tasks: Task[], fetchTasks: () => Promise<v
 
   const openListPicker = useCallback(async () => {
     setDialogOpen(true);
+    setLoading(true);
     try {
       const availableLists = await loadLists();
       if (availableLists.length === 0) setError('No Apple Reminders lists are available.');
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Could not access Apple Reminders.');
+    } finally {
+      setLoading(false);
     }
   }, [loadLists]);
 
