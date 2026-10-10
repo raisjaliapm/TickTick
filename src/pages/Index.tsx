@@ -22,6 +22,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import type { Task, TaskStatus } from '@/hooks/useTaskStore';
 import { formatLocalDateTime } from '@/lib/dateUtils';
+import { useAppleRemindersSync } from '@/hooks/useAppleRemindersSync';
 
 const viewLabels: Record<string, string> = {
   all: 'All Tasks',
@@ -43,6 +44,7 @@ type MainView = 'dashboard' | 'ai' | 'tasks' | 'product-tracker' | 'product-trac
 const Index = () => {
   const store = useTaskStore();
   const projectStore = useProjectStore();
+  const appleReminders = useAppleRemindersSync(store.allTasks, store.fetchTasks, !store.loading && !projectStore.loading);
   const [mainView, setMainView] = usePersistedState<MainView>('ptt-main-view', 'dashboard');
   const [sidebarOpen, setSidebarOpen] = usePersistedState('ptt-sidebar-open', true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -227,6 +229,7 @@ const Index = () => {
     onAddProject: (name: string) => projectStore.addProject(name),
     onDeleteProject: projectStore.deleteProject,
     onDashboardClick: () => { setMainView('dashboard'); projectStore.setActiveProjectId(null); if (isMobile) setMobileSidebarOpen(false); },
+    appleReminders,
   };
 
   return (

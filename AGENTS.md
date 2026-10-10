@@ -1,0 +1,2 @@
+# Project architecture rules
+- Keep Apple Reminders EventKit logic in its dedicated sync hook and control; PTT tasks remain the source of truth, with per-user link metadata stored in Lovable Cloud, so native APIs stay out of core task CRUD.

@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      apple_reminder_sync_settings: {
+        Row: {
+          created_at: string
+          reminders_list_id: string
+          reminders_list_title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          reminders_list_id: string
+          reminders_list_title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          reminders_list_id?: string
+          reminders_list_title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      apple_reminder_task_sync: {
+        Row: {
+          created_at: string
+          id: string
+          ignored: boolean
+          last_synced_at: string
+          last_synced_completed: boolean
+          last_synced_due_date: string | null
+          last_synced_notes: string
+          last_synced_title: string | null
+          reminder_id: string
+          reminders_list_id: string
+          task_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ignored?: boolean
+          last_synced_at?: string
+          last_synced_completed?: boolean
+          last_synced_due_date?: string | null
+          last_synced_notes?: string
+          last_synced_title?: string | null
+          reminder_id: string
+          reminders_list_id: string
+          task_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ignored?: boolean
+          last_synced_at?: string
+          last_synced_completed?: boolean
+          last_synced_due_date?: string | null
+          last_synced_notes?: string
+          last_synced_title?: string | null
+          reminder_id?: string
+          reminders_list_id?: string
+          task_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string

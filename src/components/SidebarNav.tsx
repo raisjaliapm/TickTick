@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Circle, CalendarDays, Inbox, CheckCircle2, ListTodo, Hash, CalendarRange, LogOut, BarChart3, FileText, Clock, Pause, Columns3, Sun, Moon, X, LayoutDashboard, FolderKanban, Plus, ChevronDown, ChevronRight, GanttChart, AlertTriangle, Package } from 'lucide-react';
 import { GoogleCalendarButton } from '@/components/GoogleCalendarButton';
+import { AppleRemindersButton } from '@/components/AppleRemindersButton';
+import type { useAppleRemindersSync } from '@/hooks/useAppleRemindersSync';
 import type { ViewFilter, Category, Priority, TaskStatus } from '@/hooks/useTaskStore';
 import type { Project } from '@/hooks/useProjectStore';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,6 +29,7 @@ interface SidebarNavProps {
   onDeleteProject?: (id: string) => void;
   onDashboardClick?: () => void;
   onProductTrackerClick?: () => void;
+  appleReminders: ReturnType<typeof useAppleRemindersSync>;
 }
 
 const viewItems: { key: ViewFilter; label: string; icon: React.ElementType }[] = [
@@ -61,7 +64,7 @@ const statusItems: { key: TaskStatus; label: string; icon: React.ElementType; co
 export function SidebarNav({ 
   viewFilter, setViewFilter, categoryFilter, setCategoryFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, 
   categories, stats, onDeleteCategory, onLogoClick, className,
-  projects = [], activeProjectId, onSelectProject, onAddProject, onDeleteProject, onDashboardClick, onProductTrackerClick
+  projects = [], activeProjectId, onSelectProject, onAddProject, onDeleteProject, onDashboardClick, onProductTrackerClick, appleReminders
 }: SidebarNavProps) {
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -264,6 +267,7 @@ export function SidebarNav({
           <p className="px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Integrations</p>
           <div className="mt-1 px-1">
             <GoogleCalendarButton />
+            <AppleRemindersButton {...appleReminders} />
           </div>
         </div>
       </div>

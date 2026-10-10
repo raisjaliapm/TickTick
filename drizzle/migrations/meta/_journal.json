@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791641077993,
+      "tag": "0000_apple_reminder_task_sync",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791641430833,
+      "tag": "0001_apple_reminder_sync_settings",
+      "breakpoints": true
+    }
+  ]
+}
